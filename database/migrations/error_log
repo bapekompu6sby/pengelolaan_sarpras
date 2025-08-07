@@ -1,0 +1,16 @@
+[29-May-2024 13:52:45 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2024_05_22_133523_add_kegiatan_column.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2024_05_22_133523_add_kegiatan_column.php on line 7
+[29-May-2024 13:52:47 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2024_02_27_064722_create_transactions_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2024_02_27_064722_create_transactions_table.php on line 7
+[29-May-2024 13:52:49 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2024_02_27_064411_create_properties_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2024_02_27_064411_create_properties_table.php on line 7
+[29-May-2024 13:52:51 Asia/Jakarta] PHP Fatal error:  Uncaught Error: Class "Illuminate\Database\Migrations\Migration" not found in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/bapm2355/public_html/topang.bapekom6sby.com/pengelolaan_sarpras/database/migrations/2019_12_14_000001_create_personal_access_tokens_table.php on line 7
