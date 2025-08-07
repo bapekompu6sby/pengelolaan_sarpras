@@ -43,36 +43,39 @@ Route::group(['middleware' => 'auth'], function() {
                 Route::get('/', [TransactionController::class, 'wisma_show'])->name('wisma_show_user');
         });
 
+        Route::get('/transactions/ruangan', [TransactionController::class, 'ruangan_show'])
+                ->name('transactions.ruangan.show');
+
+        Route::get('/properties', [PropertiesController::class, 'index'])->name('properties');
+
+        // Data master semua penghuni wisma
+  
+        // Menyiapkan data untuk transaksi ruangan dan wisma
+        
+        Route::post('/transactions/ruangan', [TransactionController::class, 'ruangan_store'])
+                ->name('transactions.ruangan.store');
+        Route::post('/transactions/ruangan/update/{id}', [TransactionController::class, 'ruangan_update'])
+                ->name('transactions.ruangan.update');
+        Route::delete('/transactions/ruangan', [TransactionController::class, 'ruangan_destroy'])
+                ->name('transactions.ruangan.destroy');
+
+        Route::get('/transactions/wisma', [TransactionController::class, 'wisma_show'])
+                ->name('transactions.wisma.show');
+        Route::post('/transactions/wisma', [TransactionController::class, 'wisma_store'])
+                ->name('transactions.wisma.store');
+        Route::patch('/transactions/wisma/{id}', [TransactionController::class, 'wisma_update'])
+                ->name('transactions.wisma.update');
+        Route::delete('/transactions/wisma/destroy', [TransactionController::class, 'wisma_destroy'])
+                ->name('transactions.wisma.destroy');
+
         Route::group(['middleware' => 'checkRole:admin'], function() {
             // prefik untuk admin
             Route::prefix('admin')->group(function () {
-                Route::get('/properties', [PropertiesController::class, 'index'])->name('properties');
                 Route::post('/properties/store', [PropertiesController::class, 'store'])->name('properties.store');
                 Route::patch('/properties/{id}', [PropertiesController::class, 'update'])->name('properties.update');
                 Route::delete('/properties/{id}', [PropertiesController::class, 'destroy'])->name('properties.destroy');
-
-                // Data master semua penghuni wisma
                 Route::get('/wisma', [TransactionController::class, 'wisma_show_admin'])->name('wisma-admin');
 
-                // Menyiapkan data untuk transaksi ruangan dan wisma
-                Route::get('/transactions/ruangan', [TransactionController::class, 'ruangan_show'])
-                        ->name('transactions.ruangan.show');
-          
-                Route::post('/transactions/ruangan', [TransactionController::class, 'ruangan_store'])
-                        ->name('transactions.ruangan.store');
-                Route::post('/transactions/ruangan/update/{id}', [TransactionController::class, 'ruangan_update'])
-                        ->name('transactions.ruangan.update');
-                Route::delete('/transactions/ruangan', [TransactionController::class, 'ruangan_destroy'])
-                        ->name('transactions.ruangan.destroy');
-
-                Route::get('/transactions/wisma', [TransactionController::class, 'wisma_show'])
-                        ->name('transactions.wisma.show');
-                Route::post('/transactions/wisma', [TransactionController::class, 'wisma_store'])
-                        ->name('transactions.wisma.store');
-                Route::patch('/transactions/wisma/{id}', [TransactionController::class, 'wisma_update'])
-                        ->name('transactions.wisma.update');
-                Route::delete('/transactions/wisma/destroy', [TransactionController::class, 'wisma_destroy'])
-                        ->name('transactions.wisma.destroy');
             });
         });
         Route::group(['middleware' => 'checkRole:user'], function() {

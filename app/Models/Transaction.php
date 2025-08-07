@@ -10,6 +10,7 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'instansi',
         'kegiatan',
         'start',
@@ -17,11 +18,18 @@ class Transaction extends Model
         'color',
         'property_id',
         'status',
-        'description'
+        'description',
+        'user_id'
     ];
 
     public function properties()
     {
         return $this->belongsTo(Properties::class, 'property_id');
+    }
+
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

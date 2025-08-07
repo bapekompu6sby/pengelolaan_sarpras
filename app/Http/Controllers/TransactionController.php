@@ -66,6 +66,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         ];
 
         $isValidate = $request->validate([
+            'name'=> 'required|string',
             'office' => 'required|string|max:32',
             'event' => 'required|string|max:32',
             'start' => 'required|date',
@@ -86,8 +87,9 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
         // generate random color from color list above
         $color = array_rand($colors, 1);
-
+        echo $request;
         Transaction::create([
+            'name' => ucfirst($request->name),
             'instansi' => ucfirst($request->office),
             'kegiatan' => ucfirst($request->event),
             'start' => $request->start,
@@ -95,6 +97,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'color' => $colors[$color],
             'property_id' => $request->venue,
             'description' => $request->description,
+            'user_id' => auth()->user()->id,
         ]);
 
         return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil dibuat');
