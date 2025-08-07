@@ -283,7 +283,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             }
         }
         
-        return view('wisma.index', [
+        return view('admin.transaction-wisma', [
             'wisma' => $wismas->pluck('room'),
             'nama' => $wismas->pluck('name'),
             'kegiatan' => $wismas->pluck('kegiatan'),
