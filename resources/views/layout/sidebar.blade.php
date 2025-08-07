@@ -59,7 +59,10 @@
       </li>
     </ul>
   </li>
-  @if($role == 'admin')
+  
+
+  @endif
+
   <li class="menu-item {{ (strpos($route, 'transactions') !== false) ? 'active open' : '' }}">
     <a href="#" class="menu-link menu-toggle" id="transaction">
       <i class="menu-icon tf-icons bx bx-grid-alt"></i>
@@ -79,9 +82,6 @@
       </li>
     </ul>
   </li>
-  @endif
-
-  @endif
 
   @if($role == 'user' || $role == 'pakheru')
   <li class="menu-item {{ ($route == 'wisma_show_user') ? 'active' : '' }}">
