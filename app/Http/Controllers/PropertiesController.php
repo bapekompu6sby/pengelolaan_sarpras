@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Properties;
 
@@ -30,14 +31,29 @@ class PropertiesController extends Controller
             'name' => 'required|string|max:32',
             'type' => 'required|string|max:10',
             'capacity' => 'required|int|min:1|max:1000',
+            'image' => 'nullable|image|max:4096',
         ]);
 
         if ($isValdate) {
-            Properties::create([
-                'name' => ucfirst($request->name),
-                'type' => $request->type,
-                'capacity' => $request->capacity,
-            ]);
+            // Properties::create([
+            //     'name' => ucfirst($request->name),
+            //     'type' => $request->type,
+            //     'capacity' => $request->capacity,
+            // ]);
+
+            $property = new Properties();
+            $property->name = ucfirst($request->name);
+            $property->type = $request->type;
+            $property->capacity = $request->capacity;
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $path = Storage::disk('ftp')->put('', $image);
+
+                $property->image_path = $path; // Save FTP path in DB
+            }
+
+            $property->save();
 
             return redirect()->route('properties')->with('success', 'Data berhasil ditambahkan');
         }
@@ -80,4 +96,18 @@ class PropertiesController extends Controller
         Properties::destroy($id);
         return redirect()->route('properties')->with('success', 'Data berhasil dihapus');
     }
+
+    public function showImage(Properties $properties)
+{
+    $path = $properties->image_path;
+
+    if (!Storage::disk('ftp')->exists($path)) {
+        abort(404, 'Image not found on FTP');
+    }
+
+    $file = Storage::disk('ftp')->get($path);
+    $mime = Storage::disk('ftp')->mimeType($path);
+
+    return response($file, 200)->header('Content-Type', $mime);
+}
 }

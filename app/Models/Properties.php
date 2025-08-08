@@ -12,7 +12,8 @@ class Properties extends Model
     protected $fillable = [
         'name',
         'type',
-        'capacity'
+        'capacity',
+        'image_path',
     ];
 
     public function transactions()

@@ -19,6 +19,10 @@ use App\Http\Controllers\ProfileController;
 */
 
 // auth 
+
+// routes/web.php
+Route::get('/images/{properties}', [PropertiesController::class, 'showImage'])->name('properties.image');
+
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asrama');
 Route::group(['middleware' => 'auth'], function() {

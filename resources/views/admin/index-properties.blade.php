@@ -28,6 +28,7 @@
 <div class="container-xxl flex-grow-1 container-p-y">
 <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Data master/</span> Ruangan</h4>
   <div class="row">
+    <!-- <img src="{{ route('properties.image', 13) }}"/> -->
     <div class="col-lg-12 mb-4 order-0">
       <div>
         @if ($errors->any())
@@ -106,7 +107,7 @@
         <h5 class="modal-title" id="modalCenterTitle">Tambah ruangan</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form action="{{ route('properties.store') }}" method="POST">
+      <form action="{{ route('properties.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="modal-body">
           <div class="row">
@@ -130,6 +131,12 @@
               <label for="dobWithTitle" class="form-label">Kapasistas</label>
               <input type="number" id="dobWithTitle" class="form-control" placeholder="Kapasistas ruangan" min="1"
                 name="capacity" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col mb-3">
+              <label for="nameWithTitle" class="form-label">Gambar Ruangan</label>
+              <input type="file" id="image" class="form-control" name="image" accept="image/*" />
             </div>
           </div>
         </div>
