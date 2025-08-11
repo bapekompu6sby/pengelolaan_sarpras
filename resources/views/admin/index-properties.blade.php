@@ -60,7 +60,7 @@
                                     <th>Properti</th>
                                     <th>Img</th>
                                     <th>Jenis</th>
-                                    <th>Kapasistas</th>
+                                    <th>Kapasitas</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -74,8 +74,8 @@
                                         </td>
 
                                         <td>
-                                            @if ($property->img)
-                                                <img src="{{ asset('uploads/' . $property->img) }}"
+                                            @if (!empty($property->image_path))
+                                                <img src="{{ asset('uploads/' . $property->image_path) }}"
                                                     alt="{{ $property->name }}" width="50" height="50"
                                                     style="object-fit: cover; border-radius: 4px;">
                                             @else
@@ -85,33 +85,67 @@
 
                                         <td>{{ ucfirst($property->type) }}</td>
                                         <td>{{ $property->capacity }}</td>
-                                        <td><span class="badge bg-label-success me-1">Kosong</span></td>
                                         <td>
-                                            <div class="dropdown">
-                                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow"
-                                                    data-bs-toggle="dropdown">
-                                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                                </button>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item" href="javascript:void(0);"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#modalCenter{{ $property->id }}">
-                                                        <i class="bx bx-edit-alt me-2"></i> Edit
-                                                    </a>
-                                                    <a class="dropdown-item" href="javascript:void(0);"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#modalDelete{{ $property->id }}">
-                                                        <i class="bx bx-trash me-2"></i> Delete
-                                                    </a>
-                                                </div>
-                                            </div>
+                                            <span class="badge bg-label-success me-1">Kosong</span>
                                         </td>
+                                        <td>
+                                            <button type="button" class="btn btn-warning btn-sm me-1"
+                                                data-bs-toggle="modal" data-bs-target="#modalCenter{{ $property->id }}">
+                                                Edit
+                                            </button>
+
+                                            <button type="button" class="btn btn-danger btn-sm me-1" data-bs-toggle="modal"
+                                                data-bs-target="#modalDelete{{ $property->id }}">
+                                                Delete
+                                            </button>
+
+                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#modalDetail{{ $property->id }}">
+                                                Detail
+                                            </button>
+                                        </td>
+
                                     </tr>
 
                                     @include('components.edit-modal', ['property' => $property])
                                     @include('components.confirm-modal', ['property' => $property])
+
+                                    {{-- Modal Detail --}}
+                                    <div class="modal fade" id="modalDetail{{ $property->id }}" tabindex="-1"
+                                        aria-labelledby="modalDetailLabel{{ $property->id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="modalDetailLabel{{ $property->id }}">Detail
+                                                        Properti: {{ $property->name }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <ul class="list-group list-group-flush">
+                                                        <li class="list-group-item"><strong>Room Type:</strong>
+                                                            {{ $property->room_type ?: '-' }}</li>
+                                                        <li class="list-group-item"><strong>Area:</strong>
+                                                            {{ $property->area ?: '-' }}</li>
+                                                        <li class="list-group-item"><strong>Facilities:</strong>
+                                                            {{ $property->facilities ?: '-' }}</li>
+                                                        <li class="list-group-item"><strong>Price:</strong>
+                                                            {{ $property->price ?: '-' }}</li>
+                                                        <li class="list-group-item"><strong>Unit:</strong>
+                                                            {{ $property->unit }}</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Tutup</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endforeach
                             </tbody>
+
+
 
                         </table>
                     </div>

@@ -1,58 +1,83 @@
-@if (isset($property)) {{-- form edit for ruangan --}}
+@if (isset($property))
     <div class="modal fade" id="modalCenter{{ $property->id }}" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalCenterTitle">Edit ruangan</h5>
+                    <h5 class="modal-title">Edit Ruangan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                {{-- tambahkan enctype --}}
+
                 <form action="{{ route('properties.update', $property->id) }}" method="POST"
                     enctype="multipart/form-data">
                     @method('PATCH')
                     @csrf
+
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label for="nameWithTitle" class="form-label">Nama Ruangan</label>
-                                <input type="text" id="nameWithTitle" class="form-control"
-                                    placeholder="Masukkan nama ruangan" name="name" value="{{ $property->name }}" />
-                            </div>
-                        </div>
-                        <div class="row g-2">
-                            <div class="col mb-0">
-                                <label for="exampleFormControlSelect1" class="form-label">Jenis Sarana</label>
-                                <select class="form-select" id="exampleFormControlSelect1"
-                                    aria-label="Default select example" name="type">
-                                    <option value="kelas" {{ $property->type == 'kelas' ? 'selected' : '' }}>Kelas
-                                    </option>
-                                    <option value="aula" {{ $property->type == 'aula' ? 'selected' : '' }}>Aula
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col mb-0">
-                                <label for="dobWithTitle" class="form-label">Kapasistas</label>
-                                <input type="number" id="dobWithTitle" class="form-control"
-                                    placeholder="Kapasistas ruangan" min="1" name="capacity"
-                                    value="{{ $property->capacity }}" />
-                            </div>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nama Ruangan</label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                value="{{ old('name', $property->name) }}" required maxlength="32" />
                         </div>
 
-                        {{-- Input upload gambar --}}
-                        <div class="mt-3">
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Jenis Sarana</label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="kelas" {{ $property->type == 'kelas' ? 'selected' : '' }}>Kelas</option>
+                                <option value="aula" {{ $property->type == 'aula' ? 'selected' : '' }}>Aula</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="capacity" class="form-label">Kapasitas</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity"
+                                value="{{ old('capacity', $property->capacity) }}" min="1" max="1000"
+                                required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="room_type" class="form-label">Tipe Ruangan</label>
+                            <input type="text" class="form-control" id="room_type" name="room_type"
+                                value="{{ old('room_type', $property->room_type) }}" maxlength="50" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="area" class="form-label">Luas Area</label>
+                            <input type="text" class="form-control" id="area" name="area"
+                                value="{{ old('area', $property->area) }}" maxlength="50" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="facilities" class="form-label">Fasilitas</label>
+                            <textarea class="form-control" id="facilities" name="facilities" rows="3">{{ old('facilities', $property->facilities) }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Harga</label>
+                            <input type="number" class="form-control" id="price" name="price"
+                                value="{{ old('price', $property->price) }}" min="0" step="0.01" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="unit" class="form-label">Unit</label>
+                            <input type="number" class="form-control" id="unit" name="unit"
+                                value="{{ old('unit', $property->unit) }}" min="0" />
+                        </div>
+
+                        <div class="mb-3">
                             <label for="img" class="form-label">Gambar Ruangan</label>
-                            <input type="file" id="img" class="form-control" name="img" accept="image/*" />
+                            <input type="file" class="form-control" id="img" name="img" accept="image/*" />
 
-                            {{-- Preview gambar lama kalau ada --}}
-                            @if ($property->img)
+                            @if ($property->image_path)
                                 <div class="mt-2">
-                                    <img src="{{ asset('uploads/' . $property->img) }}" alt="Gambar" width="100">
+                                    <img src="{{ asset('uploads/' . $property->image_path) }}" alt="Gambar Ruangan"
+                                        width="100" />
                                 </div>
                             @endif
                         </div>
                     </div>
+
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Edit</button>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
@@ -60,15 +85,16 @@
     </div>
 @elseif(isset($t))
     {{-- form edit for peminjaman ruangan --}}
-    <div class="modal fade" id="modalCenter{{ $t->id }}" tabindex="-1" data-bs-backdrop="static" role="dialog"
-        aria-labelledby="addEventLabel" aria-hidden="true">
+    <div class="modal fade" id="modalCenter{{ $t->id }}" tabindex="-1" data-bs-backdrop="static"
+        role="dialog" aria-labelledby="addEventLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <form action="{{ route('transactions.ruangan.update', $t->id) }}" method="POST">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title" id="addEventLabel">Edit Event</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">

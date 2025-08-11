@@ -32,8 +32,8 @@ class PropertiesController extends Controller
             'type' => 'required|string|max:10',
             'capacity' => 'required|int|min:1|max:1000',
             'image' => 'nullable|image|max:4096',
-            'room_type'=> 'required|string|',
-            'price'=> 'required|string|'
+            'room_type' => 'required|string|',
+            'price' => 'required|string|'
         ]);
 
         if ($isValdate) {
@@ -65,36 +65,57 @@ class PropertiesController extends Controller
 
     public function update(Request $request, $id)
     {
-        $ifFound = Properties::find($id);
+        $property = Properties::find($id);
 
-        if ($ifFound === null) {
+        if ($property === null) {
             return redirect()->route('properties')->with('failed', 'Data tidak ditemukan');
         }
 
-        $isValidate = $request->validate([
-            'name'     => 'required|string|max:32',
-            'type'     => 'required|string|max:10',
-            'capacity' => 'required|integer|min:1|max:1000',
-            'img'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        // Validasi input
+        $request->validate([
+            'name'       => 'required|string|max:32',
+            'type'       => 'required|string|max:10',
+            'capacity'   => 'required|integer|min:1|max:1000',
+            'room_type'  => 'nullable|string|max:50',
+            'area'       => 'nullable|string|max:50',
+            'facilities' => 'nullable|string',
+            'price'      => 'nullable|numeric|min:0',
+            'unit'       => 'nullable|integer|min:0',
+            'img'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        // Data yang akan di-update
         $updateData = [
-            'name'     => $request->name,
-            'type'     => $request->type,
-            'capacity' => $request->capacity,
+            'name'       => $request->name,
+            'type'       => $request->type,
+            'capacity'   => $request->capacity,
+            'room_type'  => $request->room_type,
+            'area'       => $request->area,
+            'facilities' => $request->facilities,
+            'price'      => $request->price,
+            'unit'       => $request->unit ?? 0, // default 0 kalau null
         ];
 
+        // Kalau ada upload gambar baru
         if ($request->hasFile('img')) {
+            // Hapus gambar lama kalau ada
+            if ($property->image_path && file_exists(public_path('uploads/' . $property->image_path))) {
+                unlink(public_path('uploads/' . $property->image_path));
+            }
+
+            // Simpan gambar baru
             $file = $request->file('img');
-            $filename = $file->hashName(); // nama random unik otomatis
+            $filename = $file->hashName(); // nama unik otomatis
             $file->move(public_path('uploads'), $filename);
-            $updateData['img'] = $filename;
+            $updateData['image_path'] = $filename;
         }
 
-        Properties::where('id', $id)->update($updateData);
+     
+        $property->update($updateData);
 
         return redirect()->route('properties')->with('success', 'Data berhasil diubah');
     }
+
 
 
 
