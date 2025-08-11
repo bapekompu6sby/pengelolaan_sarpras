@@ -88,6 +88,12 @@
                       <i class="bx bx-edit-alt me-2"></i>
                       Edit
                     </button>
+
+                    <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
+                      data-bs-target="#modalResponse{{ $t->id }}">
+                      <i class="bx bx-edit-alt me-2"></i>
+                      Response
+                    </button>
                   </td>
                 @endif
               </tr>

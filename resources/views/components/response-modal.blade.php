@@ -54,30 +54,9 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="name" class="form-label">Nama Pemesan</label>
-            <input type="text" class="form-control" id="name" name="name" required value="{{ $t->name }}">
-          </div>
-          <div class="mb-3">
-            <label for="phone_number" class="form-label">Nomor HP/WA</label>
-            <input type="text" class="form-control" id="phone_number" name="phone_number" required value="{{ $t->phone_number }}">
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="text" class="form-control" id="email" name="email" required value="{{ $t->email }}">
-          </div>
-          <div class="mb-3">
             <label for="office" class="form-label">Instansi</label>
             <input type="text" class="form-control" id="office" name="office" required value="{{ $t->instansi }}">
           </div>
-          <div class="col mb-0">
-              <label for="affiliation" class="form-label">Afiliasi</label>
-              <select class="form-select" id="affiliation" aria-label="Default select example"
-                name="affiliation">
-                <option value="" selected disabled>Open this select menu</option>
-                <option value="internal_pu" {{ ($t->affiliation == "internal_pu")? 'selected' : '' }}>Internal PU</option>
-                <option value="external_pu" {{ ($t->affiliation == "external_pu")? 'selected' : '' }}>External PU</option>
-              </select>
-            </div>
           <div class="mb-3">
             <label for="event" class="form-label">Kegiatan</label>
             <input type="text" class="form-control" id="event" name="event" required value="{{ $t->kegiatan }}">
