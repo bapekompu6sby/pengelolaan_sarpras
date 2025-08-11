@@ -13,7 +13,12 @@ class Properties extends Model
         'name',
         'type',
         'capacity',
-        'img',
+        'image_path',
+        'room_type',
+        'area',
+        'facilities',
+        'price',
+        'unit',
     ];
 
     public function transactions()

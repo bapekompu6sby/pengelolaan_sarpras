@@ -27,7 +27,7 @@
 
 <div class="container-xxl flex-grow-1 container-p-y">
   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Peminjaman/</span> Tambah peminjaman</h4>
-
+  WISMAAAAAAAAAAAA TRANSACTION
   @if($errors->any())
   <div class="alert alert-danger">
     <h5 class="text-danger">Masukkan data dengan benar</h5>

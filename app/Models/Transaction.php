@@ -19,7 +19,10 @@ class Transaction extends Model
         'property_id',
         'status',
         'description',
-        'user_id'
+        'user_id',
+        'affiliation',
+        'phone_number',
+        'email',
     ];
 
     public function properties()

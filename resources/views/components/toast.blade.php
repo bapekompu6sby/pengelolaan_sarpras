@@ -6,6 +6,7 @@
       <small>1 mins ago</small>
       <button id="close" type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
+    TOAST
     <div class="toast-body">
       {{ $slot }}
     </div>

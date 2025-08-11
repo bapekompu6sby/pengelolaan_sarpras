@@ -9,6 +9,7 @@
         @endif
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      PAVILIUNNNS
       <div class="modal-body">
         <div id="seat-results">
           <div class="scroll-container">

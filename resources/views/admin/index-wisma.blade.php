@@ -26,6 +26,7 @@
 
 <div class="container-xxl flex-grow-1 container-p-y">
   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Data master/</span> Asrama & Paviliun</h4>
+  index wisma
   <div class="row">
     <div class="col-lg-12 mb-4 order-0">
       <div class="card">
