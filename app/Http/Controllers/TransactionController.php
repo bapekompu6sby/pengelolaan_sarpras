@@ -73,8 +73,10 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'end' => 'required|date',
             'venue' => 'required',
             'description' => 'nullable|string',
-            'phone_number' => 'string',
-            'email' => 'rules',
+            'phone_number' => 'nullable|string',
+            'email' => 'nullable|string',
+            'affiliation' => 'required|string',
+            'ordered_unit' => 'required|integer'
         ]);
 
         if (!$isValidate) {
@@ -101,6 +103,9 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'user_id' => auth()->user()->id,
             'email' => $request->email,
             'phone_number' => $request->phone_number,
+            'status' => 'pending',
+            'affiliation' => $request->affiliation,
+            'ordered_unit' => $request->ordered_unit,
         ]);
 
         return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil dibuat');
