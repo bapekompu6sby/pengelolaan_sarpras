@@ -51,9 +51,12 @@
                 @if(Auth::user()->role == 'admin')
                   <th style="width: 10px">✔</th>
                 @endif
+                <th>Nama Pemesan</th>
                 <th>Instansi</th>
                 <th>Kegiatan</th>
                 <th>Ruangan</th>
+                <th>No. HP/WA</th>
+                <th>Email</th>
                 <th>Tanggal</th>
                 @if(Auth::user()->role == 'admin')
                   <th>Actions</th>
@@ -68,15 +71,19 @@
                     <input type="checkbox" class="form-check-input" value="{{ $t->id }}">
                   </th>
                 @endif
+                <td>{{ $t->name }}</td>
                 <td><strong>{{ ucfirst($t->instansi) }}</strong></td>
                 <td>{{ $t->kegiatan }}</td>
                 <td>
                   {{ $t->properties->name }}
                 </td>
+                <td>{{ $t->phone_number }}</td>
+                <td>{{ $t->email }}</td>
                 <td><span class="me-1">{{ date("d-m-Y", strtotime($t->start)) .' | '. date("d-m-Y", strtotime($t->end)) }}</span></td>
+                
                 @if(Auth::user()->role == 'admin')
                   <td>
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                    <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
                       data-bs-target="#modalCenter{{ $t->id }}">
                       <i class="bx bx-edit-alt me-2"></i>
                       Edit
