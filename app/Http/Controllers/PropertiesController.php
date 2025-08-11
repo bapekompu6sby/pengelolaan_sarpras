@@ -52,23 +52,33 @@ class PropertiesController extends Controller
         if ($ifFound === null) {
             return redirect()->route('properties')->with('failed', 'Data tidak ditemukan');
         }
-        
-        $isValdate = $request->validate([
-            'name' => 'required|string|max:32',
-            'type' => 'required|string|max:10',
-            'capacity' => 'required|int|min:1|max:1000',
+
+        $isValidate = $request->validate([
+            'name'     => 'required|string|max:32',
+            'type'     => 'required|string|max:10',
+            'capacity' => 'required|integer|min:1|max:1000',
+            'img'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        if ($isValdate) {
-            Properties::where('id', $id)->update([
-                'name' => $request->name,
-                'type' => $request->type,
-                'capacity' => $request->capacity,
-            ]);
+        $updateData = [
+            'name'     => $request->name,
+            'type'     => $request->type,
+            'capacity' => $request->capacity,
+        ];
 
-            return redirect()->route('properties')->with('success', 'Data berhasil diubah');
+        if ($request->hasFile('img')) {
+            $file = $request->file('img');
+            $filename = $file->hashName(); // nama random unik otomatis
+            $file->move(public_path('uploads'), $filename);
+            $updateData['img'] = $filename;
         }
+
+        Properties::where('id', $id)->update($updateData);
+
+        return redirect()->route('properties')->with('success', 'Data berhasil diubah');
     }
+
+
 
     public function destroy($id)
     {
