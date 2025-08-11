@@ -5,6 +5,7 @@
         <h5 class="modal-title" id="modalCenterTitle">Hapus ruangan</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      CONFIRM MODAL
       <form action="{{ route('properties.destroy', $property->id) }}" method="POST">
         @method('DELETE')
         @csrf

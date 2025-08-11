@@ -96,7 +96,7 @@
             </form>
 
             <div class="mb-3">
-              <a href="{{ route('dashboard') }}" class="btn btn-primary d-grid w-100" type="submit">Login as tamu</a>
+              <a href="{{ route('dashboard') }}" class="btn btn-primary d-grid w-100" type="submit">Lanjutkan sebagai tamu</a>
             </div>
 
             <p class="text-center">

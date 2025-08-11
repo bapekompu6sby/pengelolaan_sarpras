@@ -32,6 +32,8 @@ class PropertiesController extends Controller
             'type' => 'required|string|max:10',
             'capacity' => 'required|int|min:1|max:1000',
             'image' => 'nullable|image|max:4096',
+            'room_type'=> 'required|string|',
+            'price'=> 'required|string|'
         ]);
 
         if ($isValdate) {
@@ -98,16 +100,16 @@ class PropertiesController extends Controller
     }
 
     public function showImage(Properties $properties)
-{
-    $path = $properties->image_path;
+    {
+        $path = $properties->image_path;
 
-    if (!Storage::disk('ftp')->exists($path)) {
-        abort(404, 'Image not found on FTP');
+        if (!Storage::disk('ftp')->exists($path)) {
+            abort(404, 'Image not found on FTP');
+        }
+
+        $file = Storage::disk('ftp')->get($path);
+        $mime = Storage::disk('ftp')->mimeType($path);
+
+        return response($file, 200)->header('Content-Type', $mime);
     }
-
-    $file = Storage::disk('ftp')->get($path);
-    $mime = Storage::disk('ftp')->mimeType($path);
-
-    return response($file, 200)->header('Content-Type', $mime);
-}
 }

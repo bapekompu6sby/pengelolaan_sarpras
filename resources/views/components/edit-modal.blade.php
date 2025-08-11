@@ -6,6 +6,7 @@
         <h5 class="modal-title" id="modalCenterTitle">Edit ruangan</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      EDIT MODAAAAAAAL
       <form action="{{ route('properties.update', $property->id) }}" method="POST">
         @method('PATCH')
         @csrf

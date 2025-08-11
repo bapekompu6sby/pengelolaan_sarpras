@@ -25,6 +25,7 @@
 @endif
 
 <div class="container-xxl flex-grow-1 container-p-y">
+  TRANSACTION RUANGAAAAAAAAAAAAAAAAAN
   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Peminjaman/</span> Tambah peminjaman</h4>
 
   @if($errors->any())
