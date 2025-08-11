@@ -114,10 +114,17 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     public function ruangan_update(Request $request, $id)
     {
         $isValidate = $request->validate([
+            'name'=> 'required|string',
             'office' => 'required|string|max:32',
             'event' => 'required|string|max:32',
+            'start' => 'required|date',
+            'end' => 'required|date',
             'venue' => 'required',
             'description' => 'nullable|string',
+            'phone_number' => 'nullable|string',
+            'email' => 'nullable|string',
+            'affiliation' => 'required|string',
+            'ordered_unit' => 'required|integer'
         ]);
 
         if (!$isValidate) {
@@ -134,6 +141,23 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil diubah');
     }
 
+
+    public function ruangan_response(Request $request, $id)
+    {
+        $isValidate = $request->validate([
+            'status' => 'required|string'
+        ]);
+
+        if (!$isValidate) {
+            return redirect()->route('transactions.ruangan.show')->withInput($request->all());
+        }
+
+        $transaction = Transaction::find($id);
+        $transaction->status = $request->status;
+        $transaction->save();
+
+        return redirect()->route('ruangan.detail')->with('success', 'Event berhasil direspon');
+    }
     public function ruangan_detail()
     {
         $transactions = Transaction::all();

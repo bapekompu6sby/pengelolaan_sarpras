@@ -60,6 +60,8 @@ Route::group(['middleware' => 'auth'], function() {
                 ->name('transactions.ruangan.store');
         Route::post('/transactions/ruangan/update/{id}', [TransactionController::class, 'ruangan_update'])
                 ->name('transactions.ruangan.update');
+        Route::post('/transactions/ruangan/response/{id}', [TransactionController::class, 'ruangan_response'])
+                ->name('transactions.ruangan.response');
         Route::delete('/transactions/ruangan', [TransactionController::class, 'ruangan_destroy'])
                 ->name('transactions.ruangan.destroy');
 

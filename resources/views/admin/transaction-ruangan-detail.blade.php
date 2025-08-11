@@ -58,6 +58,7 @@
                 <th>No. HP/WA</th>
                 <th>Email</th>
                 <th>Tanggal</th>
+                <th>Status</th>
                 @if(Auth::user()->role == 'admin')
                   <th>Actions</th>
                 @endif
@@ -80,7 +81,7 @@
                 <td>{{ $t->phone_number }}</td>
                 <td>{{ $t->email }}</td>
                 <td><span class="me-1">{{ date("d-m-Y", strtotime($t->start)) .' | '. date("d-m-Y", strtotime($t->end)) }}</span></td>
-                
+                <td>{{ $t->status }}</td>
                 @if(Auth::user()->role == 'admin')
                   <td>
                     <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
@@ -99,6 +100,7 @@
               </tr>
 
               @include('components.edit-modal')
+              @include('components.response-modal')
 
               @endforeach
             </tbody>
