@@ -29,7 +29,15 @@ Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asram
 Route::group(['middleware' => 'auth'], function () {
 
         //baru
-        Route::get('/propertiesasuser', [PropertiesControllerAsUser::class, 'index'])->name('propertiesasuser');
+        Route::get('/PropertiesAsUser', [PropertiesControllerAsUser::class, 'index'])->name('PropertiesAsUser');
+
+        Route::prefix('transactions')->group(function () {
+                Route::get('/pinjam/{id}', [TransactionController::class, 'pinjam'])->name('transactions.pinjam');
+                Route::post('/pinjam/store', [TransactionController::class, 'pinjam_store'])->name('transactions.pinjam.store');
+                Route::patch('/transactions/{id}/status', [TransactionController::class, 'update_status'])->name('transactions.updateStatus');
+        });
+
+
 
         Route::get("/redirectAuthenticatedUsers", [RedirectAuthenticatedUsersController::class, "home"]);
 
@@ -38,6 +46,7 @@ Route::group(['middleware' => 'auth'], function () {
                 ->name('ruangan.detail');
         Route::get('/transactions/wisma/list', [TransactionController::class, 'wisma_show_admin'])
                 ->name('wisma.detail');
+
 
         // export route untuk ruangan
         Route::get('/transactions/ruangan/export', [TransactionController::class, 'ruangan_export'])

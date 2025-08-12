@@ -41,10 +41,10 @@
                 <div data-i18n="room">Kalender Kegiatan</div>
             </a>
         </li>
-        <li class="menu-item {{ strpos($route, 'propertiesasuser') !== false ? 'active open' : '' }}">
-            <a href="{{ route('propertiesasuser') }}" class="menu-link">
+        <li class="menu-item {{ strpos($route, 'PropertiesAsUser') !== false ? 'active open' : '' }}">
+            <a href="{{ route('PropertiesAsUser') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-building-house"></i>
-                <div data-i18n="room">Propertis</div>
+                <div data-i18n="room">Ruangan</div>
             </a>
         </li>
 

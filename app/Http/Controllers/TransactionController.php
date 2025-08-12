@@ -2,18 +2,111 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Transaction;
-use App\Models\Properties;
+use App\Models\User;
 use App\Models\Wisma;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\RuanganExports;
+use App\Models\Properties;
+use App\Models\Transaction;
+use Illuminate\Http\Request;
 use App\Exports\WismaExports;
+use App\Exports\RuanganExports;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
 {
-/* ========================================================
+    public function update_status(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,di terima,di tolak',
+        ]);
+
+        $transaction = Transaction::findOrFail($id);
+        $transaction->status = $request->status;
+        $transaction->save();
+
+        return redirect()->back()->with('success', 'Status transaksi berhasil diubah');
+    }
+
+
+    public function pinjam($id)
+    {
+        $property = Properties::findOrFail($id);
+        $userId = Auth::id();
+        $user = User::findOrFail($userId);
+
+        return view('user.properties_pinjam_as_user', [
+            'property' => $property,
+            'user' => $user,
+        ]);
+    }
+
+
+    public function pinjam_store(Request $request)
+    {
+        $data = $request->validate([
+            'property_id' => 'required|integer',
+            'instansi' => 'required|string',
+            'affiliation' => 'required|string',
+            'phone_number' => 'required|string',
+            'orderer_unit' => 'required|integer',
+            'start' => 'required|date',
+            'end' => 'required|date',
+            'total_harga' => 'required|integer',
+        ]);
+
+        // Ambil user
+        $userId = Auth::user()->id;
+        $user = User::findOrFail($userId);
+
+        // Ambil property sesuai ID
+        $property = Properties::findOrFail($data['property_id']);
+
+        // Pilih warna random
+        $colors = [
+            'primary'   => '#0d6efd',
+            'secondary' => '#6c757d',
+            'success'   => '#198754',
+            'info'      => '#0dcaf0',
+            'warning'   => '#ffc107',
+            'danger'    => '#dc3545',
+            'dark'      => '#212529',
+        ];
+        $randomKey = array_rand($colors);
+
+        // Tambahkan data tambahan
+        $data['color'] = $colors[$randomKey];
+        $data['user'] = $user->toArray();
+        $data['property_id'] = $property->toArray();
+        $data['status'] = 'pending';
+
+        $transaction = Transaction::create([
+            'instansi' => $data['instansi'],
+            'kegiatan' => "Pinjam ",
+            'start' => $data['start'],
+            'end' => $data['end'],
+            'total_harga' => $data['total_harga'],
+            'color' => $data['color'],
+            'property_id' => $property['id'],
+            'status' => $data['status'],
+            'description' => $data['description'] ?? null,
+            'name' => $user['name'],
+            'user_id' => $user['id'],
+            'affiliation' => $data['affiliation'],
+            'phone_number' => $data['phone_number'],
+            'email' => $user['email'],
+            'ordered_unit' => $data['orderer_unit'],
+
+        ]);
+
+        echo "<pre>";
+        print_r($transaction->toArray());
+        echo "</pre>";
+    }
+
+
+
+    /* ========================================================
 $$$$$$\  $$\   $$\  $$$$$$\  $$$$$$$\   $$$$$$\   $$$$$$\  $$$$$$$\  
 $$  __$$\ $$ |  $$ | \____$$\ $$  __$$\ $$  __$$\  \____$$\ $$  __$$\ 
 $$ |  \__|$$ |  $$ | $$$$$$$ |$$ |  $$ |$$ /  $$ | $$$$$$$ |$$ |  $$ |
@@ -34,14 +127,14 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     }
 
     // public function check_available_ruangan($start, $end, $property_id) 
-    public function check_available_ruangan($start, $end, $property_id) 
+    public function check_available_ruangan($start, $end, $property_id)
     {
         // check url query parameter
         // dd(request()->all());
         // $start = request()->start;
         // $end = request()->end;
         // $property_id = request()->property_id;
-        
+
         $transactions = Transaction::where('property_id', $property_id)
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start', [$start, $end])
@@ -49,8 +142,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             })
             ->get();
 
-            return $transactions;
-            // return response()->json($transactions);
+        return $transactions;
+        // return response()->json($transactions);
     }
 
     public function ruangan_store(Request $request)
@@ -66,7 +159,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         ];
 
         $isValidate = $request->validate([
-            'name'=> 'required|string',
+            'name' => 'required|string',
             'office' => 'required|string|max:32',
             'event' => 'required|string|max:32',
             'start' => 'required|date',
@@ -110,7 +203,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
         return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil dibuat');
     }
-    
+
     public function ruangan_update(Request $request, $id)
     {
         $isValidate = $request->validate([
@@ -150,7 +243,6 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         $ids = explode(',', request()->selected);
         Transaction::destroy($ids);
         return redirect()->route('transactions.ruangan.show');
-    
     }
 
     public function ruangan_export()
@@ -159,7 +251,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         return Excel::download(new RuanganExports, "$now-rekap-ruangan.xlsx");
     }
 
-/* ========================================================
+    /* ========================================================
                /$$                                  
               |__/                                  
  /$$  /$$  /$$ /$$  /$$$$$$$ /$$$$$$/$$$$   /$$$$$$ 
@@ -170,7 +262,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
  \_____/\___/ |__/|_______/ |__/ |__/ |__/ \_______/
 // ======================================================== */
 
-    public function check_expired() {
+    public function check_expired()
+    {
         $transactions = Wisma::where('end', '<', now()->toDateString())->get();
         $transactions->each(function ($item) {
             $item->isOut = 1;
@@ -178,7 +271,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         });
     }
 
-    public function check_available_asrama($start, $end, $room) 
+    public function check_available_asrama($start, $end, $room)
     {
         $transactions = Wisma::where('room', $room)
             ->where(function ($query) use ($start, $end) {
@@ -187,7 +280,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             })
             ->get();
 
-            return $transactions;
+        return $transactions;
     }
 
     public function wisma_store(Request $request)
@@ -228,17 +321,17 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'end' => $request->end,
             ]);
         }
-        
+
         if (count($errorRoom) > 0) {
             $listRooms =  implode(',', $errorRoom);
 
             return redirect()->route('transactions.wisma.show')
-                    ->with('failed', "$request->name kamar $listRooms, gagal ditambahkan karena ruangan sudah digunakan")
-                    ->withInput($request->all());
+                ->with('failed', "$request->name kamar $listRooms, gagal ditambahkan karena ruangan sudah digunakan")
+                ->withInput($request->all());
         }
 
         return redirect()->route('transactions.wisma.show')
-                ->with('success', 'Data berhasil ditambahkan');
+            ->with('success', 'Data berhasil ditambahkan');
     }
 
     public function wisma_update(Request $request, $id)
@@ -260,10 +353,11 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         ]);
 
         return redirect()->route('wisma-admin')
-                ->with('success', 'Data berhasil diubah');
+            ->with('success', 'Data berhasil diubah');
     }
 
-    public function wisma_show_admin() {
+    public function wisma_show_admin()
+    {
         $this->check_expired();
 
         $wisma = Wisma::all();
@@ -278,10 +372,10 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         $today = now()->toDateString();
 
         $wismas = Wisma::where('isOut', 0)
-                ->whereRaw('? BETWEEN start AND end', [$today])
-                ->get();
+            ->whereRaw('? BETWEEN start AND end', [$today])
+            ->get();
 
-        if (auth()->check()){
+        if (auth()->check()) {
             if (auth()->user()->role == 'admin') {
                 return view('admin.transaction-wisma', [
                     'wisma' => $wismas->pluck('room'),
@@ -290,7 +384,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 ]);
             }
         }
-        
+
         return view('admin.transaction-wisma', [
             'wisma' => $wismas->pluck('room'),
             'nama' => $wismas->pluck('name'),
@@ -311,7 +405,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         return Excel::download(new WismaExports, "$now-rekap-wisma.xlsx");
     }
 
-/* ========================================================
+    /* ========================================================
                    $$\                           $$\                     
                    $$ |                          $$ |                    
  $$$$$$$\ $$$$$$\  $$ | $$$$$$\  $$$$$$$\   $$$$$$$ | $$$$$$\   $$$$$$\  
@@ -360,4 +454,4 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
 
         return response()->json($events);
     }
-}   
+}

@@ -62,7 +62,7 @@
                                     <th>Jenis</th>
                                     <th>Kapasitas</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="table-border-bottom-0">
@@ -123,13 +123,13 @@
                                                 </div>
                                                 <div class="modal-body">
                                                     <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item"><strong>Room Type:</strong>
+                                                        <li class="list-group-item"><strong>Tipe Room:</strong>
                                                             {{ $property->room_type ?: '-' }}</li>
-                                                        <li class="list-group-item"><strong>Area:</strong>
-                                                            {{ $property->area ?: '-' }}</li>
-                                                        <li class="list-group-item"><strong>Facilities:</strong>
+                                                        <li class="list-group-item"><strong>Luas:</strong>
+                                                            {{ $property->area ?: '-' }} m<sup>2</sup></li>
+                                                        <li class="list-group-item"><strong>Fasilitas:</strong>
                                                             {{ $property->facilities ?: '-' }}</li>
-                                                        <li class="list-group-item"><strong>Price:</strong>
+                                                        <li class="list-group-item"><strong>Harga:</strong>
                                                             {{ $property->price ?: '-' }}</li>
                                                         <li class="list-group-item"><strong>Unit:</strong>
                                                             {{ $property->unit }}</li>
@@ -160,46 +160,90 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalCenterTitle">Tambah ruangan</h5>
+                    <h5 class="modal-title" id="modalCenterTitle">Tambah Ruangan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('properties.store') }}" method="POST">
+
+                <form action="{{ route('properties.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label for="nameWithTitle" class="form-label">Nama Ruangan</label>
-                                <input type="text" id="nameWithTitle" class="form-control"
-                                    placeholder="Masukkan nama ruangan" name="name" value="{{ old('name') }}" />
-                            </div>
+
+                        <!-- Nama Ruangan -->
+                        <div class="mb-3">
+                            <label for="nameWithTitle" class="form-label">Nama Ruangan</label>
+                            <input type="text" id="nameWithTitle" class="form-control"
+                                placeholder="Masukkan nama ruangan" name="name" value="{{ old('name') }}" required />
                         </div>
+
+                        <!-- Jenis Sarana dan Kapasitas -->
                         <div class="row g-2">
-                            <div class="col mb-0">
-                                <label for="exampleFormControlSelect1" class="form-label">Jenis Sarana</label>
-                                <select class="form-select" id="exampleFormControlSelect1"
-                                    aria-label="Default select example" name="type">
-                                    <option selected disabled>Open this select menu</option>
+                            <div class="col">
+                                <label for="typeSelect" class="form-label">Jenis Sarana</label>
+                                <select class="form-select" id="typeSelect" name="type" required>
+                                    <option disabled selected>Pilih jenis</option>
                                     <option value="kelas">Kelas</option>
                                     <option value="aula">Aula</option>
                                 </select>
                             </div>
-                            <div class="col mb-0">
-                                <label for="dobWithTitle" class="form-label">Kapasistas</label>
-                                <input type="number" id="dobWithTitle" class="form-control"
-                                    placeholder="Kapasistas ruangan" min="1" name="capacity" />
+                            <div class="col">
+                                <label for="capacityInput" class="form-label">Kapasitas</label>
+                                <input type="number" id="capacityInput" class="form-control"
+                                    placeholder="Kapasitas ruangan" min="1" name="capacity" required />
                             </div>
                         </div>
+
+                        <!-- Room Type -->
+                        <div class="mt-3">
+                            <label for="roomType" class="form-label">Tipe Ruangan</label>
+                            <input type="text" id="roomType" class="form-control" name="room_type"
+                                placeholder="Contoh: VIP, Standar" />
+                        </div>
+
+                        <!-- Luas -->
+                        <div class="mt-3">
+                            <label for="area" class="form-label">Luas Ruangan (m²)</label>
+                            <input type="text" id="area" class="form-control" name="area"
+                                placeholder="Contoh: 50" />
+                        </div>
+
+                        <!-- Fasilitas -->
+                        <div class="mt-3">
+                            <label for="facilities" class="form-label">Fasilitas</label>
+                            <textarea id="facilities" class="form-control" name="facilities" placeholder="Contoh: AC, Proyektor, Sound System"></textarea>
+                        </div>
+
+                        <!-- Harga dan Unit -->
+                        <div class="row g-2 mt-3">
+                            <div class="col">
+                                <label for="price" class="form-label">Harga</label>
+                                <input type="number" id="price" class="form-control" name="price"
+                                    placeholder="Masukkan harga" />
+                            </div>
+                            <div class="col">
+                                <label for="unit" class="form-label">Unit</label>
+                                <input type="number" id="unit" class="form-control" name="unit"
+                                    placeholder="Jumlah unit" />
+                            </div>
+                        </div>
+
+                        <!-- Upload Gambar -->
+                        <div class="mt-3">
+                            <label for="img" class="form-label">Upload Gambar</label>
+                            <input type="file" id="img" class="form-control" name="img"
+                                accept="image/*" />
+                        </div>
+
                     </div>
+
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Close
-                        </button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
 
 @endsection
 

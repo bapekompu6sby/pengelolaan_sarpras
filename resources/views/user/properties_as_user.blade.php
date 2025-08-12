@@ -26,7 +26,7 @@
     @endif
 
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">propertis</h4>
+        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Ruangan</h4>
         <div class="row">
             <div class="col-lg-12 mb-4 order-0">
                 <div>
@@ -45,17 +45,22 @@
                     <div class="table-responsive text-nowrap p-4">
                         @foreach ($properties as $property)
                             <div
-                                style="display: flex; max-width: 700px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: Arial, sans-serif; gap: 20px; margin-bottom: 20px;">
-                                <div style="flex-shrink: 0;">
+                                style="display: flex; width: 100%; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: Arial, sans-serif; gap: 20px; margin-bottom: 20px;">
+                                <div
+                                    style="flex-shrink: 0; width: 250px; height: 250px; overflow: hidden; border-radius: 8px;">
                                     <img src="{{ asset('uploads/' . $property->image_path) }}" alt="{{ $property->name }}"
-                                        style="width: 250px; height: 180px; object-fit: cover; border-radius: 8px;" />
+                                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" />
                                 </div>
+
 
                                 <div style="flex-grow: 1; color: #333;">
                                     <h3 style="margin-top: 0; margin-bottom: 12px;">{{ $property->name }}</h3>
 
                                     <p style="margin: 4px 0;">
-                                        <strong>Tipe:</strong> Tipe {{ strtoupper($property->room_type) }}
+                                        <strong>Tipe:</strong> {{ strtoupper($property->room_type) }}
+                                    </p>
+                                    <p style="margin: 4px 0;">
+                                        <strong>Kapasitas:</strong> {{ $property->capacity }} orang
                                     </p>
                                     <p style="margin: 4px 0;">
                                         <strong>Luas:</strong> {{ $property->area }} m<sup>2</sup>
@@ -64,21 +69,22 @@
                                         <strong>Fasilitas:</strong> {{ $property->facilities }}
                                     </p>
                                     <p style="margin: 4px 0;">
-                                        <strong>Tarif:</strong> Rp {{ number_format($property->price, 0, ',', '.') }} / Per
+                                        <strong>Harga:</strong> Rp {{ number_format($property->price, 0, ',', '.') }} / Per
                                         hari Per Ruangan
+                                    </p>
+                                    <p style="margin: 4px 0;">
+                                        <strong>Unit:</strong> {{ $property->unit }}
                                     </p>
                                     <p style="margin: 4px 0;">
                                         <strong>Status:</strong> <span
                                             style="color: #028800; font-weight: bold;">tersedia</span>
                                     </p>
-                                    <p style="margin: 4px 0;">
-                                        <strong>Periode:</strong> s.d
-                                    </p>
 
-                                    <button
-                                        style="margin-top: 15px; background-color: #0d6efd; color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer;">
+                                    <a href="{{ route('transactions.pinjam', $property->id) }}"
+                                        style="text-decoration: none; color: white; background-color: #0d6efd; padding: 10px 15px; border-radius: 5px; font-weight: bold;">
                                         Pesan Sekarang
-                                    </button>
+                                    </a>
+                                    
                                 </div>
                             </div>
                         @endforeach

@@ -23,7 +23,8 @@ class Transaction extends Model
         'affiliation',
         'phone_number',
         'email',
-        'ordered_unit'
+        'ordered_unit',
+        'total_harga',
     ];
 
     public function properties()

@@ -27,41 +27,42 @@ class PropertiesController extends Controller
 
     public function store(Request $request)
     {
-        $isValdate = $request->validate([
-            'name' => 'required|string|max:32',
-            'type' => 'required|string|max:10',
-            'capacity' => 'required|int|min:1|max:1000',
-            'image' => 'nullable|image|max:4096',
-            'room_type' => 'required|string|',
-            'price' => 'required|string|'
+        $request->validate([
+            'name'       => 'required|string|max:32',
+            'type'       => 'required|string|max:10',
+            'capacity'   => 'required|integer|min:1|max:1000',
+            'room_type'  => 'nullable|string|max:50',
+            'area'       => 'nullable|string|max:50',
+            'facilities' => 'nullable|string',
+            'price'      => 'nullable|numeric|min:0',
+            'unit'       => 'nullable|integer|min:0',
+            'img'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        if ($isValdate) {
-            // Properties::create([
-            //     'name' => ucfirst($request->name),
-            //     'type' => $request->type,
-            //     'capacity' => $request->capacity,
-            // ]);
+        $data = [
+            'name'       => ucfirst($request->name),
+            'type'       => $request->type,
+            'capacity'   => $request->capacity,
+            'room_type'  => $request->room_type,
+            'area'       => $request->area,
+            'facilities' => $request->facilities,
+            'price'      => $request->price,
+            'unit'       => $request->unit ?? 0,
+        ];
 
-            $property = new Properties();
-            $property->name = ucfirst($request->name);
-            $property->type = $request->type;
-            $property->capacity = $request->capacity;
-
-            if ($request->hasFile('image')) {
-                $image = $request->file('image');
-                $path = Storage::disk('ftp')->put('', $image);
-
-                $property->image_path = $path; // Save FTP path in DB
-            }
-
-            $property->save();
-
-            return redirect()->route('properties')->with('success', 'Data berhasil ditambahkan');
+        if ($request->hasFile('img')) {
+            $file = $request->file('img');
+            $filename = $file->hashName(); // nama unik otomatis
+            $file->move(public_path('uploads'), $filename);
+            $data['image_path'] = $filename;
         }
 
-        return view('admin.index-properties')->withInput($request->name);
+        Properties::create($data);
+
+        return redirect()->route('properties')->with('success', 'Data berhasil ditambahkan');
     }
+
+
 
     public function update(Request $request, $id)
     {
@@ -110,7 +111,7 @@ class PropertiesController extends Controller
             $updateData['image_path'] = $filename;
         }
 
-     
+
         $property->update($updateData);
 
         return redirect()->route('properties')->with('success', 'Data berhasil diubah');
