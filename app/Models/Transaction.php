@@ -18,6 +18,8 @@ class Transaction extends Model
         'color',
         'property_id',
         'status',
+        'payment_receipt',
+        'request_letter',
         'description',
         'user_id',
         'affiliation',

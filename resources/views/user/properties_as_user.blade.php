@@ -102,7 +102,7 @@
     <div class="modal fade" id="addEvent" tabindex="-1" role="dialog" aria-labelledby="addEventLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <form action="{{ route('transactions.ruangan.store') }}" method="POST">
+                <form action="{{ route('transactions.ruangan.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title" id="addEventLabel">Add Event</h5>
@@ -149,14 +149,28 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="venue" class="form-label">Ruangan</label>
-                            <select class="form-select" id="venue" name="venue" required>
-                                <option selected disabled>Pilih Ruangan</option>
-                                @foreach ($properties as $property)
-                                    <option value="{{ $property->id }}">{{ $property->name }}</option>
-                                @endforeach
-                            </select>
+                            <label for="venue_name" class="form-label">Ruangan</label>
+                            <!-- Ditampilkan ke user -->
+                            <input type="text" class="form-control" id="venue_name" value="{{ $property->name }}"
+                                readonly>
+
+                            <!-- Disimpan ke database -->
+                            <input type="hidden" id="venue" name="venue" value="{{ $property->id }}">
                         </div>
+
+
+                        {{-- <div class="mb-3">
+                            <label for="payment_receipt" class="form-label">Bukti Pembayaran</label>
+                            <input type="file" class="form-control" id="payment_receipt" name="payment_receipt"
+                                accept=".pdf,image/*">
+                        </div> --}}
+
+                        <div class="mb-3">
+                            <label for="request_letter" class="form-label">Surat Peminjaman</label>
+                            <input type="file" class="form-control" id="request_letter" name="request_letter"
+                                accept=".pdf,image/*">
+                        </div>
+
                         <div class="mb-3">
                             <label for="description" class="form-label">Deskripsi</label>
                             <textarea class="form-control" id="description" name="description" rows="3"></textarea>

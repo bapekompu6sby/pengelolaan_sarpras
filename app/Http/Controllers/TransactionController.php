@@ -18,10 +18,11 @@ class TransactionController extends Controller
     public function update_status(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,di terima,di tolak',
+            'status' => 'required|in:pending,approved,rejected',
         ]);
 
         $transaction = Transaction::findOrFail($id);
+
         $transaction->status = $request->status;
         $transaction->save();
 
@@ -158,13 +159,17 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'dark'      => '#212529',
         ];
 
-        $isValidate = $request->validate([
+
+
+        $request->validate([
             'name' => 'required|string',
             'office' => 'required|string|max:32',
             'event' => 'required|string|max:32',
             'start' => 'required|date',
             'end' => 'required|date',
             'venue' => 'required',
+            // 'payment_receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
             'description' => 'nullable|string',
             'phone_number' => 'nullable|string',
             'email' => 'nullable|string',
@@ -173,17 +178,33 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'total_harga' => 'required|integer',
         ]);
 
-        if (!$isValidate) {
-            return redirect()->route('transactions.ruangan.show')->withInput($request->all());
-        }
-
         $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
         if ($transactions->count() > 0) {
             return redirect()->route('transactions.ruangan.show')
                 ->with('failed', 'Ruangan sudah terpakai');
         }
-        
+
+
+        $paymentReceiptPath = null;
+        if ($request->hasFile('payment_receipt')) {
+            $paymentReceiptPath = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+        }
+
+
+        $requestLetterPath = null;
+        if ($request->hasFile('request_letter')) {
+            $requestLetterPath = $request->file('request_letter')->store('uploads/request_letter', 'public');
+        }
+
+        $namePaymentReceipt = $paymentReceiptPath ? basename($paymentReceiptPath) : null;
+        $nameRequestLetter = $requestLetterPath ? basename($requestLetterPath) : null;
+
+
+
+
+
         $color = array_rand($colors, 1);
+
         Transaction::create([
             'name' => ucfirst($request->name),
             'instansi' => ucfirst($request->office),
@@ -193,6 +214,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'total_harga' => $request->total_harga,
             'color' => $colors[$color],
             'property_id' => $request->venue,
+            'payment_receipt' => $namePaymentReceipt,
+            'request_letter' => $nameRequestLetter,
             'description' => $request->description,
             'user_id' => auth()->user()->id,
             'email' => $request->email,
@@ -204,6 +227,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
         return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil dibuat');
     }
+
 
     public function ruangan_update(Request $request, $id)
     {
@@ -233,6 +257,14 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         $transactions = Transaction::all();
         $ruangan = Properties::whereIn('type', ['aula', 'kelas'])->get();
 
+        // echo "<pre>";
+        // print_r($transactions->toArray());
+        // echo "</pre>";
+
+        // echo "ini ruangan detail";
+        // echo "<pre>";
+        // print_r($ruangan->toArray());
+        // echo "</pre>";
         return view('admin.transaction-ruangan-detail', [
             'transactions' => $transactions,
             'ruangan' => $ruangan,

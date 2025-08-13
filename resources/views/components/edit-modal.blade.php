@@ -84,6 +84,118 @@
         </div>
     </div>
 @elseif(isset($t))
+    {{-- Modal Detail --}}
+    <div class="modal fade" id="modalDetail{{ $t->id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Detail Transaksi - {{ $t->name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <p><strong>Instansi:</strong> {{ $t->instansi }}</p>
+                            <p><strong>Affiliation:</strong> {{ $t->affiliation }}</p>
+                            <p><strong>Phone:</strong> {{ $t->phone_number }}</p>
+                            <p><strong>Email:</strong> {{ $t->email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Description:</strong> {{ $t->description }}</p>
+                            <p><strong>Unit:</strong> {{ $t->ordered_unit }}</p>
+                            <p><strong>Payment Receipt:</strong>
+                                @if ($t->payment_receipt)
+                                    <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
+                                        target="_blank">Download</a>
+                                @else
+                                    <em>Tidak ada</em>
+                                @endif
+                            </p>
+                            <p><strong>Request Letter:</strong>
+                                @if ($t->request_letter)
+                                    <a href="{{ asset('/storage/uploads/request_letter/' . $t->request_letter) }}"
+                                        target="_blank">Download</a>
+                                @else
+                                    <em>Tidak ada</em>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <p><strong>Mulai Acara:</strong> {{ $t->start }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Sampai Acara:</strong> {{ $t->end }}</p>
+                        </div>
+
+                    </div>
+                    <hr style="margin-top: 0px;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <p><strong>Dipesan pada:</strong> {{ $t->created_at->format('d-m-Y H:i') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- Status Dropdown (Jangan diubah tombolnya) --}}
+                    <div class="dropdown">
+                        @if ($t->status == 'pending')
+                            <button class="btn btn-warning dropdown-toggle" type="button" id="statusDropdown"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                menunggu
+                            </button>
+                        @elseif ($t->status == 'approved')
+                            <button class="btn btn-success dropdown-toggle" type="button" id="statusDropdown"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                di terima
+                            </button>
+                        @elseif ($t->status == 'rejected')
+                            <button class="btn btn-danger dropdown-toggle" type="button" id="statusDropdown"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                di tolak
+                            </button>
+                        @endif
+                        <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+                            <li>
+                                <form method="POST" action=" {{ route('transactions.updateStatus', $t->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" name="status" value="pending"
+                                        class="dropdown-item text-warning">
+                                        menunggu
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" name="status" value="approved"
+                                        class="dropdown-item text-success">
+                                        di terima
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" name="status" value="rejected"
+                                        class="dropdown-item text-danger">
+                                        di tolak
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- form edit for peminjaman ruangan --}}
     <div class="modal fade" id="modalCenter{{ $t->id }}" tabindex="-1" data-bs-backdrop="static"
         role="dialog" aria-labelledby="addEventLabel" aria-hidden="true">

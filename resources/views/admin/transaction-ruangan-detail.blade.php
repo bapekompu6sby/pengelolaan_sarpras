@@ -57,10 +57,10 @@
                                     <th>Instansi</th>
                                     <th>Kegiatan</th>
                                     <th>Ruangan</th>
-                                    <th>No. HP/WA</th>
-                                    <th>Email</th>
+
                                     <th>Tanggal</th>
-                                    <th>status</th>
+                                    <th>Status</th>
+
                                     @if (Auth::user()->role == 'admin')
                                         <th>Actions</th>
                                     @endif
@@ -80,47 +80,19 @@
                                         <td>
                                             {{ $t->properties->name }}
                                         </td>
-                                        <td>{{ $t->phone_number }}</td>
-                                        <td>{{ $t->email }}</td>
                                         <td><span
                                                 class="me-1">{{ date('d-m-Y', strtotime($t->start)) . ' | ' . date('d-m-Y', strtotime($t->end)) }}</span>
                                         </td>
                                         <td>
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-warning dropdown-toggle" type="button"
-                                                    id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    pending
-                                                </button>
-                                                <ul class="dropdown-menu" aria-labelledby="statusDropdown">
-                                                    <li>
-                                                        <form method="POST"
-                                                            action=" {{ route('transactions.updateStatus', $t->id) }}">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" name="status" value="pending"
-                                                                class="dropdown-item text-warning">pending</button>
-                                                        </form>
-                                                    </li>
-                                                    <li>
-                                                        <form method="POST"
-                                                            action="{{ route('transactions.updateStatus', $t->id) }}">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" name="status" value="di terima"
-                                                                class="dropdown-item text-success">di terima</button>
-                                                        </form>
-                                                    </li>
-                                                    <li>
-                                                        <form method="POST"
-                                                            action="{{ route('transactions.updateStatus', $t->id) }}">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" name="status" value="di tolak"
-                                                                class="dropdown-item text-danger">di tolak</button>
-                                                        </form>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            @if ($t->status == 'pending')
+                                                <span class="badge bg-warning">Menunggu</span>
+                                            @elseif ($t->status == 'approved')
+                                                <span class="badge bg-success">Di terima</span>
+                                            @elseif ($t->status == 'rejected')
+                                                <span class="badge bg-danger">Di tolak</span>
+                                            @endif
+
+
 
 
                                         </td>
@@ -133,6 +105,12 @@
                                                     data-bs-target="#modalCenter{{ $t->id }}">
                                                     <i class="bx bx-edit-alt me-2"></i>
                                                     Edit
+                                                </button>
+
+                                                <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
+                                                    data-bs-target="#modalDetail{{ $t->id }}">
+                                                    <i class="bx bx-detail me-2"></i>
+                                                    Detail
                                                 </button>
                                             </td>
                                         @endif
