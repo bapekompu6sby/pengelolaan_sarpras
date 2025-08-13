@@ -60,6 +60,7 @@
 
                                     <th>Tanggal</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
 
                                     @if (Auth::user()->role == 'admin')
                                         <th>Actions</th>
@@ -109,6 +110,14 @@
 
                                                 <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalDetail{{ $t->id }}">
+                                                    <i class="bx bx-detail me-2"></i>
+                                                    Detail
+                                                </button>
+                                            </td>
+                                        @else
+                                            <td>
+                                                <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
+                                                    data-bs-target="#modalDetailAsUser{{ $t->id }}">
                                                     <i class="bx bx-detail me-2"></i>
                                                     Detail
                                                 </button>

@@ -14,7 +14,46 @@ use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
+
+
 {
+
+    public function update_payment_receipt(Request $request, $id)
+    {
+        $request->validate([
+            'payment_receipt' => 'required|file|mimes:pdf,jpg,jpeg,png|max:4096',
+        ]);
+
+        $transaction = Transaction::findOrFail($id);
+
+        if ($request->hasFile('payment_receipt')) {
+            $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+            $transaction->payment_receipt = basename($path);
+        }
+
+        $transaction->save();
+
+        return redirect()->back()->with('success', 'Bukti pembayaran berhasil diunggah');
+    }
+
+    public function update_request_letter(Request $request, $id)
+    {
+        $request->validate([
+            'request_letter' => 'required|file|mimes:pdf,jpg,jpeg,png|max:4096',
+        ]);
+
+        $transaction = Transaction::findOrFail($id);
+
+        if ($request->hasFile('request_letter')) {
+            $path = $request->file('request_letter')->store('uploads/request_letter', 'public');
+            $transaction->request_letter = basename($path);
+        }
+
+        $transaction->save();
+
+        return redirect()->back()->with('success', 'Surat permohonan berhasil diunggah');
+    }
+
     public function update_status(Request $request, $id)
     {
         $request->validate([

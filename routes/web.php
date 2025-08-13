@@ -35,6 +35,9 @@ Route::group(['middleware' => 'auth'], function () {
                 Route::get('/pinjam/{id}', [TransactionController::class, 'pinjam'])->name('transactions.pinjam');
                 Route::post('/pinjam/store', [TransactionController::class, 'pinjam_store'])->name('transactions.pinjam.store');
                 Route::patch('/transactions/{id}/status', [TransactionController::class, 'update_status'])->name('transactions.updateStatus');
+
+                Route::post('/updatePaymentReceipt/{id}', [TransactionController::class, 'update_payment_receipt'])->name('transactions.payment');
+                Route::post('/updateRequestLetter/{id}', [TransactionController::class, 'update_request_letter'])->name('transactions.request_letter');
         });
 
         Route::get('/api/properties/{id}', [PropertiesController::class, 'getPropertyById'])
