@@ -1,11 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertiesController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\PropertiesControllerAsUser;
 use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
-use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,27 +26,42 @@ Route::get('/images/{properties}', [PropertiesController::class, 'showImage'])->
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asrama');
-Route::group(['middleware' => 'auth'], function() {
-
-        // routes/web.php
+       
+    
+Route::group(['middleware' => 'auth'], function () {
+         // routes/web.php
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
 
-    
+
+        //baru
+        Route::get('/PropertiesAsUser', [PropertiesControllerAsUser::class, 'index'])->name('PropertiesAsUser');
+
+        Route::prefix('transactions')->group(function () {
+                Route::get('/pinjam/{id}', [TransactionController::class, 'pinjam'])->name('transactions.pinjam');
+                Route::post('/pinjam/store', [TransactionController::class, 'pinjam_store'])->name('transactions.pinjam.store');
+                Route::patch('/transactions/{id}/status', [TransactionController::class, 'update_status'])->name('transactions.updateStatus');
+        });
+
+        Route::get('/api/properties/{id}', [PropertiesController::class, 'getPropertyById'])
+                ->middleware('auth');
+
+
         Route::get("/redirectAuthenticatedUsers", [RedirectAuthenticatedUsersController::class, "home"]);
-    
+
         // role khusus untuk pak heru :) saja saja ada
         Route::get('/transactions/ruangan/list', [TransactionController::class, 'ruangan_detail'])
-        ->name('ruangan.detail');
+                ->name('ruangan.detail');
         Route::get('/transactions/wisma/list', [TransactionController::class, 'wisma_show_admin'])
-        ->name('wisma.detail');
+                ->name('wisma.detail');
+
 
         // export route untuk ruangan
         Route::get('/transactions/ruangan/export', [TransactionController::class, 'ruangan_export'])
-        ->name('transactions.ruangan.export');
+                ->name('transactions.ruangan.export');
 
         // export route untuk wisma
         Route::get('/transactions/wisma/export', [TransactionController::class, 'wisma_export'])
-        ->name('transactions.wisma.export');
+                ->name('transactions.wisma.export');
 
         Route::prefix('wisma')->group(function () {
                 Route::get('/', [TransactionController::class, 'wisma_show'])->name('wisma_show_user');
@@ -57,15 +73,13 @@ Route::group(['middleware' => 'auth'], function() {
         Route::get('/properties', [PropertiesController::class, 'index'])->name('properties');
 
         // Data master semua penghuni wisma
-  
+
         // Menyiapkan data untuk transaksi ruangan dan wisma
-        
+
         Route::post('/transactions/ruangan', [TransactionController::class, 'ruangan_store'])
                 ->name('transactions.ruangan.store');
         Route::post('/transactions/ruangan/update/{id}', [TransactionController::class, 'ruangan_update'])
                 ->name('transactions.ruangan.update');
-        Route::post('/transactions/ruangan/response/{id}', [TransactionController::class, 'ruangan_response'])
-                ->name('transactions.ruangan.response');
         Route::delete('/transactions/ruangan', [TransactionController::class, 'ruangan_destroy'])
                 ->name('transactions.ruangan.destroy');
 
@@ -78,32 +92,31 @@ Route::group(['middleware' => 'auth'], function() {
         Route::delete('/transactions/wisma/destroy', [TransactionController::class, 'wisma_destroy'])
                 ->name('transactions.wisma.destroy');
 
-        Route::group(['middleware' => 'checkRole:admin'], function() {
-            // prefik untuk admin
-            Route::prefix('admin')->group(function () {
-                Route::post('/properties/store', [PropertiesController::class, 'store'])->name('properties.store');
-                Route::patch('/properties/{id}', [PropertiesController::class, 'update'])->name('properties.update');
-                Route::delete('/properties/{id}', [PropertiesController::class, 'destroy'])->name('properties.destroy');
-                Route::get('/wisma', [TransactionController::class, 'wisma_show_admin'])->name('wisma-admin');
-
-            });
+        Route::group(['middleware' => 'checkRole:admin'], function () {
+                // prefik untuk admin
+                Route::prefix('admin')->group(function () {
+                        Route::post('/properties/store', [PropertiesController::class, 'store'])->name('properties.store');
+                        Route::patch('/properties/{id}', [PropertiesController::class, 'update'])->name('properties.update');
+                        Route::delete('/properties/{id}', [PropertiesController::class, 'destroy'])->name('properties.destroy');
+                        Route::get('/wisma', [TransactionController::class, 'wisma_show_admin'])->name('wisma-admin');
+                });
         });
-        Route::group(['middleware' => 'checkRole:user'], function() {
-            // prefik untuk wisma
+        Route::group(['middleware' => 'checkRole:user'], function () {
+                // prefik untuk wisma
 
         });
-    });
-    
-    Route::middleware('auth')->group(function () {
+});
+
+Route::middleware('auth')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    });
-    
-    require __DIR__.'/auth.php';
+});
+
+require __DIR__ . '/auth.php';
 
 Route::get('calendar', [TransactionController::class, 'calendar'])->name('calendar');
 
 Route::fallback(function () {
-    return view('errors.404');
+        return view('errors.404');
 });
