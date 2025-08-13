@@ -479,13 +479,7 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
 
     public function events()
     {
-        if (auth()->check()){
-            if (auth()->user()->role == 'admin'){
-                $events = Transaction::all();
-            } else {
-                $events = Transaction::where('user_id', auth()->user()->id)->get();
-            };
-        }
+        $events = Transaction::all();
 
         $events = $events->map(function ($item) {
             return [
