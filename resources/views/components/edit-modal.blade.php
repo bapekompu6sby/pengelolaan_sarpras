@@ -84,6 +84,140 @@
         </div>
     </div>
 @elseif(isset($t))
+    {{-- Modal Detail As User --}}
+    <div class="modal fade" id="modalDetailAsUser{{ $t->id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Detail Transaksi - {{ $t->name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <p><strong>Instansi:</strong> {{ $t->instansi }}</p>
+                            <p><strong>Affiliation:</strong> {{ $t->affiliation }}</p>
+                            <p><strong>Phone:</strong> {{ $t->phone_number }}</p>
+                            <p><strong>Email:</strong> {{ $t->email }}</p>
+                            <p><strong>Description:</strong> {{ $t->description }}</p>
+                            <p><strong>Unit:</strong> {{ $t->ordered_unit }}</p>
+                        </div>
+                        <div class="col-md-6">
+
+                            {{-- Payment Receipt --}}
+                            <p style="margin-bottom: -15px; "><strong>Bukti Pembayaran:</strong>
+                                @if ($t->payment_receipt)
+                                    <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
+                                        target="_blank">Download</a>
+                                @else
+                                    <em>Tidak ada</em>
+                                @endif
+                            </p>
+                            <form action="{{ route('transactions.payment', $t->id) }}" method="POST"
+                                enctype="multipart/form-data" class="mb-3">
+                                @csrf
+                                <div class="input-group">
+                                    <input type="file" name="payment_receipt" class="form-control"
+                                        accept=".pdf,.jpg,.jpeg,.png" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+                                </div>
+                            </form>
+
+                            {{-- Request Letter --}}
+                            <p style="margin-top: 15px; margin-bottom: 0px;"><strong>Surat Permohonan:</strong>
+                                @if ($t->request_letter)
+                                    <a href="{{ asset('/storage/uploads/request_letter/' . $t->request_letter) }}"
+                                        target="_blank">Download</a>
+                                @else
+                                    <em>Tidak ada</em>
+                                @endif
+                            </p>
+                            <form action="{{ route('transactions.request_letter', $t->id) }}" method="POST"
+                                enctype="multipart/form-data">
+                                @csrf
+                                <div class="input-group">
+                                    <input type="file" name="request_letter" class="form-control"
+                                        accept=".pdf,.jpg,.jpeg,.png" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <p><strong>Mulai Acara:</strong> {{ $t->start }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Sampai Acara:</strong> {{ $t->end }}</p>
+                        </div>
+
+                    </div>
+                    <hr style="margin-top: 0px;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <p><strong>Dipesan pada:</strong> {{ $t->created_at->format('d-m-Y H:i') }}</p>
+                        </div>
+                    </div>
+
+                    {{-- Status Dropdown (Jangan diubah tombolnya) --}}
+                    {{-- <div class="dropdown">
+                        @if ($t->status == 'pending')
+                            <button class="btn btn-warning dropdown-toggle" type="button" id="statusDropdown"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                menunggu
+                            </button>
+                        @elseif ($t->status == 'approved')
+                            <button class="btn btn-success dropdown-toggle" type="button" id="statusDropdown"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                di terima
+                            </button>
+                        @elseif ($t->status == 'rejected')
+                            <button class="btn btn-danger dropdown-toggle" type="button" id="statusDropdown"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                di tolak
+                            </button>
+                        @endif
+                        <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+                            <li>
+                                <form method="POST" action=" {{ route('transactions.updateStatus', $t->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" name="status" value="pending"
+                                        class="dropdown-item text-warning">
+                                        menunggu
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" name="status" value="approved"
+                                        class="dropdown-item text-success">
+                                        di terima
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" name="status" value="rejected"
+                                        class="dropdown-item text-danger">
+                                        di tolak
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div> --}}
+                </div>
+            </div>
+        </div>
+    </div>
     {{-- Modal Detail --}}
     <div class="modal fade" id="modalDetail{{ $t->id }}" tabindex="-1">
         <div class="modal-dialog modal-lg">
