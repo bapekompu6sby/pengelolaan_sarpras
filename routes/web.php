@@ -37,6 +37,8 @@ Route::group(['middleware' => 'auth'], function () {
                 Route::patch('/transactions/{id}/status', [TransactionController::class, 'update_status'])->name('transactions.updateStatus');
         });
 
+        Route::get('/api/properties/{id}', [PropertiesController::class, 'getPropertyById'])
+                ->middleware('auth');
 
 
         Route::get("/redirectAuthenticatedUsers", [RedirectAuthenticatedUsersController::class, "home"]);

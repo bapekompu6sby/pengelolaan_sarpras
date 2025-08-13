@@ -144,4 +144,20 @@ class PropertiesController extends Controller
 
         return response($file, 200)->header('Content-Type', $mime);
     }
+
+    public function getPropertyById($id)
+    {
+        $property = Properties::find($id);
+
+        if (!$property) {
+            return response()->json(['error' => 'Property not found'], 404);
+        }
+
+        $user = auth()->user();
+
+        return response()->json([
+            'property' => $property,
+            'user' => $user,
+        ]);
+    }
 }

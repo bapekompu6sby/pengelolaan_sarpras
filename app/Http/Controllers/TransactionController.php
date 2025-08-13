@@ -169,7 +169,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'phone_number' => 'nullable|string',
             'email' => 'nullable|string',
             'affiliation' => 'required|string',
-            'ordered_unit' => 'required|integer'
+            'ordered_unit' => 'required|integer',
+            'total_harga' => 'required|integer',
         ]);
 
         if (!$isValidate) {
@@ -181,8 +182,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             return redirect()->route('transactions.ruangan.show')
                 ->with('failed', 'Ruangan sudah terpakai');
         }
-
-        // generate random color from color list above
+        
         $color = array_rand($colors, 1);
         Transaction::create([
             'name' => ucfirst($request->name),
@@ -190,6 +190,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'kegiatan' => ucfirst($request->event),
             'start' => $request->start,
             'end' => $request->end,
+            'total_harga' => $request->total_harga,
             'color' => $colors[$color],
             'property_id' => $request->venue,
             'description' => $request->description,
