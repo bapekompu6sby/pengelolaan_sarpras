@@ -5,9 +5,51 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Properties;
+use App\Models\Transaction;
 
 class PropertiesController extends Controller
 {
+
+    public function checkAvailability(Request $request)
+    {
+        $request->validate([
+            'venue_id'    => 'required|integer',
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+            'ordered_unit' => 'required|integer'
+        ]);
+
+        $propertyId = $request->venue_id;
+        $start  = $request->start_date;
+        $end    = $request->end_date;
+        $unit = $request->ordered_unit;
+
+        $exists = Transaction::where('property_id', $propertyId)
+            ->where('status', '=', 'approved') // Optional
+            ->where(function($query) use ($start, $end) {
+                $query->whereBetween('start', [$start, $end])
+                    //   ->orWhereBetween('end_date', [$start, $end])
+                      ->orWhere(function($query) use ($start, $end) {
+                          $query->where('start', '<=', $start)
+                                ->where('end', '>=', $end);
+                      });
+            })
+            ->count();
+
+        $avail = false;
+        $prop = Properties::find($propertyId);
+        $avail_unit = $prop->unit - $exists;
+
+        if ($avail_unit >= $unit){
+            $avail = true;
+        };
+        
+
+        return response()->json([
+            'available' => $avail,
+            'avail_count' => $avail_unit
+        ]);
+    }
     public function index()
     {
         $properties = Properties::all();
@@ -32,7 +74,7 @@ class PropertiesController extends Controller
             'type' => 'required|string|max:10',
             'capacity' => 'required|int|min:1|max:1000',
             'image' => 'nullable|image|max:4096',
-            'room_type'=> 'required|string|',
+            'property_type'=> 'required|string|',
             'price'=> 'required|string|'
         ]);
 

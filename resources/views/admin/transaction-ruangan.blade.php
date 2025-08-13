@@ -106,8 +106,8 @@
               <label for="venue" class="form-label">Ruangan</label>
               <select class="form-select" id="venue" name="venue" required>
                 <option selected disabled>Pilih Ruangan</option>
-                @foreach ($properties as $property)
-                <option value="{{ $property->id }}">{{ $property->name }}</option>
+                @foreach ($properties as $venue)
+                <option value="{{ $venue->id }}">{{ $venue->name }}</option>
                 @endforeach
               </select>
             </div>
@@ -118,10 +118,14 @@
             <div>
               <input type="hidden" class="form-control" id="ordered_unit" name="ordered_unit" value="1">
             </div>
+
+            <button type="button" id="checkAvailabilityBtn">Cek Ketersediaan Ruangan</button>
+
+            <div id="availabilityResult" class="mt-2"></div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Save changes</button>
+            <button type="submit" class="btn btn-primary" id="createTransactionBtn" disabled>Save changes</button>
           </div>
         </form>
       </div>
@@ -183,6 +187,50 @@
       });
 
       calendar.render();
+    }
+  );
+  
+    document.getElementById('checkAvailabilityBtn').addEventListener('click', function() {
+      let venueId = document.getElementById('venue').value;
+      let startDate = document.getElementById('start').value;
+      let endDate = document.getElementById('end').value;
+      let unit = document.getElementById('ordered_unit').value;
+      let bookBtn = document.getElementById('createTransactionBtn');
+
+      if (!venueId || !startDate || !endDate) {
+          alert('Pilih tanggal, ruangan, dan jumlah terlebih dahulu.');
+          return;
+      }
+
+      fetch("{{ route('properties.check') }}", {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': "{{ csrf_token() }}"
+          },
+          body: JSON.stringify({
+              venue_id: venueId,
+              start_date: startDate,
+              end_date: endDate,
+              ordered_unit: unit
+          })
+      })
+      .then(res => res.json())
+      .then(data => {
+          let resultDiv = document.getElementById('availabilityResult');
+          if (data.available) {
+              resultDiv.innerHTML = `<span class="text-success">✅ ${data.avail_count} Ruangan Tersedia!</span>`;
+              bookBtn.disabled = false;
+          } else {
+                resultDiv.innerHTML = `<span class="text-danger"> ${data.avail_count} Ruangan Tersedia !</span>`;
+              bookBtn.disabled = true;
+          }
+      })
+      .catch(err => {
+          console.log(err)
+          console.error(err);
+          alert('Error checking availability.');
+      });
     });
   </script>
   @endsection

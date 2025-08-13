@@ -83,12 +83,6 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             return redirect()->route('transactions.ruangan.show')->withInput($request->all());
         }
 
-        $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
-        if ($transactions->count() > 0) {
-            return redirect()->route('transactions.ruangan.show')
-                ->with('failed', 'Ruangan sudah terpakai');
-        }
-
         // generate random color from color list above
         $color = array_rand($colors, 1);
         Transaction::create([
@@ -160,8 +154,15 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     }
     public function ruangan_detail()
     {
-        $transactions = Transaction::all();
-        $ruangan = Properties::whereIn('type', ['aula', 'kelas'])->get();
+
+        if (auth()->check()){
+            if (auth()->user()->role == 'admin'){
+                $transactions = Transaction::all();
+            } else {
+                $transactions = Transaction::where('user_id', auth()->user()->id)->get();
+            };
+        }
+        $ruangan = Properties::all();
 
         return view('admin.transaction-ruangan-detail', [
             'transactions' => $transactions,
@@ -369,7 +370,13 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
 
     public function events()
     {
-        $events = Transaction::all();
+        if (auth()->check()){
+            if (auth()->user()->role == 'admin'){
+                $events = Transaction::all();
+            } else {
+                $events = Transaction::where('user_id', auth()->user()->id)->get();
+            };
+        }
 
         $events = $events->map(function ($item) {
             return [

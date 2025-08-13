@@ -26,6 +26,10 @@ Route::get('/images/{properties}', [PropertiesController::class, 'showImage'])->
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asrama');
 Route::group(['middleware' => 'auth'], function() {
+
+        // routes/web.php
+        Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
+
     
         Route::get("/redirectAuthenticatedUsers", [RedirectAuthenticatedUsersController::class, "home"]);
     
