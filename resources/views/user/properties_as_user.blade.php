@@ -75,10 +75,10 @@
                                     <p style="margin: 4px 0;">
                                         <strong>Unit:</strong> {{ $property->unit }}
                                     </p>
-                                    <p style="margin: 4px 0;">
+                                    <!-- <p style="margin: 4px 0;">
                                         <strong>Status:</strong> <span
                                             style="color: #028800; font-weight: bold;">tersedia</span>
-                                    </p>
+                                    </p> -->
 
                                     <button class="btn btn-primary btn-pesan" data-property-id="{{ $property->id }}"
                                         data-bs-toggle="modal" data-bs-target="#addEvent">
