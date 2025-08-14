@@ -30,10 +30,6 @@ class PropertiesController extends Controller
                 $query->whereBetween('start', [$start, $end])
                     ->orWhereBetween('end', [$start, $end]);            
             })->get();
-                    //   ->orWhere(function($query) use ($start, $end) {
-                    //       $query->where('start', '<=', $start)
-                    //             ->where('end', '>=', $end);
-                    //   });
         $transactions_unit = $transactions->sum('ordered_unit');
         $avail = false;
         $prop = Properties::find($propertyId);
