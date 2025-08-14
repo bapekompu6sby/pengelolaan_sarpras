@@ -61,7 +61,7 @@
                                     <th>Img</th>
                                     <th>Jenis</th>
                                     <th>Kapasitas</th>
-                                    <th>Status</th>
+
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -85,9 +85,7 @@
 
                                         <td>{{ ucfirst($property->type) }}</td>
                                         <td>{{ $property->capacity }}</td>
-                                        <td>
-                                            <span class="badge bg-label-success me-1">Kosong</span>
-                                        </td>
+
                                         <td>
                                             <button type="button" class="btn btn-warning btn-sm me-1"
                                                 data-bs-toggle="modal" data-bs-target="#modalCenter{{ $property->id }}">
@@ -104,46 +102,64 @@
                                                 Detail
                                             </button>
                                         </td>
-
                                     </tr>
+                                @endforeach
+                            </tbody>
 
-                                    @include('components.edit-modal', ['property' => $property])
-                                    @include('components.confirm-modal', ['property' => $property])
+                            {{-- Modal Section, di luar tbody --}}
+                            @foreach ($properties as $property)
+                                @include('components.edit-modal', ['property' => $property])
+                                @include('components.confirm-modal', ['property' => $property])
 
-                                    {{-- Modal Detail --}}
-                                    <div class="modal fade" id="modalDetail{{ $property->id }}" tabindex="-1"
-                                        aria-labelledby="modalDetailLabel{{ $property->id }}" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="modalDetailLabel{{ $property->id }}">Detail
-                                                        Properti: {{ $property->name }}</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <ul class="list-group list-group-flush">
-                                                        <li class="list-group-item"><strong>Tipe Room:</strong>
-                                                            {{ $property->room_type ?: '-' }}</li>
-                                                        <li class="list-group-item"><strong>Luas:</strong>
-                                                            {{ $property->area ?: '-' }} m<sup>2</sup></li>
-                                                        <li class="list-group-item"><strong>Fasilitas:</strong>
-                                                            {{ $property->facilities ?: '-' }}</li>
-                                                        <li class="list-group-item"><strong>Harga:</strong>
-                                                            {{ $property->price ?: '-' }}</li>
-                                                        <li class="list-group-item"><strong>Unit:</strong>
-                                                            {{ $property->unit }}</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Tutup</button>
-                                                </div>
+                                <div class="modal fade" id="modalDetail{{ $property->id }}" tabindex="-1"
+                                    aria-labelledby="modalDetailLabel{{ $property->id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="modalDetailLabel{{ $property->id }}">
+                                                    Detail Properti: {{ $property->name }}
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                @if (!empty($property->image_path))
+                                                    <div class="d-flex justify-content-center align-items-center">
+                                                        <img src="{{ asset('uploads/' . $property->image_path) }}"
+                                                            alt="{{ $property->name }}" width="300" height="300"
+                                                            style="object-fit: cover; border-radius: 4px;">
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">No Image</span>
+                                                @endif
+                                                <ul class="list-group list-group-flush mt-2">
+                                                    <li class="list-group-item"><strong>Tipe Room:</strong>
+                                                        {{ $property->room_type ?: '-' }}</li>
+                                                    <li class="list-group-item"><strong>Luas:</strong>
+                                                        {{ $property->area ?: '-' }} m<sup>2</sup></li>
+                                                    <li class="list-group-item"><strong>Fasilitas:</strong>
+                                                        {{ $property->facilities ?: '-' }}</li>
+                                                    <li class="list-group-item"><strong>Harga:</strong>
+                                                        {{ $property->price ?: '-' }}</li>
+                                                    <li class="list-group-item"><strong>Unit:</strong>
+                                                        {{ $property->unit }}</li>
+                                                    <li class="list-group-item"><strong>Tipe:</strong>
+                                                        {{ ucfirst($property->type) }}</li>
+                                                    <li class="list-group-item"><strong>Kapasitas:</strong>
+                                                        {{ $property->capacity }}</li>
+                                                    <li class="list-group-item"><strong>Created At:</strong>
+                                                        {{ $property->created_at->format('d M Y H:i') }}</li>
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Tutup</button>
                                             </div>
                                         </div>
                                     </div>
-                                @endforeach
-                            </tbody>
+                                </div>
+                            @endforeach
+
 
 
 
@@ -172,7 +188,8 @@
                         <div class="mb-3">
                             <label for="nameWithTitle" class="form-label">Nama Ruangan</label>
                             <input type="text" id="nameWithTitle" class="form-control"
-                                placeholder="Masukkan nama ruangan" name="name" value="{{ old('name') }}" required />
+                                placeholder="Masukkan nama ruangan" name="name" value="{{ old('name') }}"
+                                required />
                         </div>
 
                         <!-- Jenis Sarana dan Kapasitas -->
