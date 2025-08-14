@@ -279,17 +279,22 @@
                         @if ($t->status == 'pending')
                             <button class="btn btn-warning dropdown-toggle" type="button" id="statusDropdown"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                menunggu
+                                Menunggu
                             </button>
                         @elseif ($t->status == 'approved')
                             <button class="btn btn-success dropdown-toggle" type="button" id="statusDropdown"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                di terima
+                                Disetujui
+                            </button>
+                        @elseif ($t->status == 'waiting_payment')
+                            <button class="btn btn-success dropdown-toggle" type="button" id="statusDropdown"
+                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Menunggu Pembayaran
                             </button>
                         @elseif ($t->status == 'rejected')
                             <button class="btn btn-danger dropdown-toggle" type="button" id="statusDropdown"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                di tolak
+                                Ditolak
                             </button>
                         @endif
                         <ul class="dropdown-menu" aria-labelledby="statusDropdown">
@@ -309,7 +314,17 @@
                                     @method('PATCH')
                                     <button type="submit" name="status" value="approved"
                                         class="dropdown-item text-success">
-                                        di terima
+                                        Disetujui
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" name="status" value="waiting_payment"
+                                        class="dropdown-item text-success">
+                                        Menunggu Pembayaran
                                     </button>
                                 </form>
                             </li>
@@ -319,7 +334,7 @@
                                     @method('PATCH')
                                     <button type="submit" name="status" value="rejected"
                                         class="dropdown-item text-danger">
-                                        di tolak
+                                        Ditolak
                                     </button>
                                 </form>
                             </li>

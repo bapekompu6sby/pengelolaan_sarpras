@@ -81,7 +81,7 @@ class TransactionController extends Controller
     public function update_status(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,approved,rejected',
+            'status' => 'required|in:pending,approved,rejected,waiting_payment',
         ]);
 
         $transaction = Transaction::findOrFail($id);
