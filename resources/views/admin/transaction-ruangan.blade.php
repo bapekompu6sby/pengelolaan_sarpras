@@ -228,7 +228,7 @@
               resultDiv.innerHTML = `<span class="text-success">✅ ${data.avail_count} Ruangan Tersedia!</span>`;
               bookBtn.disabled = false;
           } else {
-                resultDiv.innerHTML = `<span class="text-danger"> ${data.avail_count} Ruangan Tersedia !</span>`;
+              resultDiv.innerHTML = `<span class="text-danger"> ${data.avail_count} Ruangan Tersedia !</span>`;
               bookBtn.disabled = true;
           }
       })

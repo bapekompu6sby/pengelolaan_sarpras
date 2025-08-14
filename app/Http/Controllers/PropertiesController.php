@@ -28,13 +28,12 @@ class PropertiesController extends Controller
             ->where('status', '=', 'approved') // Optional
             ->where(function($query) use ($start, $end) {
                 $query->whereBetween('start', [$start, $end])
-                    //   ->orWhereBetween('end_date', [$start, $end])
-                      ->orWhere(function($query) use ($start, $end) {
-                          $query->where('start', '<=', $start)
-                                ->where('end', '>=', $end);
-                      });
-            })
-            ->count();
+                    ->orWhereBetween('end', [$start, $end]);            
+            })->count();
+                    //   ->orWhere(function($query) use ($start, $end) {
+                    //       $query->where('start', '<=', $start)
+                    //             ->where('end', '>=', $end);
+                    //   });
 
         $avail = false;
         $prop = Properties::find($propertyId);

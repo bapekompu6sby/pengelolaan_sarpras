@@ -48,7 +48,6 @@
 
 <body>
     <div class="layout-wrapper layout-content-navbar">
-        LAYOUT INDEX
         <div class="layout-container">
             <!-- Sidebar -->
             @yield('sidebar')
