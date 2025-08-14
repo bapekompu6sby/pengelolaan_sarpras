@@ -47,6 +47,13 @@
                 <div data-i18n="room">Ruangan</div>
             </a>
         </li>
+        <li class="menu-item {{ strpos($route, 'historyTransaction') !== false ? 'active open' : '' }}">
+            <a href="{{ route('transactions.historyTransaction') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-history"></i>
+                <div data-i18n="room">Riwayat Peminjaman</div>
+            </a>
+        </li>
+
 
         @auth
 

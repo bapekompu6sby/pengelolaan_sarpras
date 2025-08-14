@@ -187,10 +187,15 @@
                         </div>
 
 
+
+                        <button type="button" id="checkAvailabilityBtn">Cek Ketersediaan Ruangan</button>
+
+                        <div id="availabilityResult" class="mt-2"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="submit" class="btn btn-primary" id="createTransactionBtn" disabled>Save
+                            changes</button>
                     </div>
                 </form>
             </div>
@@ -204,6 +209,97 @@
 @section('script')
     <script src="{{ asset('/assets/vendor/libs/datatables/datatables.min.js') }}"></script>
     <script src="{{ asset('/assets/vendor/js/datatables.js') }}"></script>
+    <script src="{{ asset('/assets/vendor/libs/fullcalendar/lib/main.min.js') }}"></script>
+    <script>
+        const getEvents = async () => {
+            const response = await fetch('/api/events');
+            const data = await response.json();
+            return data;
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            var calendarEl = document.getElementById('calendar');
+            const btnTrig = document.getElementById('btn-trigger');
+            const startDate = document.getElementById('start');
+            const endDate = document.getElementById('end');
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialDate: new Date(),
+                customButtons: {
+                    addEventButton: {
+                        text: 'Tambah',
+                        click: function() {
+                            btnTrig.click();
+                        }
+                    },
+                    listEventButton: {
+                        text: 'List Kegiatan',
+                        click: function() {
+                            window.location.href = '/transactions/ruangan/list';
+                        }
+                    }
+                },
+                headerToolbar: {
+                    left: 'addEventButton listEventButton',
+                    center: 'title',
+                },
+                selectable: true,
+                eventClick: function(arg) {
+                    console.log(arg.event.title);
+                },
+                businessHours: true,
+                dayMaxEvents: true, // allow "more" link when too many events
+                events: await getEvents(),
+            });
+
+            calendar.render();
+        });
+
+        document.getElementById('checkAvailabilityBtn').addEventListener('click', function() {
+            let venueId = document.getElementById('venue').value;
+            let startDate = document.getElementById('start').value;
+            let endDate = document.getElementById('end').value;
+            let unit = document.getElementById('ordered_unit').value;
+            let bookBtn = document.getElementById('createTransactionBtn');
+
+            if (!venueId || !startDate || !endDate) {
+                alert('Pilih tanggal, ruangan, dan jumlah terlebih dahulu.');
+                return;
+            }
+
+            fetch("{{ route('properties.check') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        venue_id: venueId,
+                        start_date: startDate,
+                        end_date: endDate,
+                        ordered_unit: unit
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    let resultDiv = document.getElementById('availabilityResult');
+                    if (data.available) {
+                        resultDiv.innerHTML =
+                            `<span class="text-success">✅ ${data.avail_count} Ruangan Tersedia!</span>`;
+                        bookBtn.disabled = false;
+                    } else {
+                        resultDiv.innerHTML =
+                            `<span class="text-danger"> Ruangan Tidak Tersedia !</span>`;
+                        bookBtn.disabled = true;
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    console.error(err);
+                    alert('Error checking availability.');
+                });
+        });
+    </script>
 
     <script>
         // Fungsi hitung total harga

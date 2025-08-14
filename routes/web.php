@@ -26,10 +26,10 @@ Route::get('/images/{properties}', [PropertiesController::class, 'showImage'])->
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asrama');
-       
-    
+
+
 Route::group(['middleware' => 'auth'], function () {
-         // routes/web.php
+        // routes/web.php
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
 
 
@@ -37,8 +37,11 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/PropertiesAsUser', [PropertiesControllerAsUser::class, 'index'])->name('PropertiesAsUser');
 
         Route::prefix('transactions')->group(function () {
+                Route::get('/historyTransaction', [TransactionController::class, 'history_transaction'])->name('transactions.historyTransaction');
+
                 Route::get('/pinjam/{id}', [TransactionController::class, 'pinjam'])->name('transactions.pinjam');
                 Route::post('/pinjam/store', [TransactionController::class, 'pinjam_store'])->name('transactions.pinjam.store');
+
                 Route::patch('/transactions/{id}/status', [TransactionController::class, 'update_status'])->name('transactions.updateStatus');
 
                 Route::post('/updatePaymentReceipt/{id}', [TransactionController::class, 'update_payment_receipt'])->name('transactions.payment');

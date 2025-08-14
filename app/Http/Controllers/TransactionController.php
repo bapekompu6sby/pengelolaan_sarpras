@@ -17,6 +17,30 @@ class TransactionController extends Controller
 
 
 {
+    public function history_transaction()
+    {
+        if (auth()->check()){
+            if (auth()->user()->role == 'admin'){
+                $transactions = Transaction::all();
+            } else {
+                $transactions = Transaction::where('user_id', auth()->user()->id)->get();
+            };
+        }
+        $ruangan = Properties::all();
+
+        // echo "<pre>";
+        // print_r($transactions->toArray());
+        // echo "</pre>";
+
+        // echo "ini ruangan detail";
+        // echo "<pre>";
+        // print_r($ruangan->toArray());
+        // echo "</pre>";
+        return view('user.history_transaction', [
+            'transactions' => $transactions,
+            'ruangan' => $ruangan,
+        ]);
+    }
 
     public function update_payment_receipt(Request $request, $id)
     {

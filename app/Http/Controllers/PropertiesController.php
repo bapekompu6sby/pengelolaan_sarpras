@@ -2,20 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Request;
+
+
 use App\Models\Properties;
 use App\Models\Transaction;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class PropertiesController extends Controller
 {
 
+
     public function checkAvailability(Request $request)
     {
+        Log::info('=== CHECK AVAILABILITY START ===');
+        Log::info('Request data:', $request->all());
+
         $request->validate([
             'venue_id'    => 'required|integer',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date'   => 'required|date|after_or_equal:start_date',
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date',
             'ordered_unit' => 'required|integer'
         ]);
 
@@ -24,32 +31,50 @@ class PropertiesController extends Controller
         $end    = $request->end_date;
         $unit = $request->ordered_unit;
 
+        Log::info("Property ID: {$propertyId}");
+        Log::info("Start Date: {$start}, End Date: {$end}");
+        Log::info("Ordered Unit: {$unit}");
+
         $exists = Transaction::where('property_id', $propertyId)
-            ->where('status', '=', 'approved') // Optional
-            ->where(function($query) use ($start, $end) {
+            ->where('status', '=', 'approved')
+            ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start', [$start, $end])
-                    //   ->orWhereBetween('end_date', [$start, $end])
-                      ->orWhere(function($query) use ($start, $end) {
-                          $query->where('start', '<=', $start)
-                                ->where('end', '>=', $end);
-                      });
+                    ->orWhereBetween('end', [$start, $end])
+                    ->orWhere(function ($query) use ($start, $end) {
+                        $query->where('start', '<=', $start)
+                            ->where('end', '>=', $end);
+                    });
             })
             ->count();
 
+        Log::info("Existing Bookings Count: {$exists}");
+
         $avail = false;
         $prop = Properties::find($propertyId);
+
+        if (!$prop) {
+            Log::warning("Property not found for ID: {$propertyId}");
+            return response()->json(['error' => 'Property not found'], 404);
+        }
+
         $avail_unit = $prop->unit - $exists;
 
-        if ($avail_unit >= $unit){
+        Log::info("Property Unit: {$prop->unit}");
+        Log::info("Available Unit After Check: {$avail_unit}");
+
+        if ($avail_unit >= $unit) {
             $avail = true;
-        };
-        
+        }
+
+        Log::info("Final Availability Status: " . ($avail ? 'AVAILABLE' : 'NOT AVAILABLE'));
+        Log::info('=== CHECK AVAILABILITY END ===');
 
         return response()->json([
             'available' => $avail,
             'avail_count' => $avail_unit
         ]);
     }
+
     public function index()
     {
         $properties = Properties::all();
