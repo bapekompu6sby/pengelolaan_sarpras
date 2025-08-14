@@ -60,7 +60,7 @@ class PropertiesController extends Controller
 
     public function show()
     {
-        $ruangan = Properties::whereIn('type', ['aula', 'kelas'])->get();
+        $ruangan = Properties::all();
 
         return view('admin.transaction', [
             'aulaKelas' => $ruangan,

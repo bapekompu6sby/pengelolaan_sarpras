@@ -25,7 +25,6 @@
 @endif
 
 <div class="container-xxl flex-grow-1 container-p-y">
-  TRANSACTION RUANGAAAAAAAAAAAAAAAAAN
   <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Peminjaman/</span> Tambah peminjaman</h4>
 
   @if($errors->any())
@@ -56,7 +55,7 @@
   <div class="modal fade" id="addEvent" tabindex="-1" role="dialog" aria-labelledby="addEventLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
-        <form action="{{ route('transactions.ruangan.store') }}" method="POST">
+        <form action="{{ route('transactions.ruangan.store') }}" method="POST" enctype="multipart/form-data">
           @csrf
           <div class="modal-header">
             <h5 class="modal-title" id="addEventLabel">Add Event</h5>
@@ -89,6 +88,11 @@
               </select>
             </div>
             <div class="mb-3">
+              <label for="request_letter" class="form-label">Surat Peminjaman</label>
+              <input type="file" class="form-control" id="request_letter" name="request_letter"
+                  accept=".pdf,image/*">
+            </div>
+            <div class="mb-3">
               <label for="event" class="form-label">Kegiatan</label>
               <input type="text" class="form-control" id="event" name="event" required>
             </div>
@@ -111,12 +115,14 @@
                 @endforeach
               </select>
             </div>
+            <div>
+              <label for="ordered_unit" class="form-label">Jumlah Ruangan</label>
+              <input type="number" class="form-control" id="ordered_unit" name="ordered_unit" value="1">
+              <span class="mt-1 text-sm text-danger">Untuk tipe Aula dan Kelas, hanya ada 1 Ruangan</span>
+            </div>
             <div class="mb-3">
               <label for="description" class="form-label">Deskripsi</label>
               <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-            </div>
-            <div>
-              <input type="hidden" class="form-control" id="ordered_unit" name="ordered_unit" value="1">
             </div>
 
             <button type="button" id="checkAvailabilityBtn">Cek Ketersediaan Ruangan</button>
