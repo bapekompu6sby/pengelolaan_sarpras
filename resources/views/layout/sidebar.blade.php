@@ -28,7 +28,7 @@
                 <div data-i18n="Analytics">Dashboard</div>
             </a>
         </li>
-        <li class="menu-item {{ strpos($route, 'transactions') !== false ? 'active open' : '' }}">
+        <li class="menu-item {{ $route == 'transactions.ruangan.show' ? 'active open' : '' }}">
             <a href="{{ route('transactions.ruangan.show') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-grid-alt"></i>
                 <div data-i18n="room">Peminjaman</div>
@@ -46,7 +46,7 @@
                 <div data-i18n="room">Ruangan</div>
             </a>
         </li>
-        <li class="menu-item {{ strpos($route, 'historyTransaction') !== false ? 'active open' : '' }}">
+        <li class="menu-item {{ $route == 'transactions.historyTransaction' ? 'active open' : '' }}">
             <a href="{{ route('transactions.historyTransaction') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-history"></i>
                 <div data-i18n="room">Riwayat Peminjaman</div>

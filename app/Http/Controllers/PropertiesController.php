@@ -8,7 +8,7 @@ use App\Models\Properties;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
+
 
 class PropertiesController extends Controller
 {
@@ -16,8 +16,6 @@ class PropertiesController extends Controller
 
     public function checkAvailability(Request $request)
     {
-        Log::info('=== CHECK AVAILABILITY START ===');
-        Log::info('Request data:', $request->all());
 
         $request->validate([
             'venue_id'    => 'required|integer',
@@ -42,15 +40,11 @@ class PropertiesController extends Controller
         $prop = Properties::find($propertyId);
         $avail_unit = $prop->unit - $transactions_unit;
 
-        Log::info("Property Unit: {$prop->unit}");
-        Log::info("Available Unit After Check: {$avail_unit}");
+
 
         if ($avail_unit >= $unit) {
             $avail = true;
         }
-
-        Log::info("Final Availability Status: " . ($avail ? 'AVAILABLE' : 'NOT AVAILABLE'));
-        Log::info('=== CHECK AVAILABILITY END ===');
 
         return response()->json([
             'available' => $avail,

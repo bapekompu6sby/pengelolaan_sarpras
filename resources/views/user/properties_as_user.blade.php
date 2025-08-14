@@ -76,9 +76,9 @@
                                         <strong>Unit:</strong> {{ $property->unit }}
                                     </p>
                                     <!-- <p style="margin: 4px 0;">
-                                        <strong>Status:</strong> <span
-                                            style="color: #028800; font-weight: bold;">tersedia</span>
-                                    </p> -->
+                                            <strong>Status:</strong> <span
+                                                style="color: #028800; font-weight: bold;">tersedia</span>
+                                        </p> -->
 
                                     <button class="btn btn-primary btn-pesan" data-property-id="{{ $property->id }}"
                                         data-bs-toggle="modal" data-bs-target="#addEvent">
@@ -188,7 +188,8 @@
 
 
 
-                        <button type="button" id="checkAvailabilityBtn">Cek Ketersediaan Ruangan</button>
+                        <button type="button" id="checkAvailabilityBtn" class="btn btn-success">Cek Ketersediaan
+                            Ruangan</button>
 
                         <div id="availabilityResult" class="mt-2"></div>
                     </div>
@@ -304,12 +305,13 @@
     <script>
         // Fungsi hitung total harga
         function calculateTotal(pricePerDay) {
+            const afiliasi = document.getElementById('affiliation').value;
             const modal = document.getElementById('addEvent');
             const start = new Date(modal.querySelector('#start').value);
             const end = new Date(modal.querySelector('#end').value);
             const unit = parseInt(modal.querySelector('#ordered_unit').value) || 1;
 
-            if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) {
+            if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start || afiliasi === 'internal_pu') {
                 document.getElementById('total_price').innerText = 'Rp 0';
                 return;
             }
@@ -339,6 +341,9 @@
             if (window.currentPrice) calculateTotal(window.currentPrice);
         });
         document.getElementById('ordered_unit').addEventListener('input', () => {
+            if (window.currentPrice) calculateTotal(window.currentPrice);
+        });
+        document.getElementById('affiliation').addEventListener('change', () => {
             if (window.currentPrice) calculateTotal(window.currentPrice);
         });
 
