@@ -48,12 +48,11 @@
 
 <body>
     <div class="layout-wrapper layout-content-navbar">
-        LAYOUT INDEX
         <div class="layout-container">
             <!-- Sidebar -->
             @yield('sidebar')
             <!-- /Sidebar -->
-            <div class="layout-page" style="padding-left: 10rem">
+            <div class="layout-page">
                 @yield('nav')
                 <div class="content-wrapper">
                     @section('content')

@@ -39,13 +39,12 @@ class PropertiesController extends Controller
             ->where('status', '=', 'approved')
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start', [$start, $end])
-                    ->orWhereBetween('end', [$start, $end])
-                    ->orWhere(function ($query) use ($start, $end) {
-                        $query->where('start', '<=', $start)
-                            ->where('end', '>=', $end);
-                    });
-            })
-            ->count();
+                    ->orWhereBetween('end', [$start, $end]);
+            })->count();
+        //   ->orWhere(function($query) use ($start, $end) {
+        //       $query->where('start', '<=', $start)
+        //             ->where('end', '>=', $end);
+        //   });
 
         Log::info("Existing Bookings Count: {$exists}");
 
@@ -85,7 +84,7 @@ class PropertiesController extends Controller
 
     public function show()
     {
-        $ruangan = Properties::whereIn('type', ['aula', 'kelas'])->get();
+        $ruangan = Properties::all();
 
         return view('admin.transaction', [
             'aulaKelas' => $ruangan,

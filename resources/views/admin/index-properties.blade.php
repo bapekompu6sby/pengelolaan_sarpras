@@ -183,6 +183,8 @@
                                     <option disabled selected>Pilih jenis</option>
                                     <option value="kelas">Kelas</option>
                                     <option value="aula">Aula</option>
+                                    <option value="asrama">Asrama</option>
+                                    <option value="paviliun">Paviliun</option>
                                 </select>
                             </div>
                             <div class="col">
