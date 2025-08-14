@@ -125,7 +125,7 @@
               <textarea class="form-control" id="description" name="description" rows="3"></textarea>
             </div>
 
-            <button type="button" id="checkAvailabilityBtn">Cek Ketersediaan Ruangan</button>
+            <button type="button" id="checkAvailabilityBtn" class="btn btn-success">Cek Ketersediaan Ruangan</button>
 
             <div id="availabilityResult" class="mt-2"></div>
           </div>

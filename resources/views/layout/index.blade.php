@@ -52,7 +52,7 @@
             <!-- Sidebar -->
             @yield('sidebar')
             <!-- /Sidebar -->
-            <div class="layout-page" style="padding-left: 10rem">
+            <div class="layout-page">
                 @yield('nav')
                 <div class="content-wrapper">
                     @section('content')
