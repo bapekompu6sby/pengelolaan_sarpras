@@ -31,32 +31,16 @@ class PropertiesController extends Controller
         $end    = $request->end_date;
         $unit = $request->ordered_unit;
 
-        Log::info("Property ID: {$propertyId}");
-        Log::info("Start Date: {$start}, End Date: {$end}");
-        Log::info("Ordered Unit: {$unit}");
-
-        $exists = Transaction::where('property_id', $propertyId)
-            ->where('status', '=', 'approved')
+        $transactions = Transaction::where('property_id', $propertyId)
+            ->where('status', '=', 'approved') // Optional
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start', [$start, $end])
                     ->orWhereBetween('end', [$start, $end]);
-            })->count();
-        //   ->orWhere(function($query) use ($start, $end) {
-        //       $query->where('start', '<=', $start)
-        //             ->where('end', '>=', $end);
-        //   });
-
-        Log::info("Existing Bookings Count: {$exists}");
-
+            })->get();
+        $transactions_unit = $transactions->sum('ordered_unit');
         $avail = false;
         $prop = Properties::find($propertyId);
-
-        if (!$prop) {
-            Log::warning("Property not found for ID: {$propertyId}");
-            return response()->json(['error' => 'Property not found'], 404);
-        }
-
-        $avail_unit = $prop->unit - $exists;
+        $avail_unit = $prop->unit - $transactions_unit;
 
         Log::info("Property Unit: {$prop->unit}");
         Log::info("Available Unit After Check: {$avail_unit}");
