@@ -24,20 +24,20 @@ class PropertiesController extends Controller
         $end    = $request->end_date;
         $unit = $request->ordered_unit;
 
-        $exists = Transaction::where('property_id', $propertyId)
+        $transactions = Transaction::where('property_id', $propertyId)
             ->where('status', '=', 'approved') // Optional
             ->where(function($query) use ($start, $end) {
                 $query->whereBetween('start', [$start, $end])
                     ->orWhereBetween('end', [$start, $end]);            
-            })->count();
+            })->get();
                     //   ->orWhere(function($query) use ($start, $end) {
                     //       $query->where('start', '<=', $start)
                     //             ->where('end', '>=', $end);
                     //   });
-
+        $transactions_unit = $transactions->sum('ordered_unit');
         $avail = false;
         $prop = Properties::find($propertyId);
-        $avail_unit = $prop->unit - $exists;
+        $avail_unit = $prop->unit - $transactions_unit;
 
         if ($avail_unit >= $unit){
             $avail = true;
