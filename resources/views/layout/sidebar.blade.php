@@ -46,15 +46,17 @@
                 <div data-i18n="room">Ruangan</div>
             </a>
         </li>
-        <li class="menu-item {{ $route == 'transactions.historyTransaction' ? 'active open' : '' }}">
-            <a href="{{ route('transactions.historyTransaction') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-history"></i>
-                <div data-i18n="room">Riwayat Peminjaman</div>
-            </a>
-        </li>
-
-
         @auth
+            @if ($role == 'user')
+                <li class="menu-item {{ $route == 'transactions.historyTransaction' ? 'active open' : '' }}">
+                    <a href="{{ route('transactions.historyTransaction') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-history"></i>
+                        <div data-i18n="room">Riwayat Peminjaman</div>
+                    </a>
+                </li>
+            @endif
+
+
 
             @if ($role == 'admin' || $role == 'pakheru')
                 <li class="menu-item {{ in_array($route, $menus) ? 'active open' : '' }}">

@@ -45,7 +45,8 @@
                             </a>
                         </div>
                     </div>
-                    <div class="table-responsive text-nowrap p-4">
+                    {{-- Desktop --}}
+                    <div class="table-responsive text-nowrap p-4 d-none d-md-block">
                         <table id="datatable2" class="table">
                             <thead>
                                 <tr>
@@ -56,14 +57,9 @@
                                     <th>Instansi</th>
                                     <th>Kegiatan</th>
                                     <th>Ruangan</th>
-
                                     <th>Tanggal</th>
                                     <th>Status</th>
                                     <th>Actions</th>
-
-                                    @if (Auth::user()->role == 'admin')
-                                        <th>Actions</th>
-                                    @endif
                                 </tr>
                             </thead>
                             <tbody class="table-border-bottom-0">
@@ -77,12 +73,9 @@
                                         <td>{{ $t->name }}</td>
                                         <td><strong>{{ ucfirst($t->instansi) }}</strong></td>
                                         <td>{{ $t->kegiatan }}</td>
-                                        <td>
-                                            {{ $t->properties->name }}
-                                        </td>
-                                        <td><span
-                                                class="me-1">{{ date('d-m-Y', strtotime($t->start)) . ' | ' . date('d-m-Y', strtotime($t->end)) }}</span>
-                                        </td>
+                                        <td>{{ $t->properties->name }}</td>
+                                        <td>{{ date('d-m-Y', strtotime($t->start)) }} |
+                                            {{ date('d-m-Y', strtotime($t->end)) }}</td>
                                         <td>
                                             @if ($t->status == 'pending')
                                                 <span class="badge bg-warning">Menunggu</span>
@@ -93,79 +86,104 @@
                                             @elseif ($t->status == 'rejected')
                                                 <span class="badge bg-danger">Ditolak</span>
                                             @endif
-
-
-
-
                                         </td>
-
-
-
-                                        @if (Auth::user()->role == 'admin')
-                                            <td>
+                                        <td>
+                                            @if (Auth::user()->role == 'admin')
                                                 <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalCenter{{ $t->id }}">
-                                                    <i class="bx bx-edit-alt me-2"></i>
-                                                    Edit
+                                                    <i class="bx bx-edit-alt me-2"></i>Edit
                                                 </button>
-
-                                                <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
-                                                    data-bs-target="#modalDetail{{ $t->id }}">
-                                                    <i class="bx bx-detail me-2"></i>
-                                                    Detail
-                                                </button>
-                                            </td>
-                                        @else
-                                            <td>
-                                                <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
-                                                    data-bs-target="#modalDetailAsUser{{ $t->id }}">
-                                                    <i class="bx bx-detail me-2"></i>
-                                                    Detail
-                                                </button>
-                                            </td>
-                                        @endif
+                                            @endif
+                                            <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
+                                                data-bs-target="#modalDetailAsUser{{ $t->id }}">
+                                                <i class="bx bx-detail me-2"></i>Detail
+                                            </button>
+                                        </td>
                                     </tr>
-
-                                    @include('components.edit-modal')
                                 @endforeach
                             </tbody>
                         </table>
-                        <form action="{{ route('transactions.ruangan.destroy') }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <input type="text" class="d-none" id="selected" name="selected">
-                            <input type="button" class="btn btn-danger d-none" id="delete" value="Delete"
-                                data-bs-toggle="modal" data-bs-target="#modalDeleteRooms">
+                    </div>
 
-                            <!-- Confirm modal -->
-                            <div class="modal fade" id="modalDeleteRooms" data-bs-backdrop="static" tabindex="-1"
-                                aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="modalCenterTitle">Hapus ruangan</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p>Apakah anda yakin ingin menghapus data ini?</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-outline-secondary"
-                                                data-bs-dismiss="modal">
-                                                Close
+                    {{-- Mobile --}}
+                    <div class="d-block d-md-none p-2">
+                        @foreach ($transactions as $t)
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-bold mb-1">{{ $t->name }}</h6>
+                                    <p class="mb-1"><strong>Instansi:</strong> {{ ucfirst($t->instansi) }}</p>
+                                    <p class="mb-1"><strong>Kegiatan:</strong> {{ $t->kegiatan }}</p>
+                                    <p class="mb-1"><strong>Ruangan:</strong> {{ $t->properties->name }}</p>
+                                    <p class="mb-1"><strong>Tanggal:</strong> {{ date('d-m-Y', strtotime($t->start)) }} -
+                                        {{ date('d-m-Y', strtotime($t->end)) }}</p>
+                                    <p class="mb-2"><strong>Status:</strong>
+                                        @if ($t->status == 'pending')
+                                            <span class="badge bg-warning">Menunggu</span>
+                                        @elseif ($t->status == 'approved')
+                                            <span class="badge bg-success">Disetujui</span>
+                                        @elseif ($t->status == 'waiting_payment')
+                                            <span class="badge bg-success">Menunggu Pembayaran</span>
+                                        @elseif ($t->status == 'rejected')
+                                            <span class="badge bg-danger">Ditolak</span>
+                                        @endif
+                                    </p>
+                                    <div class="d-flex gap-2">
+                                        @if (Auth::user()->role == 'admin')
+                                            <button class="btn btn-warning btn-sm flex-fill" data-bs-toggle="modal"
+                                                data-bs-target="#modalCenter{{ $t->id }}">
+                                                <i class="bx bx-edit-alt me-1"></i>Edit
                                             </button>
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </div>
+                                        @endif
+                                        <button class="btn btn-info btn-sm flex-fill" data-bs-toggle="modal"
+                                            data-bs-target="#modalDetailAsUser{{ $t->id }}">
+                                            <i class="bx bx-detail me-1"></i>Detail
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-
-                        </form>
+                        @endforeach
                     </div>
+
+                    {{-- Modal diletakkan di sini sekali saja --}}
+                    @foreach ($transactions as $t)
+                        @include('components.edit-modal')
+                    @endforeach
+
+                    <form action="{{ route('transactions.ruangan.destroy') }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <input type="text" class="d-none" id="selected" name="selected">
+                        <input type="button" class="btn btn-danger d-none" id="delete" value="Delete"
+                            data-bs-toggle="modal" data-bs-target="#modalDeleteRooms">
+
+                        <!-- Confirm modal -->
+                        <div class="modal fade" id="modalDeleteRooms" data-bs-backdrop="static" tabindex="-1"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalCenterTitle">Hapus ruangan</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Apakah anda yakin ingin menghapus data ini?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                            Close
+                                        </button>
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
     </div>
     <!-- / Content -->
 @endsection

@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertiesController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CustomerServiceController;
 use App\Http\Controllers\PropertiesControllerAsUser;
 use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 
@@ -29,6 +30,9 @@ Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asram
 
 
 Route::group(['middleware' => 'auth'], function () {
+
+        Route::post('/customer_service/send', [CustomerServiceController::class, 'sendToWhatsapp'])->name('customer_service.send');
+
         // routes/web.php
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
 

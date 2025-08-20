@@ -12,6 +12,7 @@ use App\Exports\RuanganExports;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
 
@@ -19,8 +20,8 @@ class TransactionController extends Controller
 {
     public function history_transaction()
     {
-        if (auth()->check()){
-            if (auth()->user()->role == 'admin'){
+        if (auth()->check()) {
+            if (auth()->user()->role == 'admin') {
                 $transactions = Transaction::all();
             } else {
                 $transactions = Transaction::where('user_id', auth()->user()->id)->get();
@@ -42,11 +43,19 @@ class TransactionController extends Controller
         ]);
     }
 
+
+
     public function update_payment_receipt(Request $request, $id)
     {
-        $request->validate([
-            'payment_receipt' => 'required|file|mimes:pdf,jpg,jpeg,png|max:4096',
-        ]);
+        try {
+            $request->validate([
+                'payment_receipt' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            ], [
+                'payment_receipt.max' => 'Ukuran file terlalu besar, maksimal 20 MB.',
+            ]);
+        } catch (ValidationException $e) {
+            return redirect()->back()->with('failed', $e->validator->errors()->first());
+        }
 
         $transaction = Transaction::findOrFail($id);
 
@@ -62,9 +71,15 @@ class TransactionController extends Controller
 
     public function update_request_letter(Request $request, $id)
     {
-        $request->validate([
-            'request_letter' => 'required|file|mimes:pdf,jpg,jpeg,png|max:4096',
-        ]);
+        try {
+            $request->validate([
+                'request_letter' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            ], [
+                'request_letter.max' => 'Ukuran file terlalu besar, maksimal 20 MB.',
+            ]);
+        } catch (ValidationException $e) {
+            return redirect()->back()->with('failed', $e->validator->errors()->first());
+        }
 
         $transaction = Transaction::findOrFail($id);
 
@@ -77,6 +92,7 @@ class TransactionController extends Controller
 
         return redirect()->back()->with('success', 'Surat permohonan berhasil diunggah');
     }
+
 
     public function update_status(Request $request, $id)
     {
@@ -294,32 +310,85 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
     public function ruangan_update(Request $request, $id)
     {
-        $isValidate = $request->validate([
+        $request->validate([
             'office' => 'required|string|max:32',
+            'affiliation' => 'required|string',
+            'phone_number' => 'required|string|max:15',
+            'email' => 'required|email',
             'event' => 'required|string|max:32',
-            'venue' => 'required',
+            'ordered_unit' => 'required|integer|min:1',
             'description' => 'nullable|string',
+            'start' => 'required|date',
+            'end' => 'required|date|after_or_equal:start',
+            'status' => 'required|string|in:pending,approved,rejected,waiting_payment',
         ]);
 
-        if (!$isValidate) {
-            return redirect()->route('transactions.ruangan.show')->withInput($request->all());
+        $transaction = Transaction::findOrFail($id);
+
+        // default pakai file lama
+        $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
+        $requestLetter  = $request->old_request_letter ?? $transaction->request_letter;
+
+        // kalau ada upload baru, replace
+        if ($request->hasFile('payment_receipt')) {
+            $paymentReceiptPath = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+            $paymentReceipt = basename($paymentReceiptPath);
         }
 
-        $transaction = Transaction::find($id);
-        $transaction->instansi = ucfirst($request->office);
-        $transaction->kegiatan = ucfirst($request->event);
-        $transaction->property_id = $request->venue;
-        $transaction->description = $request->description;
-        $transaction->save();
+        if ($request->hasFile('request_letter')) {
+            $requestLetterPath = $request->file('request_letter')->store('uploads/request_letter', 'public');
+            $requestLetter = basename($requestLetterPath);
+        }
 
-        return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil diubah');
+        $transaction->update([
+            'instansi' => ucwords($request->office),
+            'kegiatan' => ucwords($request->event),
+            'property_id' => $request->property_id ?? $transaction->property_id,
+            'description' => $request->description,
+            'status' => $request->status,
+            'ordered_unit' => $request->ordered_unit ?? $transaction->ordered_unit,
+            'payment_receipt' => $paymentReceipt,
+            'request_letter' => $requestLetter,
+        ]);
+
+        return back()->with('success', 'Transaksi berhasil diperbarui.');
     }
+
+
+
+
+    // $transaction->save();
+
+    // return redirect()->route('transactions.ruangan.show')
+    //     ->with('success', 'Jadwal berhasil diubah');
+
+
+    // $isValidate = $request->validate([
+    //     'office' => 'required|string|max:32',
+    //     'event' => 'required|string|max:32',
+    //     'venue' => 'required',
+    //     'description' => 'nullable|string',
+    // ]);
+
+    // if (!$isValidate) {
+    //     return redirect()->route('transactions.ruangan.show')->withInput($request->all());
+    // }
+
+    // $transaction = Transaction::find($id);
+    // $transaction->instansi = ucfirst($request->office);
+    // $transaction->kegiatan = ucfirst($request->event);
+    // $transaction->property_id = $request->venue;
+    // $transaction->description = $request->description;
+    // $transaction->save();
+
+    // return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil diubah');
+
 
     public function ruangan_detail()
     {
 
-        if (auth()->check()){
-            if (auth()->user()->role == 'admin'){
+        if (auth()->check()) {
+            if (auth()->user()->role == 'admin') {
                 $transactions = Transaction::all();
             } else {
                 $transactions = Transaction::where('user_id', auth()->user()->id)->get();
@@ -519,30 +588,42 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
  \_______|\_______|\__| \_______|\__|  \__| \_______| \_______|\__|      
 ================================================================== */
 
+    // public function calendar()
+    // {
+    //     $propreties = Properties::all();
+    //     // $events = Transaction::all();
+
+    //     // $events = $events->map(function ($item) {
+    //     //     return [
+    //     //         'title' => $item->kegiatan,
+    //     //         'venue' => $item->properties->name,
+    //     //         'start' => $item->start,
+    //     //         'end' => $item->end,
+    //     //         'color' => $item->color,
+    //     //     ];
+    //     // });
+
+    //     return view('calendar', [
+    //         // 'events' => $events,
+    //         'properties' => $propreties,
+    //     ]);
+    // }
     public function calendar()
     {
-        $propreties = Properties::all();
-        // $events = Transaction::all();
-
-        // $events = $events->map(function ($item) {
-        //     return [
-        //         'title' => $item->kegiatan,
-        //         'venue' => $item->properties->name,
-        //         'start' => $item->start,
-        //         'end' => $item->end,
-        //         'color' => $item->color,
-        //     ];
-        // });
+        $properties = Properties::whereHas('transactions', function ($q) {
+            $q->where('status', 'approved');
+        })->get();
 
         return view('calendar', [
-            // 'events' => $events,
-            'properties' => $propreties,
+            'properties' => $properties,
         ]);
     }
 
+
     public function events()
     {
-        $events = Transaction::all();
+        $events = Transaction::where('status', 'approved')
+            ->get();
 
         $events = $events->map(function ($item) {
             return [
@@ -554,6 +635,7 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
                 // 'url' => '/transactions/' . $item->id . '/detail',
             ];
         });
+
 
         return response()->json($events);
     }

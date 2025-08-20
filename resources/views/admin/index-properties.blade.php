@@ -124,33 +124,42 @@
                                             </div>
                                             <div class="modal-body">
                                                 @if (!empty($property->image_path))
-                                                    <div class="d-flex justify-content-center align-items-center">
+                                                    <div class="d-flex justify-content-center mb-3">
                                                         <img src="{{ asset('uploads/' . $property->image_path) }}"
-                                                            alt="{{ $property->name }}" width="300" height="300"
-                                                            style="object-fit: cover; border-radius: 4px;">
+                                                            alt="{{ $property->name }}" class="img-fluid rounded shadow-sm"
+                                                            style="max-height: 300px; object-fit: cover;">
                                                     </div>
                                                 @else
                                                     <span class="text-muted">No Image</span>
                                                 @endif
-                                                <ul class="list-group list-group-flush mt-2">
-                                                    <li class="list-group-item"><strong>Tipe Room:</strong>
-                                                        {{ $property->room_type ?: '-' }}</li>
-                                                    <li class="list-group-item"><strong>Luas:</strong>
-                                                        {{ $property->area ?: '-' }} m<sup>2</sup></li>
-                                                    <li class="list-group-item"><strong>Fasilitas:</strong>
-                                                        {{ $property->facilities ?: '-' }}</li>
-                                                    <li class="list-group-item"><strong>Harga:</strong>
-                                                        {{ $property->price ?: '-' }}</li>
-                                                    <li class="list-group-item"><strong>Unit:</strong>
-                                                        {{ $property->unit }}</li>
-                                                    <li class="list-group-item"><strong>Tipe:</strong>
-                                                        {{ ucfirst($property->type) }}</li>
-                                                    <li class="list-group-item"><strong>Kapasitas:</strong>
-                                                        {{ $property->capacity }}</li>
-                                                    <li class="list-group-item"><strong>Created At:</strong>
-                                                        {{ $property->created_at->format('d M Y H:i') }}</li>
-                                                </ul>
+
+                                                <div class="row g-3">
+                                                    <div class="col-6"><strong>Tipe
+                                                            Ruangan:</strong><br>{{ $property->room_type ?: '-' }}</div>
+                                                    <div class="col-6">
+                                                        <strong>Luas:</strong><br>{{ $property->area ?: '-' }} m²
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <strong>Fasilitas:</strong><br>{{ $property->facilities ?: '-' }}
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <strong>Harga:</strong><br>{{ $property->price ? 'Rp ' . number_format($property->price, 0, ',', '.') : '-' }}
+                                                    </div>
+                                                    <div class="col-6"><strong>Unit:</strong><br>{{ $property->unit }}
+                                                    </div>
+                                                    <div class="col-6"><strong>Jenis Ruangan:</strong><br><span
+                                                            class="badge bg-primary">{{ ucfirst($property->type) }}</span>
+                                                    </div>
+                                                    <div class="col-6"><strong>Kapasitas:</strong><br><span
+                                                            class="badge bg-success">{{ $property->capacity }} orang</span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <strong>Dibuat
+                                                            pada:</strong><br>{{ $property->created_at->format('d M Y H:i') }}
+                                                    </div>
+                                                </div>
                                             </div>
+
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">Tutup</button>
