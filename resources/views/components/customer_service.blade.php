@@ -9,7 +9,7 @@
 
     <!-- Chat Box -->
     <div class="collapse mt-2" id="chatBox">
-        <div class="card shadow-lg border-0 rounded-3 overflow-hidden w-100" style="max-width: 340px; height: 460px;">
+        <div class="card shadow-lg border-0 rounded-3 overflow-hidden w-100" style="max-width: 340px; height: 480px;">
 
             <!-- Header -->
             <div class="card-header text-white d-flex justify-content-between align-items-center py-2 px-3"
@@ -20,7 +20,7 @@
                         <i class="bx bx-headphone text-primary fs-5" style="color:#1C3168;"></i>
                     </div>
                     <div>
-                        <h6 class="mb-0 fw-bold text-white">Admin PU</h6>
+                        <h6 class="mb-0 fw-bold text-white">Admin bapekom VI</h6>
                         <small class="text-white">Online</small>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
             <div class="card-body d-flex flex-column bg-light px-3 py-2" style="height: 320px; overflow-y: auto;">
                 <!-- Bubble pesan -->
                 <div class="align-self-start bg-white shadow-sm p-2 px-3 rounded-3 mb-2" style="max-width: 85%;">
-                    👋 Halo! Silakan isi form di bawah ini untuk terhubung dengan CS kami.
+                    👋 Selamat datang! <br>Silahkan isi form berikut<br>untuk berkomunikasi dengan Admin bapekom VI.
                 </div>
             </div>
 

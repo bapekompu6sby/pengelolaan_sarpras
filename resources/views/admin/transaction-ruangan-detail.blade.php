@@ -33,11 +33,11 @@
                             <h5 class="card-header">Peminjaman Ruangan</h5>
                         </div>
                         <div class="my-auto pe-4">
-                            @if (Auth::user()->role == 'admin')
+                            {{-- @if (Auth::user()->role == 'admin')
                                 <a href="{{ route('transactions.ruangan.show') }}" class="btn btn-primary me-3">
                                     <span class="tf-icons bx bx-plus-medical bx-sm"></span>
                                 </a>
-                            @endif
+                            @endif --}}
                             <a href="{{ route('transactions.ruangan.export') }}" class="btn btn-success"
                                 data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true"
                                 title=""

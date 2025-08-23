@@ -304,7 +304,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'ordered_unit' => $request->ordered_unit,
         ]);
 
-        return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil dibuat');
+        return redirect()->route('transactions.historyTransaction')->with('success', 'Jadwal berhasil dibuat');
     }
 
 

@@ -165,6 +165,7 @@
                             <label for="request_letter" class="form-label">Surat Peminjaman</label>
                             <input type="file" class="form-control" id="request_letter" name="request_letter"
                                 accept=".pdf,image/*">
+                            <small class="form-text text-muted">Jika belum ada, boleh dikosongi terlebih dahulu</small>
                         </div>
 
                         <div class="mb-3">

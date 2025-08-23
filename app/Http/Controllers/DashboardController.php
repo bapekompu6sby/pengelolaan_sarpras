@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+
+    public function bukuPanduan()
+    {
+        return view('components.user_guide');
+    }
     public function index()
     {
         $today = now()->toDateString();

@@ -221,6 +221,7 @@
                             <p><strong>Total Harga:</strong> Rp. {{ number_format($t->total_harga, 0, ',', '.') }}</p>
                         </div>
                         <div class="col-12 col-md-6">
+                            
                             {{-- Payment Receipt --}}
                             <p class="mb-1"><strong>Bukti Pembayaran:</strong>
                                 @if ($t->payment_receipt)
@@ -258,6 +259,19 @@
                                     <button type="submit" class="btn btn-primary btn-sm">Upload</button>
                                 </div>
                             </form>
+
+                            {{-- Status --}}
+                            <p class="mt-3 mb-1"><strong>Status :</strong>
+                                @if ($t->status == 'pending')
+                                    <span class="badge bg-warning">Menunggu</span>
+                                @elseif ($t->status == 'waiting_payment')
+                                    <span class="badge bg-info">Menunggu Pembayaran</span>
+                                @elseif ($t->status == 'approved')
+                                    <span class="badge bg-success">Disetujui</span>
+                                @elseif ($t->status == 'rejected')
+                                    <span class="badge bg-danger">Ditolak</span>
+                                @endif
+                            </p>
                         </div>
                     </div>
 
@@ -304,7 +318,7 @@
                         <div class="col-md-6">
                             <p><strong>Description:</strong> {{ $t->description }}</p>
                             <p><strong>Unit:</strong> {{ $t->ordered_unit }}</p>
-                            <p><strong>Payment Receipt:</strong>
+                            <p><strong>Bukti Pembayaran:</strong>
                                 @if ($t->payment_receipt)
                                     <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
                                         target="_blank">Download</a>
@@ -312,7 +326,7 @@
                                     <em>Tidak ada</em>
                                 @endif
                             </p>
-                            <p><strong>Request Letter:</strong>
+                            <p><strong>Surat Permohonan:</strong>
                                 @if ($t->request_letter)
                                     <a href="{{ asset('/storage/uploads/request_letter/' . $t->request_letter) }}"
                                         target="_blank">Download</a>

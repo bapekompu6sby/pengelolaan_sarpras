@@ -64,11 +64,9 @@
                                 @endforeach
                             </table>
                         </div>
-                        @auth
-                            @if (Auth::user()->role == 'admin')
-                                <a href="{{ route('ruangan.detail') }}" class="btn btn-success" id="more-btn">More</a>
-                            @endif
-                        @endauth
+
+                        <a href="{{ route('ruangan.detail') }}" class="btn btn-success" id="more-btn">More</a>
+
                     </div>
                 </div>
             </div>
@@ -114,12 +112,10 @@
                                                 {{ $aulaNotAvailable }}</h4>
                                         </div>
                                     </div>
-                                    @auth
-                                        @if (Auth::user()->role == 'admin' || Auth::user()->role == 'user')
+                                    
                                             <a href="{{ route('PropertiesAsUser') }}" class="btn btn-primary"
                                                 id="more-btn">More</a>
-                                        @endif
-                                    @endauth
+                                       
                                 </div>
                             </div>
                         </div>
@@ -155,12 +151,10 @@
                                                 {{ $kelasNotAvailable }}</h4>
                                         </div>
                                     </div>
-                                    @auth
-                                        @if (Auth::user()->role == 'admin' || Auth::user()->role == 'user')
+                                    
                                             <a href="{{ route('PropertiesAsUser') }}" class="btn btn-warning"
                                                 id="more-btn">More</a>
-                                        @endif
-                                    @endauth
+                                        
                                 </div>
                             </div>
                         </div>
@@ -197,12 +191,10 @@
                                             </h4>
                                         </div>
                                     </div>
-                                    @auth
-                                        @if (Auth::user()->role == 'admin' || Auth::user()->role == 'user')
+                                    
                                             <a href="{{ route('PropertiesAsUser') }}" class="btn btn-success"
                                                 id="more-btn">More</a>
-                                        @endif
-                                    @endauth
+                                        
                                 </div>
                             </div>
                         </div>
@@ -238,12 +230,10 @@
                                                 {{ $paviliunNotAvailable }}</h4>
                                         </div>
                                     </div>
-                                    @auth
-                                        @if (Auth::user()->role == 'admin' || Auth::user()->role == 'user')
+                                    
                                             <a href="{{ route('PropertiesAsUser') }}" class="btn"
                                                 style="background-color:#6f42c1; color:white;" id="more-btn">More</a>
-                                        @endif
-                                    @endauth
+                                       
                                 </div>
                             </div>
                         </div>
