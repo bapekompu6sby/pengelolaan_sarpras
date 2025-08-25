@@ -62,9 +62,11 @@
                         <label for="message">Pesan</label>
                     </div>
 
-                    <button type="submit" class="btn btn-success w-100 rounded-pill shadow-sm">
+                    <button type="submit" class="btn w-100 rounded-pill shadow-sm"
+                        style="background-color: #FCB810; color: #000;">
                         <i class="bx bx-send"></i> Kirim
                     </button>
+
                 </form>
             </div>
         </div>

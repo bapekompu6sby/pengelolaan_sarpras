@@ -33,9 +33,10 @@ Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asram
 
 Route::get('/bukuPanduan', [DashboardController::class, 'bukuPanduan'])->name('bukuPanduan');
 
+Route::post('/customer_service/send', [CustomerServiceController::class, 'sendToWhatsapp'])->name('customer_service.send');
+
 Route::group(['middleware' => 'auth'], function () {
 
-        Route::post('/customer_service/send', [CustomerServiceController::class, 'sendToWhatsapp'])->name('customer_service.send');
 
         // routes/web.php
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');

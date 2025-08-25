@@ -65,7 +65,7 @@
                             </table>
                         </div>
 
-                        <a href="{{ route('ruangan.detail') }}" class="btn btn-success" id="more-btn">More</a>
+                        <a href="{{ route('ruangan.detail') }}" class="btn btn-success" id="more-btn">selengkapnya</a>
 
                     </div>
                 </div>
@@ -112,10 +112,10 @@
                                                 {{ $aulaNotAvailable }}</h4>
                                         </div>
                                     </div>
-                                    
-                                            <a href="{{ route('PropertiesAsUser') }}" class="btn btn-primary"
-                                                id="more-btn">More</a>
-                                       
+
+                                    <a href="{{ route('PropertiesAsUser') }}" class="btn btn-primary"
+                                        id="more-btn">selengkapnya</a>
+
                                 </div>
                             </div>
                         </div>
@@ -151,10 +151,10 @@
                                                 {{ $kelasNotAvailable }}</h4>
                                         </div>
                                     </div>
-                                    
-                                            <a href="{{ route('PropertiesAsUser') }}" class="btn btn-warning"
-                                                id="more-btn">More</a>
-                                        
+
+                                    <a href="{{ route('PropertiesAsUser') }}" class="btn btn-warning"
+                                        id="more-btn">selengkapnya</a>
+
                                 </div>
                             </div>
                         </div>
@@ -191,10 +191,10 @@
                                             </h4>
                                         </div>
                                     </div>
-                                    
-                                            <a href="{{ route('PropertiesAsUser') }}" class="btn btn-success"
-                                                id="more-btn">More</a>
-                                        
+
+                                    <a href="{{ route('PropertiesAsUser') }}" class="btn btn-success"
+                                        id="more-btn">selengkapnya</a>
+
                                 </div>
                             </div>
                         </div>
@@ -230,10 +230,10 @@
                                                 {{ $paviliunNotAvailable }}</h4>
                                         </div>
                                     </div>
-                                    
-                                            <a href="{{ route('PropertiesAsUser') }}" class="btn"
-                                                style="background-color:#6f42c1; color:white;" id="more-btn">More</a>
-                                       
+
+                                    <a href="{{ route('PropertiesAsUser') }}" class="btn"
+                                        style="background-color:#6f42c1; color:white;" id="more-btn">selengkapnya</a>
+
                                 </div>
                             </div>
                         </div>
