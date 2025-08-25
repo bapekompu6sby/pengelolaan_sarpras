@@ -38,8 +38,19 @@
     </ul>
   </div>
   @endif
+
+  @php 
+  $menus = ['properties', 'wisma-admin', 'ruangan.detail', 'wisma.detail'];
+  $route = Route::currentRouteName();
+  if(Auth::check()) {
+    $role = Auth::user()->role;
+  }
+  @endphp
+  
   
   <div class="row">
+    @auth
+    @if ($role == 'admin' || $role == 'pakheru')
     <div class="col-xl-6">
       <div class="nav-align-top mb-4">
         <ul class="nav nav-tabs nav-fill" role="tablist">
@@ -120,6 +131,8 @@
         </div>
       </div>
     </div>
+    @endif
+    @endauth
     <div class="col-xl-6" id="hidden-select">
       <div class="col-md-8 col-lg-8 mb-3">
         <div class="card h-100 border border-info border-5 border-top-0 border-bottom-0 border-end-0">
@@ -161,7 +174,7 @@
     </div>
 
   </div>
-
+  
   @include('components.suhodo-modal')
   @include('components.surjono-modal')
   @include('components.paviliun-modal')
