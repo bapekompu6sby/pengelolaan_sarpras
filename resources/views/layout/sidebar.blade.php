@@ -61,7 +61,7 @@
   </li>
   
 
-  @endif
+  
 
   <li class="menu-item {{ (strpos($route, 'transactions') !== false) ? 'active open' : '' }}">
     <a href="#" class="menu-link menu-toggle" id="transaction">
@@ -82,6 +82,8 @@
       </li>
     </ul>
   </li>
+
+  @endif
 
   @if($role == 'user' || $role == 'pakheru')
   <li class="menu-item {{ ($route == 'wisma_show_user') ? 'active' : '' }}">
