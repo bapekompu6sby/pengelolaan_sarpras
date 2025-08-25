@@ -28,12 +28,12 @@
                 <div data-i18n="Analytics">Dashboard</div>
             </a>
         </li>
-        <li class="menu-item {{ $route == 'transactions.ruangan.show' ? 'active open' : '' }}">
+        {{-- <li class="menu-item {{ $route == 'transactions.ruangan.show' ? 'active open' : '' }}">
             <a href="{{ route('transactions.ruangan.show') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-grid-alt"></i>
                 <div data-i18n="room">Peminjaman</div>
             </a>
-        </li>
+        </li> --}}
         <li class="menu-item {{ $route == 'calendar' ? 'active' : '' }}">
             <a href="{{ route('calendar') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
@@ -43,18 +43,20 @@
         <li class="menu-item {{ strpos($route, 'PropertiesAsUser') !== false ? 'active open' : '' }}">
             <a href="{{ route('PropertiesAsUser') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-building-house"></i>
-                <div data-i18n="room">Ruangan</div>
+                <div data-i18n="room">Peminjaman Ruangan</div>
             </a>
         </li>
-        <li class="menu-item {{ $route == 'transactions.historyTransaction' ? 'active open' : '' }}">
-            <a href="{{ route('transactions.historyTransaction') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-history"></i>
-                <div data-i18n="room">Riwayat Peminjaman</div>
-            </a>
-        </li>
-
-
         @auth
+            @if ($role == 'user')
+                <li class="menu-item {{ $route == 'transactions.historyTransaction' ? 'active open' : '' }}">
+                    <a href="{{ route('transactions.historyTransaction') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-history"></i>
+                        <div data-i18n="room">Riwayat Peminjaman</div>
+                    </a>
+                </li>
+            @endif
+
+
 
             @if ($role == 'admin' || $role == 'pakheru')
                 <li class="menu-item {{ in_array($route, $menus) ? 'active open' : '' }}">
@@ -83,5 +85,12 @@
 
 
         @endauth
+        {{-- buku panduan --}}
+        <li class="menu-item {{ strpos($route, 'bukuPanduan') !== false ? 'active open' : '' }}">
+            <a href="{{ route('bukuPanduan') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-book"></i>
+                <div data-i18n="room">Buku Panduan</div>
+            </a>
+        </li>
     </ul>
 </aside>

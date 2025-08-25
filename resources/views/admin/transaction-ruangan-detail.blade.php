@@ -24,7 +24,7 @@
     @endif
 
     <div class="container-xxl flex-grow-1 container-p-y">
-        DETAIIIIIIIIIIL TRANSACTION RUANGAN
+        {{-- DETAIIIIIIIIIIL TRANSACTION RUANGAN --}}
         <div class="row">
             <div class="col-lg-12 mb-4 order-0">
                 <div class="card">
@@ -33,11 +33,11 @@
                             <h5 class="card-header">Peminjaman Ruangan</h5>
                         </div>
                         <div class="my-auto pe-4">
-                            @if (Auth::user()->role == 'admin')
+                            {{-- @if (Auth::user()->role == 'admin')
                                 <a href="{{ route('transactions.ruangan.show') }}" class="btn btn-primary me-3">
                                     <span class="tf-icons bx bx-plus-medical bx-sm"></span>
                                 </a>
-                            @endif
+                            @endif --}}
                             <a href="{{ route('transactions.ruangan.export') }}" class="btn btn-success"
                                 data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true"
                                 title=""
@@ -62,9 +62,9 @@
                                     <th>Status</th>
                                     <th>Actions</th>
 
-                                    @if (Auth::user()->role == 'admin')
+                                    {{-- @if (Auth::user()->role == 'admin')
                                         <th>Actions</th>
-                                    @endif
+                                    @endif --}}
                                 </tr>
                             </thead>
                             <tbody class="table-border-bottom-0">
@@ -82,7 +82,7 @@
                                             {{ $t->properties->name }}
                                         </td>
                                         <td><span
-                                                class="me-1">{{ date('d-m-Y', strtotime($t->start)) . ' | ' . date('d-m-Y', strtotime($t->end)) }}</span>
+                                                class="me-1">{{ date('Y-m-d', strtotime($t->start)) . ' | ' . date('Y-m-d', strtotime($t->end)) }}</span>
                                         </td>
                                         <td>
                                             @if ($t->status == 'pending')

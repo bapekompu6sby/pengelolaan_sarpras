@@ -80,7 +80,7 @@ class PropertiesController extends Controller
             'facilities' => 'nullable|string',
             'price'      => 'nullable|numeric|min:0',
             'unit'       => 'nullable|integer|min:0',
-            'img'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'img'        => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
 
         $data = [
@@ -126,7 +126,7 @@ class PropertiesController extends Controller
             'facilities' => 'nullable|string',
             'price'      => 'nullable|numeric|min:0',
             'unit'       => 'nullable|integer|min:0',
-            'img'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'img'        => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
 
         // Data yang akan di-update

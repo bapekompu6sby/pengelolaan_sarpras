@@ -33,6 +33,9 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{ asset('/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
 
+
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
     <!-- Page CSS -->
 
     <!-- Helpers -->
@@ -57,6 +60,33 @@
                 <div class="content-wrapper">
                     @section('content')
                     @show
+                    @if (!Auth::check() || Auth::user()->role != 'admin')
+                        <div class="customer-service" style="display: none;">
+                            @include('components.customer_service')
+                        </div>
+
+                        <style>
+                            @keyframes showElement {
+                                from {
+                                    opacity: 0;
+                                }
+
+                                to {
+                                    opacity: 1;
+                                }
+                            }
+
+                            .customer-service {
+                                display: block !important;
+                                opacity: 0;
+                                animation: showElement 1s ease-in forwards;
+                                animation-delay: 3s;
+                                /* muncul di detik ke-5 */
+                            }
+                        </style>
+                    @endif
+
+
                     <footer class="content-footer footer bg-footer-theme">
                         <div
                             class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
@@ -65,8 +95,8 @@
                                 <script>
                                     document.write(new Date().getFullYear());
                                 </script>
-                                , by <span class="fw-bolder">Bapekom 6 Surabaya</span> colaborate with <span
-                                    class="fw-bolder">MBKM 2024 UTM</span>
+                                , by <span class="fw-bolder">Bapekom 6 Surabaya</span> colab with
+                                <span class="fw-bolder">v1 MBKM UTM 2024 | v2 MBKM ITATS 2025</span>
                             </div>
                         </div>
                     </footer>

@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertiesController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CustomerServiceController;
 use App\Http\Controllers\PropertiesControllerAsUser;
 use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 
@@ -22,13 +23,21 @@ use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 // auth 
 
 // routes/web.php
+
+
 Route::get('/images/{properties}', [PropertiesController::class, 'showImage'])->name('properties.image');
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/asrama', [TransactionController::class, 'wisma_show'])->name('asrama');
 
 
+Route::get('/bukuPanduan', [DashboardController::class, 'bukuPanduan'])->name('bukuPanduan');
+
+Route::post('/customer_service/send', [CustomerServiceController::class, 'sendToWhatsapp'])->name('customer_service.send');
+
 Route::group(['middleware' => 'auth'], function () {
+
+
         // routes/web.php
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
 

@@ -44,54 +44,50 @@
                 <div class="card">
                     <div class="table-responsive text-nowrap p-4">
                         @foreach ($properties as $property)
-                            <div
-                                style="display: flex; width: 100%; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: Arial, sans-serif; gap: 20px; margin-bottom: 20px;">
-                                <div
-                                    style="flex-shrink: 0; width: 250px; height: 250px; overflow: hidden; border-radius: 8px;">
-                                    <img src="{{ asset('uploads/' . $property->image_path) }}" alt="{{ $property->name }}"
-                                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" />
-                                </div>
+                            <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+                                <div class="row g-0">
 
-
-                                <div style="flex-grow: 1; color: #333;">
-                                    <h3 style="margin-top: 0; margin-bottom: 12px;">{{ $property->name }}</h3>
-
-                                    <p style="margin: 4px 0;">
-                                        <strong>Tipe:</strong> {{ strtoupper($property->room_type) }}
-                                    </p>
-                                    <p style="margin: 4px 0;">
-                                        <strong>Kapasitas:</strong> {{ $property->capacity }} orang
-                                    </p>
-                                    <p style="margin: 4px 0;">
-                                        <strong>Luas:</strong> {{ $property->area }} m<sup>2</sup>
-                                    </p>
-                                    <p style="margin: 4px 0;">
-                                        <strong>Fasilitas:</strong> {{ $property->facilities }}
-                                    </p>
-                                    <p style="margin: 4px 0;">
-                                        <strong>Harga:</strong> Rp {{ number_format($property->price, 0, ',', '.') }} / Per
-                                        hari Per Ruangan
-                                    </p>
-                                    <p style="margin: 4px 0;">
-                                        <strong>Unit:</strong> {{ $property->unit }}
-                                    </p>
-                                    <!-- <p style="margin: 4px 0;">
-                                            <strong>Status:</strong> <span
-                                                style="color: #028800; font-weight: bold;">tersedia</span>
-                                        </p> -->
-
-                                    <button class="btn btn-primary btn-pesan" data-property-id="{{ $property->id }}"
-                                        data-bs-toggle="modal" data-bs-target="#addEvent">
-                                        Pesan Sekarang
-                                    </button>
+                                    <div class="col-md-4 d-flex justify-content-center align-items-center">
+                                        <div
+                                            style="width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px;">
+                                            <img src="{{ asset('uploads/' . $property->image_path) }}"
+                                                style="width: 100%; height: 100%; object-fit: cover;"
+                                                alt="{{ $property->name }}">
+                                        </div>
+                                    </div>
 
 
 
+                                    <!-- Konten -->
+                                    <div class="col-md-8">
+                                        <div class="card-body d-flex flex-column justify-content-between"
+                                            style="height: 100%;">
+                                            <h2 class="card-title ">{{ $property->name }}</h2>
+                                            <p class="mb-1 fs-5"><strong>Tipe:</strong>
+                                                {{ strtoupper($property->room_type) }}
+                                            </p>
+                                            <p class="mb-1 fs-5"><strong>Kapasitas:</strong> {{ $property->capacity }} orang
+                                            </p>
+                                            <p class="mb-1 fs-5"><strong>Luas:</strong> {{ $property->area }} m<sup>2</sup>
+                                            </p>
+                                            <p class="mb-1 fs-5"><strong>Fasilitas:</strong> {{ $property->facilities }}
+                                            </p>
+                                            <p class="mb-1 fs-5"><strong>Harga:</strong> Rp
+                                                {{ number_format($property->price, 0, ',', '.') }} / hari</p>
+                                            <p class="mb-3 fs-5"><strong>Unit:</strong> {{ $property->unit }}</p>
 
+                                            <button class="btn btn-primary btn-pesan"
+                                                data-property-id="{{ $property->id }}" data-bs-toggle="modal"
+                                                data-bs-target="#addEvent">
+                                                Pesan Sekarang
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
+
                 </div>
 
             </div>
@@ -119,7 +115,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="text" class="form-control" id="email" name="email" required readonly>
+                            <input type="text" class="form-control" id="email" name="email" required>
                         </div>
                         <div class="mb-3">
                             <label for="office" class="form-label">Instansi</label>
@@ -169,6 +165,7 @@
                             <label for="request_letter" class="form-label">Surat Peminjaman</label>
                             <input type="file" class="form-control" id="request_letter" name="request_letter"
                                 accept=".pdf,image/*">
+                            <small class="form-text text-muted">Jika belum ada, boleh dikosongi terlebih dahulu</small>
                         </div>
 
                         <div class="mb-3">
@@ -179,6 +176,8 @@
                             <label for="ordered_unit" class="form-label">Jumlah Unit</label>
                             <input type="number" class="form-control" id="ordered_unit" name="ordered_unit"
                                 min="1" value="1" required>
+                            <span class="mt-1 text-sm text-danger">Untuk tipe Aula dan Kelas, hanya ada 1
+                                Ruangan</span>
                         </div>
                         <div class="mb-3">
                             <label for="total_harga" class="form-label">Total Harga</label>
@@ -290,7 +289,7 @@
                         bookBtn.disabled = false;
                     } else {
                         resultDiv.innerHTML =
-                            `<span class="text-danger"> Ruangan Tidak Tersedia !</span>`;
+                            `<span class="text-danger"> ${data.avail_count} Ruangan Tersedia !</span>`;
                         bookBtn.disabled = true;
                     }
                 })
