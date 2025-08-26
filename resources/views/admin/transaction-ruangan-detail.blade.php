@@ -60,6 +60,7 @@
 
                                     <th>Tanggal</th>
                                     <th>Status</th>
+                                    
                                     <th>Actions</th>
 
                                     {{-- @if (Auth::user()->role == 'admin')
@@ -90,7 +91,7 @@
                                             @elseif ($t->status == 'approved')
                                                 <span class="badge bg-success">Disetujui</span>
                                             @elseif ($t->status == 'waiting_payment')
-                                                <span class="badge bg-success">Menunggu Pembayaran</span>
+                                                <span class="badge bg-info">Menunggu Pembayaran</span>
                                             @elseif ($t->status == 'rejected')
                                                 <span class="badge bg-danger">Ditolak</span>
                                             @endif
@@ -106,15 +107,15 @@
                                             <td>
                                                 <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalCenter{{ $t->id }}">
-                                                    <i class="bx bx-edit-alt me-2"></i>
-                                                    Edit
+                                                    {{-- <i class="bx bx-edit-alt me-2"></i> --}}
+                                                    Detail/Edit
                                                 </button>
 
-                                                <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
+                                                {{-- <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalDetail{{ $t->id }}">
                                                     <i class="bx bx-detail me-2"></i>
                                                     Detail
-                                                </button>
+                                                </button> --}}
                                             </td>
                                         @else
                                             <td>

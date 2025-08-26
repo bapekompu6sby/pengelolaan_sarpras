@@ -147,11 +147,9 @@
                         <div class="mb-3">
                             <label for="venue_name" class="form-label">Ruangan</label>
                             <!-- Ditampilkan ke user -->
-                            <input type="text" class="form-control" id="venue_name" value="{{ $property->name }}"
-                                readonly>
+                            <input type="text" class="form-control" id="venue_name" readonly>
+                            <input type="hidden" id="venue" name="venue">
 
-                            <!-- Disimpan ke database -->
-                            <input type="hidden" id="venue" name="venue" value="{{ $property->id }}">
                         </div>
 
 
@@ -360,6 +358,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
+                        console.log(data);
                         // Simpan harga per hari ke global variable
                         window.currentPrice = parseInt(data.property.price) || 0;
 
@@ -369,6 +368,10 @@
 
                         const modalTitle = modal.querySelector('.modal-title');
                         modalTitle.textContent = 'Pesan Ruangan: ' + data.property.name;
+
+                        modal.querySelector('#venue_name').value = data.property.name;
+                        modal.querySelector('#venue').value = data.property.id;
+
 
                         modal.querySelector('#name').value = data.user.name || '';
                         modal.querySelector('#email').value = data.user.email || '';

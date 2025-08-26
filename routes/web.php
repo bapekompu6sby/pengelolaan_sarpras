@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KamarController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertiesController;
@@ -40,6 +41,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // routes/web.php
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
+        Route::post('/kamar/check', [KamarController::class, 'availableRoomsForTransaction'])->name('kamar.check');
 
 
         //baru
@@ -115,6 +117,15 @@ Route::group(['middleware' => 'auth'], function () {
                         Route::delete('/properties/{id}', [PropertiesController::class, 'destroy'])->name('properties.destroy');
                         Route::get('/wisma', [TransactionController::class, 'wisma_show_admin'])->name('wisma-admin');
                 });
+
+                Route::prefix('kamar')->group(
+                        function () {
+                                Route::get('/', [KamarController::class, 'index'])->name('kamar');
+                                Route::post('/store', [KamarController::class, 'store'])->name('kamar.store');
+                                Route::post('/edit/{id}', [KamarController::class, 'update'])->name('kamar.update');
+                                Route::delete('/destroy/{id}', [KamarController::class, 'destroy'])->name('kamar.destroy');
+                        }
+                );
         });
         Route::group(['middleware' => 'checkRole:user'], function () {
                 // prefik untuk wisma
@@ -129,6 +140,8 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+Route::get('tabelKegiatan', [DashboardController::class, 'tabelKegiatan'])->name('tabelKegiatan');
 
 Route::get('calendar', [TransactionController::class, 'calendar'])->name('calendar');
 

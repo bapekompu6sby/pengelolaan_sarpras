@@ -82,7 +82,7 @@
                                             @elseif ($t->status == 'approved')
                                                 <span class="badge bg-success">Disetujui</span>
                                             @elseif ($t->status == 'waiting_payment')
-                                                <span class="badge bg-success">Menunggu Pembayaran</span>
+                                                <span class="badge bg-info">Menunggu Pembayaran</span>
                                             @elseif ($t->status == 'rejected')
                                                 <span class="badge bg-danger">Ditolak</span>
                                             @endif
@@ -122,7 +122,7 @@
                                         @elseif ($t->status == 'approved')
                                             <span class="badge bg-success">Disetujui</span>
                                         @elseif ($t->status == 'waiting_payment')
-                                            <span class="badge bg-success">Menunggu Pembayaran</span>
+                                            <span class="badge bg-info">Menunggu Pembayaran</span>
                                         @elseif ($t->status == 'rejected')
                                             <span class="badge bg-danger">Ditolak</span>
                                         @endif

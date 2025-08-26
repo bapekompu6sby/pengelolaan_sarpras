@@ -34,6 +34,13 @@
                 <div data-i18n="room">Peminjaman</div>
             </a>
         </li> --}}
+        {{-- tabel kegiatan --}}
+        <li class="menu-item {{ $route == 'tabelKegiatan' ? 'active' : '' }}">
+            <a href="{{ route('tabelKegiatan') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                <div data-i18n="room">Tabel Kegiatan</div>
+            </a>
+        </li>
         <li class="menu-item {{ $route == 'calendar' ? 'active' : '' }}">
             <a href="{{ route('calendar') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
@@ -72,6 +79,12 @@
                                     <div data-i18n="going">Data Ruangan</div>
                                 </a>
                             </li>
+                            {{-- kamar --}}
+                            <li class="menu-item {{ $route == 'kamar' ? 'active' : '' }}" id="data-kamar">
+                                <a href="{{ route('kamar') }}" class="menu-link">
+                                    <div data-i18n="going">Data Kamar</div>
+                                </a>
+                            </li>
                         @endif
 
                         <li class="menu-item {{ $route == 'ruangan.detail' ? 'active' : '' }}" id="data-peminjaman">
@@ -80,6 +93,8 @@
                             </a>
                         </li>
                     </ul>
+
+
                 </li>
             @endif
 

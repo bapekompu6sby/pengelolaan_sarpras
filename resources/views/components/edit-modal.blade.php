@@ -221,7 +221,7 @@
                             <p><strong>Total Harga:</strong> Rp. {{ number_format($t->total_harga, 0, ',', '.') }}</p>
                         </div>
                         <div class="col-12 col-md-6">
-                            
+
                             {{-- Payment Receipt --}}
                             <p class="mb-1"><strong>Bukti Pembayaran:</strong>
                                 @if ($t->payment_receipt)
@@ -242,7 +242,7 @@
                             </form>
 
                             {{-- Request Letter --}}
-                            <p class="mt-3 mb-1"><strong>Surat Permohonan:</strong>
+                            <p class="mt-3 mb-1"><strong>Surat Permohonan: </strong>
                                 @if ($t->request_letter)
                                     <a href="{{ asset('/storage/uploads/request_letter/' . $t->request_letter) }}"
                                         target="_blank">Download</a>
@@ -272,6 +272,40 @@
                                     <span class="badge bg-danger">Ditolak</span>
                                 @endif
                             </p>
+                            @if ($t->status == 'approved')
+                                <p class="mt-3 mb-1"><strong>nama kamar:</strong></p>
+                                <ul>
+                                    @foreach ($t->detailKamars as $k)
+                                        <li>{{ $k->kamar->nama_kamar }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+
+
+                            @if ($t->status == 'rejected')
+                                <p class="mt-3 mb-1"><strong>Alasan Penolakan:</strong> {{ $t->rejection_reason }}</p>
+                            @endif
+                            @if ($t->status == 'waiting_payment')
+                                <div class="mt-3">
+                                    <p class="mb-1"><strong>Instruksi Pembayaran:</strong></p>
+
+                                    {{-- Billing Code --}}
+                                    <p class="mb-1 mt-1">
+                                        Kode Billing: <code>{{ $t->billing_code }}</code>
+                                    </p>
+
+                                    {{-- Billing QR Download --}}
+                                    <p class="mb-1 mt-1">
+                                        <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                            target="_blank" class="btn btn-sm btn-primary">
+                                            Download code
+                                        </a>
+                                    </p>
+                                </div>
+                            @endif
+
+
+
                         </div>
                     </div>
 
@@ -314,10 +348,10 @@
                             <p><strong>Affiliation:</strong> {{ $t->affiliation }}</p>
                             <p><strong>Phone:</strong> {{ $t->phone_number }}</p>
                             <p><strong>Email:</strong> {{ $t->email }}</p>
-                        </div>
-                        <div class="col-md-6">
                             <p><strong>Description:</strong> {{ $t->description }}</p>
                             <p><strong>Unit:</strong> {{ $t->ordered_unit }}</p>
+                        </div>
+                        <div class="col-md-6">
                             <p><strong>Bukti Pembayaran:</strong>
                                 @if ($t->payment_receipt)
                                     <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
@@ -334,6 +368,29 @@
                                     <em>Tidak ada</em>
                                 @endif
                             </p>
+                            @if ($t->status == 'rejected')
+                                <p class="mt-3 mb-1 text-wrap">
+                                    <strong>Alasan Penolakan:</strong> {{ $t->rejection_reason }}
+                                </p>
+                            @endif
+                            @if ($t->status == 'waiting_payment')
+                                <div class="mt-3">
+
+
+                                    {{-- Billing Code --}}
+                                    <p class="mb-1 mt-1">
+                                        <strong> Kode Billing: </strong><code>{{ $t->billing_code }}</code>
+                                    </p>
+
+                                    {{-- Billing QR Download --}}
+                                    <p class="mb-1 mt-1">
+                                        <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                            target="_blank" class="btn btn-sm btn-primary">
+                                            Download code
+                                        </a>
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -368,7 +425,7 @@
                                 Disetujui
                             </button>
                         @elseif ($t->status == 'waiting_payment')
-                            <button class="btn btn-success dropdown-toggle" type="button" id="statusDropdown"
+                            <button class="btn btn-info dropdown-toggle" type="button" id="statusDropdown"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Menunggu Pembayaran
                             </button>
@@ -400,21 +457,23 @@
                                 </form>
                             </li>
                             <li>
+                                <!-- Button to trigger modal -->
                                 <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" name="status" value="waiting_payment"
-                                        class="dropdown-item text-success">
+                                    <button type="button" class="dropdown-item text-info" data-bs-toggle="modal"
+                                        data-bs-target="#waitingPaymentModal-{{ $t->id }}">
                                         Menunggu Pembayaran
                                     </button>
                                 </form>
                             </li>
                             <li>
+                                <!-- Button to trigger modal -->
                                 <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" name="status" value="rejected"
-                                        class="dropdown-item text-danger">
+                                    <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal-{{ $t->id }}">
                                         Ditolak
                                     </button>
                                 </form>
@@ -426,6 +485,80 @@
         </div>
     </div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="waitingPaymentModal-{{ $t->id }}" tabindex="-1"
+        aria-labelledby="waitingPaymentLabel-{{ $t->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}"
+                    enctype="multipart/form-data">
+                    @csrf
+                    @method('PATCH')
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="waitingPaymentLabel-{{ $t->id }}">Billing Information
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+
+                            <div class="mb-3">
+                                <label for="billing_code-{{ $t->id }}" class="form-label">Billing Code</label>
+                                <input type="text" class="form-control" id="billing_code-{{ $t->id }}"
+                                    name="billing_code" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="billing_qr-{{ $t->id }}" class="form-label">Billing QR /
+                                    Barcode</label>
+                                <input type="file" class="form-control" id="billing_qr-{{ $t->id }}"
+                                    name="billing_qr" accept=".pdf,image/*">
+                                <small class="text-muted">Optional — PDF or Image allowed</small>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <input type="hidden" name="status" value="waiting_payment">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="rejectModal-{{ $t->id }}" tabindex="-1"
+        aria-labelledby="rejectModalLabel-{{ $t->id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ route('transactions.updateStatus', $t->id) }}">
+                @csrf
+                @method('PATCH')
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rejectModalLabel-{{ $t->id }}">Rejection Reason</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="rejection_reason-{{ $t->id }}" class="form-label">Please provide a
+                                reason:</label>
+                            <textarea class="form-control" id="rejection_reason-{{ $t->id }}" name="rejection_reason" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- form edit for peminjaman ruangan --}}
     <div class="modal fade" id="modalCenter{{ $t->id }}" tabindex="-1" data-bs-backdrop="static"
         role="dialog" aria-labelledby="editEventLabel" aria-hidden="true">
@@ -434,23 +567,88 @@
                 <form action="{{ route('transactions.ruangan.update', $t->id) }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
+                    <input type="hidden" name="user_id" value="{{ $t->user_id }}">
+
                     <div class="modal-header">
                         <h5 class="modal-title" id="editEventLabel">Edit Transaksi - {{ $t->name }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
+
+                        <ul class="nav nav-tabs border-0" id="editTab{{ $t->id }}" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link active border-0 border-bottom border-3 border-primary fw-semibold text-primary"
+                                    id="pemohon-tab-{{ $t->id }}" data-bs-toggle="tab"
+                                    data-bs-target="#pemohon-{{ $t->id }}" type="button" role="tab">
+                                    Data Pemohon
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link border-0 fw-semibold text-secondary"
+                                    id="kegiatan-tab-{{ $t->id }}" data-bs-toggle="tab"
+                                    data-bs-target="#kegiatan-{{ $t->id }}" type="button" role="tab">
+                                    Detail Kegiatan
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link border-0 fw-semibold text-secondary"
+                                    id="dokumen-tab-{{ $t->id }}" data-bs-toggle="tab"
+                                    data-bs-target="#dokumen-{{ $t->id }}" type="button" role="tab">
+                                    Dokumen
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link border-0 fw-semibold text-secondary"
+                                    id="status-tab-{{ $t->id }}" data-bs-toggle="tab"
+                                    data-bs-target="#status-{{ $t->id }}" type="button" role="tab">
+                                    Status
+                                </button>
+                            </li>
+
+                            {{-- tab button --}}
+                            @if ($t->properties && in_array($t->properties->type, ['asrama', 'paviliun']))
+                                <li class="nav-item" role="presentation" id="roomTabWrapper-{{ $t->id }}"
+                                    style="{{ $t->status == 'approved' ? '' : 'display:none' }}">
+                                    <button class="nav-link border-0 fw-semibold text-secondary"
+                                        id="room-tab-{{ $t->properties->id }}" data-bs-toggle="tab"
+                                        data-bs-target="#room-{{ $t->properties->id }}" type="button"
+                                        role="tab">
+                                        Pemilihan Ruangan
+                                    </button>
+                                </li>
+                            @endif
+
+
+
+                        </ul>
+
+
+
+
+                        {{-- Tab Content --}}
+                        <div class="tab-content mt-3">
+
+                            {{-- Data Pemohon --}}
+                            <div class="tab-pane fade show active" id="pemohon-{{ $t->id }}" role="tabpanel">
                                 <div class="mb-3">
                                     <label for="office" class="form-label">Instansi</label>
                                     <input type="text" class="form-control" id="office" name="office"
                                         required value="{{ $t->instansi }}">
                                 </div>
+                                {{-- select affiliation --}}
                                 <div class="mb-3">
                                     <label for="affiliation" class="form-label">Affiliation</label>
-                                    <input type="text" class="form-control" id="affiliation" name="affiliation"
-                                        value="{{ $t->affiliation }} " readonly>
+                                    <select class="form-select" id="affiliation" name="affiliation" required>
+                                        <option value="" selected disabled>{{ $t->affiliation }}</option>
+                                        <option value="internal_pu"
+                                            {{ $t->affiliation == 'internal_pu' ? 'selected' : '' }}>
+                                            internal PU</option>
+                                        <option value="external_pu"
+                                            {{ $t->affiliation == 'external_pu' ? 'selected' : '' }}>
+                                            external PU</option>
+                                    </select>
                                 </div>
                                 <div class="mb-3">
                                     <label for="phone_number" class="form-label">Phone</label>
@@ -462,18 +660,39 @@
                                     <input type="email" class="form-control" id="email" name="email"
                                         value="{{ $t->email }}">
                                 </div>
+                                {{-- total harga --}}
+                                <div class="mb-3">
+                                    <label for="total_harga" class="form-label">
+                                        Total Harga
+                                        <small class="text-muted fs-6">
+                                            (sebelumnya: Rp {{ number_format($t->total_harga) }})
+                                        </small>
+
+                                    </label>
+                                    <input type="number" class="form-control" id="total_harga-{{ $t->id }}"
+                                        name="total_harga" value="{{ $t->total_harga }}">
+                                </div>
+
+
+
+
+
+
                             </div>
-                            <div class="col-md-6">
+
+                            {{-- Detail Kegiatan --}}
+                            <div class="tab-pane fade" id="kegiatan-{{ $t->id }}" role="tabpanel">
                                 <div class="mb-3">
                                     <label for="event" class="form-label">Kegiatan</label>
                                     <input type="text" class="form-control" id="event" name="event"
                                         required value="{{ $t->kegiatan }}">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="ordered_unit" class="form-label">Unit</label>
+                                    <label for="ordered_unit" class="form-label">Jumlah Unit</label>
                                     <input type="number" class="form-control" id="ordered_unit" name="ordered_unit"
-                                        value="{{ $t->ordered_unit }}" readonly>
-
+                                        min="1" value="1" required>
+                                    <span class="mt-1 text-sm text-danger">Untuk tipe Aula dan Kelas, hanya ada 1
+                                        Ruangan</span>
                                 </div>
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Deskripsi</label>
@@ -481,84 +700,201 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Ruangan</label>
-                                    <input type="text" class="form-control" id="property_id"
-                                        value="{{ $t->properties->name }}" readonly>
+                                    <select name="ruangan_id" class="form-select"
+                                        id="ruanganSelect-{{ $t->id }}">
+                                        @foreach ($ruangan as $r)
+                                            <option value="{{ $r->id }}" data-price="{{ $r->price }}"
+                                                {{ $r->id == $t->properties->id ? 'selected' : '' }}>
+                                                {{ $r->name }} ({{ $r->capacity }} orang) - Rp
+                                                {{ number_format($r->price) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+
+
+                                    <script>
+                                        let ruanganData = <?php echo json_encode($ruangan->toArray()); ?>;
+                                        let propertiesData = <?php echo json_encode($t->toArray()); ?>;
+                                        console.log("Ruangan:", ruanganData);
+                                        console.log("Properties:", propertiesData);
+                                    </script>
                                 </div>
 
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="start" class="form-label">Mulai</label>
+                                        <input type="date" class="form-control" id="start" name="start"
+                                            value="{{ $t->start }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="end" class="form-label">Selesai</label>
+                                        <input type="date" class="form-control" id="end" name="end"
+                                            value="{{ $t->end }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Dokumen --}}
+                            <div class="tab-pane fade" id="dokumen-{{ $t->id }}" role="tabpanel">
+                                <div class="mb-3">
+                                    <p><strong>Bukti Pembayaran:</strong></p>
+                                    @if ($t->payment_receipt)
+                                        <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
+                                            target="_blank">Download</a>
+                                        <input type="hidden" name="old_payment_receipt"
+                                            value="{{ $t->payment_receipt }}">
+                                    @else
+                                        <em>Tidak ada</em>
+                                    @endif
+                                    <input type="file" name="payment_receipt" class="form-control mt-2"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                </div>
+
+                                <div class="mb-3">
+                                    <p><strong>Surat Permohonan:</strong></p>
+                                    @if ($t->request_letter)
+                                        <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
+                                            target="_blank">Download</a>
+                                        <input type="hidden" name="old_request_letter"
+                                            value="{{ $t->request_letter }}">
+                                    @else
+                                        <em>Tidak ada</em>
+                                    @endif
+                                    <input type="file" name="request_letter" class="form-control mt-2"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                </div>
+                            </div>
+
+                            {{-- Status --}}
+                            <div class="tab-pane fade" id="status-{{ $t->id }}" role="tabpanel">
+                                <div class="mb-3">
+                                    <label for="statusSelect-{{ $t->id }}" class="form-label">Status</label>
+                                    <select class="form-select" id="statusSelect-{{ $t->id }}"
+                                        name="status">
+                                        <option class="text-warning" value="pending"
+                                            {{ $t->status == 'pending' ? 'selected' : '' }}>Menunggu</option>
+                                        <option class="text-success" value="approved"
+                                            {{ $t->status == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                                        <option class="text-info" value="waiting_payment"
+                                            {{ $t->status == 'waiting_payment' ? 'selected' : '' }}>Menunggu
+                                            Pembayaran</option>
+                                        <option class="text-danger" value="rejected"
+                                            {{ $t->status == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                                    </select>
+                                </div>
+
+                                {{-- Rejection Reason --}}
+                                <div id="rejectionForm-{{ $t->id }}" style="display: none;" class="mt-3">
+                                    <label for="rejection_reason-{{ $t->id }}" class="form-label">Alasan
+                                        Penolakan</label>
+                                    <textarea id="rejection_reason-{{ $t->id }}" name="rejection_reason" class="form-control">{{ $t->rejection_reason ?? '' }}</textarea>
+                                </div>
+
+                                {{-- Billing Information --}}
+                                <div id="waitingPaymentForm-{{ $t->id }}" style="display: none;"
+                                    class="mt-3">
+                                    <div class="mb-3">
+                                        <label for="billing_code-{{ $t->id }}" class="form-label">Code
+                                            Pembayaran</label>
+                                        <input type="text" class="form-control"
+                                            id="billing_code-{{ $t->id }}" name="billing_code"
+                                            value="{{ $t->billing_code ?? '' }}">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="billing_qr-{{ $t->id }}" class="form-label">QR
+                                            Code/Barcode</label>
+                                        <input type="file" class="form-control"
+                                            id="billing_qr-{{ $t->id }}" name="billing_qr"
+                                            accept=".pdf,image/*">
+                                        <small class="text-muted">Optional — PDF or Image allowed</small>
+                                        @if ($t->billing_qr)
+                                            <p class="mt-2">Current File:
+                                                <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                                    target="_blank">Download</a>
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="room-{{ $t->properties->id }}" role="tabpanel">
+                                <div class="mb-3">
+
+                                    {{-- Kamar yang sedang digunakan --}}
+                                    <label class="form-label fw-bold">Kamar yang Dipakai</label>
+                                    @if ($t->detailKamars && $t->detailKamars->count())
+                                        <div class="row">
+                                            @foreach ($t->detailKamars as $dk)
+                                                <div class="col-md-6">
+                                                    <div class="card shadow-sm border-success mb-3">
+                                                        <div
+                                                            class="card-header bg-success text-white d-flex justify-content-between">
+                                                            <span><i class="bi bi-door-open"></i>
+                                                                {{ $dk->kamar->nama_kamar }}</span>
+                                                            <span class="badge bg-light text-success">Dipakai</span>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <p class="mb-1"><strong>Periode:</strong>
+                                                                {{ $dk->start }} s/d {{ $dk->end }}</p>
+                                                            <p class="mb-0"><strong>Kapasitas:</strong>
+                                                                {{ $dk->kamar->kapasitas }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <p class="text-muted"><em>Belum ada kamar yang dipilih untuk transaksi
+                                                ini.</em></p>
+                                    @endif
+
+                                    {{-- Daftar semua kamar --}}
+                                    <label class="form-label fw-bold mt-4">Daftar Semua Kamar</label>
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-primary text-white d-flex justify-content-between">
+                                            <span><i class="bi bi-building"></i> {{ $t->properties->name }}
+                                                ({{ ucfirst($t->properties->type) }})
+                                            </span>
+                                            <span class="badge bg-light text-primary">Unit yang di pesan:
+                                                {{ $t->ordered_unit }}</span>
+                                        </div>
+                                        <div class="card-body">
+                                            @if ($t->properties->kamar->isEmpty())
+                                                <p class="text-muted">Belum ada kamar tersedia</p>
+                                            @else
+                                                <ul class="list-group list-group-flush">
+                                                    @foreach ($t->properties->kamar as $k)
+                                                        @php
+                                                            $isUsed = $t->detailKamars
+                                                                ->pluck('kamar_id')
+                                                                ->contains($k->id);
+                                                        @endphp
+                                                        <li
+                                                            class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                    name="kamar_id[]" value="{{ $k->id }}"
+                                                                    id="kamar-{{ $k->id }}"
+                                                                    @if ($isUsed) checked disabled @endif>
+                                                                <label class="form-check-label"
+                                                                    for="kamar-{{ $k->id }}">
+                                                                    {{ $k->nama_kamar }} - Kapasitas:
+                                                                    {{ $k->kapasitas }}
+                                                                </label>
+                                                            </div>
+                                                            @if ($isUsed)
+                                                                <span class="badge bg-success">Dipakai</span>
+                                                            @endif
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="start" class="form-label">Mulai</label>
-                                <input type="date" class="form-control" id="start" name="start" readonly
-                                    value="{{ $t->start }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="end" class="form-label">Selesai</label>
-                                <input type="date" class="form-control" id="end" name="end" readonly
-                                    value="{{ $t->end }}">
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <p><strong>Bukti Pembayaran:</strong></p>
-                                @if ($t->payment_receipt)
-                                    <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
-                                        target="_blank">Download</a>
-                                    <input type="hidden" name="old_payment_receipt"
-                                        value="{{ $t->payment_receipt }}">
-                                @else
-                                    <em>Tidak ada</em>
-                                @endif
-                                <input type="file" name="payment_receipt" class="form-control mt-2"
-                                    accept=".pdf,.jpg,.jpeg,.png">
-                            </div>
-
-                            <div class="col-md-6">
-                                <p><strong>Surat Permohonan:</strong></p>
-                                @if ($t->request_letter)
-                                    <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
-                                        target="_blank">Download</a>
-                                    <input type="hidden" name="old_request_letter"
-                                        value="{{ $t->request_letter }}">
-                                @else
-                                    <em>Tidak ada</em>
-                                @endif
-                                <input type="file" name="request_letter" class="form-control mt-2"
-                                    accept=".pdf,.jpg,.jpeg,.png">
-                            </div>
-
-                        </div>
-
-                        <hr>
-
-                        {{-- Status Dropdown --}}
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option class="text-warning" value="pending"
-                                    {{ $t->status == 'pending' ? 'selected' : '' }}>
-                                    Menunggu
-                                </option>
-                                <option class="text-success" value="approved"
-                                    {{ $t->status == 'approved' ? 'selected' : '' }}>
-                                    Disetujui
-                                </option>
-                                <option class="text-success" value="waiting_payment"
-                                    {{ $t->status == 'waiting_payment' ? 'selected' : '' }}>
-                                    Menunggu Pembayaran
-                                </option>
-                                <option class="text-danger" value="rejected"
-                                    {{ $t->status == 'rejected' ? 'selected' : '' }}>
-                                    Ditolak
-                                </option>
-                            </select>
-                        </div>
-
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary">Edit</button>
@@ -567,6 +903,102 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('#editTab{{ $t->id }} .nav-link');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(e) {
+                    // Hapus style biru dari semua tab
+                    tabs.forEach(btn => {
+                        btn.classList.remove('border-bottom', 'border-3', 'border-primary',
+                            'text-primary');
+                        btn.classList.add('text-secondary');
+                    });
+
+                    // Tambahkan ke tab aktif
+                    e.target.classList.add('border-bottom', 'border-3', 'border-primary',
+                        'text-primary');
+                    e.target.classList.remove('text-secondary');
+                });
+            });
+        });
+    </script>
+
+    {{-- Script untuk toggle rejection/billing --}}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let statusSelect = document.getElementById("statusSelect-{{ $t->id }}");
+            let rejectionForm = document.getElementById("rejectionForm-{{ $t->id }}");
+            let waitingPaymentForm = document.getElementById("waitingPaymentForm-{{ $t->id }}");
+            let roomTabWrapper = document.getElementById("roomTabWrapper-{{ $t->id }}");
+
+            function toggleForms() {
+                rejectionForm.style.display = (statusSelect.value === "rejected") ? "block" : "none";
+                waitingPaymentForm.style.display = (statusSelect.value === "waiting_payment") ? "block" : "none";
+
+                // ✅ Tampilkan tab "Pemilihan Ruangan" hanya kalau status approved
+                if (roomTabWrapper) {
+                    roomTabWrapper.style.display = (statusSelect.value === "approved") ? "block" : "none";
+                }
+            }
+
+            statusSelect.addEventListener("change", toggleForms);
+            toggleForms();
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const modal = document.getElementById("modalCenter{{ $t->id }}");
+            if (!modal) return;
+
+            const startInput = modal.querySelector("#start");
+            const endInput = modal.querySelector("#end");
+            const unitInput = modal.querySelector("#ordered_unit");
+            const affiliationSelect = modal.querySelector("#affiliation");
+            const ruanganSelect = modal.querySelector("#ruanganSelect-{{ $t->id }}");
+            const totalHargaInput = modal.querySelector("#total_harga-{{ $t->id }}");
+
+            function calculateTotal() {
+                const afiliasi = affiliationSelect.value;
+                const start = new Date(startInput.value);
+                const end = new Date(endInput.value);
+                const unit = parseInt(unitInput.value) || 1;
+
+                const selectedOption = ruanganSelect.options[ruanganSelect.selectedIndex];
+                const pricePerDay = parseInt(selectedOption?.dataset.price) || 0;
+
+                // internal PU gratis
+                if (afiliasi === "internal_pu") {
+                    totalHargaInput.value = 0;
+                    return;
+                }
+
+                if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) {
+                    // jangan override total_harga lama
+                    return;
+                }
+
+                // hitung total tanpa syarat ruangan
+                const diffTime = end - start;
+                const diffDays = diffTime / (1000 * 60 * 60 * 24) + 1;
+                const total = diffDays * pricePerDay * unit;
+                totalHargaInput.value = total;
+            }
+
+
+
+            // listener untuk semua input yang berpengaruh
+            startInput.addEventListener("change", calculateTotal);
+            endInput.addEventListener("change", calculateTotal);
+            unitInput.addEventListener("input", calculateTotal);
+            affiliationSelect.addEventListener("change", calculateTotal);
+            ruanganSelect.addEventListener("change", calculateTotal);
+
+            // hitung pertama kali saat modal dibuka
+            calculateTotal();
+        });
+    </script>
 @else
     {{-- form edit for penghuni wisma --}}
     <div class="modal fade" id="modalCenter{{ $wisma->id }}" tabindex="-1" data-bs-backdrop="static"

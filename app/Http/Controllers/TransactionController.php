@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Kamar;
 use App\Models\Wisma;
 use App\Models\Properties;
 use App\Models\Transaction;
@@ -12,6 +13,7 @@ use App\Exports\RuanganExports;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\DetailKamarTransaction;
 use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
@@ -22,26 +24,33 @@ class TransactionController extends Controller
     {
         if (auth()->check()) {
             if (auth()->user()->role == 'admin') {
-                $transactions = Transaction::all();
+                $transactions = Transaction::with([
+                    'properties.kamar',
+                    'detailKamars.kamar'
+                ])->get();
             } else {
-                $transactions = Transaction::where('user_id', auth()->user()->id)->get();
-            };
+                $transactions = Transaction::with([
+                    'properties.kamar',
+                    'detailKamars.kamar'
+                ])->where('user_id', auth()->user()->id)->get();
+            }
         }
+
         $ruangan = Properties::all();
+        // echo "<pre>";
+        // print_r($ruangan->toArray());
+        // echo "</pre>";
 
         // echo "<pre>";
         // print_r($transactions->toArray());
         // echo "</pre>";
 
-        // echo "ini ruangan detail";
-        // echo "<pre>";
-        // print_r($ruangan->toArray());
-        // echo "</pre>";
         return view('user.history_transaction', [
             'transactions' => $transactions,
             'ruangan' => $ruangan,
         ]);
     }
+
 
 
 
@@ -98,15 +107,32 @@ class TransactionController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,approved,rejected,waiting_payment',
+            'rejection_reason' => 'required_if:status,rejected',
+            'billing_code' => 'required_if:status,waiting_payment',
+            'billing_qr' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
         ]);
 
         $transaction = Transaction::findOrFail($id);
-
         $transaction->status = $request->status;
+
+        if ($request->status == 'rejected') {
+            $transaction->rejection_reason = $request->rejection_reason;
+        }
+
+        if ($request->status == 'waiting_payment') {
+            $transaction->billing_code = $request->billing_code;
+
+            if ($request->hasFile('billing_qr')) {
+                $path = $request->file('billing_qr')->store('uploads/billing_qr', 'public');
+                $transaction->billing_qr = basename($path);
+            }
+        }
+
         $transaction->save();
 
-        return redirect()->back()->with('success', 'Status transaksi berhasil diubah');
+        return redirect()->back()->with('success', 'Transaction status updated successfully');
     }
+
 
 
     public function pinjam($id)
@@ -308,51 +334,115 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     }
 
 
+
+
     public function ruangan_update(Request $request, $id)
     {
-        $request->validate([
-            'office' => 'required|string|max:32',
-            'affiliation' => 'required|string',
-            'phone_number' => 'required|string|max:15',
-            'email' => 'required|email',
-            'event' => 'required|string|max:32',
-            'ordered_unit' => 'required|integer|min:1',
-            'description' => 'nullable|string',
-            'start' => 'required|date',
-            'end' => 'required|date|after_or_equal:start',
-            'status' => 'required|string|in:pending,approved,rejected,waiting_payment',
+        // echo "<pre>";
+        // print_r($request->all());
+        // echo "</pre>";
+        $validated = $request->validate([
+            'user_id'          => 'required|integer',
+            'office'           => 'required|string|max:32',
+            'affiliation'      => 'required|string|in:internal_pu,external_pu',
+            'phone_number'     => 'required|string|max:15',
+            'email'            => 'required|email',
+            'event'            => 'required|string|max:100',
+            'ordered_unit'     => 'required|integer|min:1',
+            'description'      => 'nullable|string',
+            'start'            => 'required|date',
+            'end'              => 'required|date|after_or_equal:start',
+            'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
+            'rejection_reason' => 'required_if:status,rejected',
+            'total_harga'      => 'required|numeric|min:0',
+            'billing_code'     => 'nullable|string',
+            'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
+            'kamar_id'         => 'sometimes|array',
+            'kamar_id.*'       => 'integer|exists:kamar,id',
         ]);
 
-        $transaction = Transaction::findOrFail($id);
+        DB::transaction(function () use ($request, $id) {
+            $transaction = Transaction::findOrFail($id);
 
-        // default pakai file lama
-        $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
-        $requestLetter  = $request->old_request_letter ?? $transaction->request_letter;
+            // default gunakan data lama
+            $paymentReceipt   = $request->old_payment_receipt ?? $transaction->payment_receipt;
+            $requestLetter    = $request->old_request_letter ?? $transaction->request_letter;
+            $billingQr        = $transaction->billing_qr;
+            $billingCode      = $transaction->billing_code;
+            $rejectionReason  = $transaction->rejection_reason;
 
-        // kalau ada upload baru, replace
-        if ($request->hasFile('payment_receipt')) {
-            $paymentReceiptPath = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
-            $paymentReceipt = basename($paymentReceiptPath);
-        }
+            // ganti file baru kalau ada
+            if ($request->hasFile('payment_receipt')) {
+                $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+                $paymentReceipt = basename($path);
+            }
 
-        if ($request->hasFile('request_letter')) {
-            $requestLetterPath = $request->file('request_letter')->store('uploads/request_letter', 'public');
-            $requestLetter = basename($requestLetterPath);
-        }
+            if ($request->hasFile('request_letter')) {
+                $path = $request->file('request_letter')->store('uploads/request_letter', 'public');
+                $requestLetter = basename($path);
+            }
 
-        $transaction->update([
-            'instansi' => ucwords($request->office),
-            'kegiatan' => ucwords($request->event),
-            'property_id' => $request->property_id ?? $transaction->property_id,
-            'description' => $request->description,
-            'status' => $request->status,
-            'ordered_unit' => $request->ordered_unit ?? $transaction->ordered_unit,
-            'payment_receipt' => $paymentReceipt,
-            'request_letter' => $requestLetter,
-        ]);
+            if ($request->status === 'rejected') {
+                $rejectionReason = $request->rejection_reason;
+                $billingCode     = null;
+                $billingQr       = null;
+            }
 
-        return back()->with('success', 'Transaksi berhasil diperbarui.');
+            if ($request->status === 'waiting_payment') {
+                $billingCode = $request->billing_code;
+
+                if ($request->hasFile('billing_qr')) {
+                    $path = $request->file('billing_qr')->store('uploads/billing_qr', 'public');
+                    $billingQr = basename($path);
+                }
+
+                $rejectionReason = null;
+            }
+
+            // update transaksi
+            $transaction->update([
+                'instansi'         => ucwords($request->office),
+                'kegiatan'         => ucwords($request->event),
+                'property_id'      => $request->property_id ?? $transaction->property_id,
+                'description'      => $request->description,
+                'status'           => $request->status,
+                'rejection_reason' => $rejectionReason,
+                'billing_code'     => $billingCode,
+                'billing_qr'       => $billingQr,
+                'start'            => $request->start, // <- simpan dulu di transaksi
+                'end'              => $request->end,
+                'total_harga'      => $request->total_harga,
+                'phone_number'     => $request->phone_number,
+                'email'            => $request->email,
+                'affiliation'      => $request->affiliation,
+                'ordered_unit'     => $request->ordered_unit ?? $transaction->ordered_unit,
+                'payment_receipt'  => $paymentReceipt,
+                'request_letter'   => $requestLetter,
+            ]);
+            $transaction->detailKamars()->delete();
+
+            // Insert ulang detail kamar sesuai request
+            if ($request->filled('kamar_id')) {
+                foreach ($request->kamar_id as $kamarId) {
+                    DetailKamarTransaction::create([
+                        'transaction_id' => $transaction->id,
+                        'kamar_id'       => $kamarId,
+                        'start'          => $request->start,
+                        'end'            => $request->end
+                    ]);
+                }
+            }
+        });
+
+        // Hapus detail kamar lama dulu (biar tidak double data)
+
+
+        return back()->with('success', 'Transaksi & kamar berhasil diperbarui.');
     }
+
+
+
+
 
 
 
@@ -386,29 +476,48 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
     public function ruangan_detail()
     {
-
         if (auth()->check()) {
             if (auth()->user()->role == 'admin') {
-                $transactions = Transaction::all();
+                $transactions = Transaction::with([
+                    'properties.kamar',
+                    'detailKamars.kamar' // tambahin ini
+                ])->get();
             } else {
-                $transactions = Transaction::where('user_id', auth()->user()->id)->get();
-            };
+                $transactions = Transaction::with([
+                    'properties.kamar',
+                    'detailKamars.kamar'
+                ])
+                    ->where('user_id', auth()->user()->id)
+                    ->get();
+            }
         }
-        $ruangan = Properties::all();
 
-        // echo "<pre>";
-        // print_r($transactions->toArray());
-        // echo "</pre>";
 
-        // echo "ini ruangan detail";
+
+        // Ambil semua ruangan beserta kamarnya
+        $ruangan = Properties::with('kamar')->get();
+
+        // Kalau mau, kosongkan kamar untuk non-asrama/paviliun
+        $ruangan->map(function ($r) {
+            if (!in_array($r->type, ['asrama', 'paviliun'])) {
+                $r->setRelation('kamar', collect());
+            }
+            return $r;
+        });
+
+        // // Debug arraynya
         // echo "<pre>";
         // print_r($ruangan->toArray());
         // echo "</pre>";
-        return view('admin.transaction-ruangan-detail', [
-            'transactions' => $transactions,
-            'ruangan' => $ruangan,
-        ]);
+        // exit;
+
+        return view('admin.transaction-ruangan-detail', compact('transactions', 'ruangan'));
     }
+
+
+
+
+
 
     public function ruangan_destroy()
     {
@@ -618,6 +727,8 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
             'properties' => $properties,
         ]);
     }
+
+
 
 
     public function events()

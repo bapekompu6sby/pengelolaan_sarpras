@@ -26,8 +26,9 @@ class DashboardController extends Controller
             $query->where('type', 'aula');
         })
 
+            ->where('start', '<=', $today)
+            ->where('end', '>=', $today)
             ->where('status', 'approved')
-            ->where('start', '<=', $today, 'and', 'end', '>=', $today)
             ->sum('ordered_unit');
 
 
@@ -41,8 +42,9 @@ class DashboardController extends Controller
         $kelasNotAvailable = Transaction::whereHas('properties', function ($query) {
             $query->where('type', 'kelas');
         })
+            ->where('start', '<=', $today)
+            ->where('end', '>=', $today)
             ->where('status', 'approved')
-            ->where('start', '<=', $today, 'and', 'end', '>=', $today)
             ->sum('ordered_unit');
 
         $availableKelas = $kelasStock - $kelasNotAvailable;
@@ -55,8 +57,9 @@ class DashboardController extends Controller
         $asramaNotAvailable = Transaction::whereHas('properties', function ($query) {
             $query->where('type', 'asrama');
         })
+            ->where('start', '<=', $today)
+            ->where('end', '>=', $today)
             ->where('status', 'approved')
-            ->where('start', '<=', $today, 'and', 'end', '>=', $today)
             ->sum('ordered_unit');
 
         $availableAsrama = $asramaStock - $asramaNotAvailable;
@@ -70,14 +73,29 @@ class DashboardController extends Controller
             $query->where('type', 'paviliun');
         })
             ->where('status', 'approved')
-            ->where('start', '<=', $today, 'and', 'end', '>=', $today)
+            ->where(function ($query) use ($today) {
+                $query->whereDate('start', '<=', $today)
+                    ->whereDate('end', '>=', $today);
+            })
             ->sum('ordered_unit');
+
 
         $availablePaviliun = $paviliunStock - $paviliunNotAvailable;
 
 
 
-        $events = Transaction::where('status', 'approved')->get();
+        $events = Transaction::where('status', 'approved')
+            ->where(function ($q) use ($today) {
+                $q->where(function ($q2) use ($today) {
+
+                    $q2->where('start', '<=', $today)
+                        ->where('end', '>=', $today);
+                })->orWhere('end', '<', $today);
+            })
+            ->orderBy('start', 'desc')
+            ->take(10)
+            ->get();
+
         return view('welcome', [
             'availableAula' => $availableAula,
             'availableKelas' => $availableKelas,
@@ -135,5 +153,31 @@ class DashboardController extends Controller
         //     'wismaAvailable' => $wismaAvailable,
         //     'wismaQueue' => $wismaQueue,
         // ]);
+    }
+
+    // tabel kegiatan
+    public function tabelKegiatan()
+    {
+        $today = now()->toDateString();
+
+        $events = Transaction::where('status', 'approved')
+            ->where(function ($q) use ($today) {
+                $q->where(function ($q2) use ($today) {
+
+                    $q2->where('start', '<=', $today)
+                        ->where('end', '>=', $today);
+                })->orWhere('end', '<', $today);
+            })
+            ->orderBy('start', 'desc')
+            ->take(10)
+            ->get();
+
+        // echo "<pre>";
+        // print_r($events->toArray());
+        // echo "</pre>";
+
+        return view('tabel_Kegiatan', [
+            'events' => $events,
+        ]);
     }
 }
