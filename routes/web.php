@@ -41,8 +41,10 @@ Route::group(['middleware' => 'auth'], function () {
 
         // routes/web.php
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
-        Route::post('/kamar/check', [KamarController::class, 'availableRoomsForTransaction'])->name('kamar.check');
+        Route::get('/kamar/check/{transaction}/{kamar}', [KamarController::class, 'check_kamar'])->name('kamar.check');
 
+        Route::get('/kamarTerpakai', [KamarController::class, 'kamarTerpakai'])->name('kamarTerpakai');
+        
 
         //baru
         Route::get('/PropertiesAsUser', [PropertiesControllerAsUser::class, 'index'])->name('PropertiesAsUser');

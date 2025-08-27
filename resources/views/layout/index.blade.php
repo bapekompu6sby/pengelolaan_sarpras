@@ -115,6 +115,8 @@
 
 <script src="{{ asset('assets/vendor/js/menu.js/') }}"></script>
 
+
+
 @section('script')
 @show
 

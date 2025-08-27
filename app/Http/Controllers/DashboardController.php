@@ -158,19 +158,16 @@ class DashboardController extends Controller
     // tabel kegiatan
     public function tabelKegiatan()
     {
-        $today = now()->toDateString();
+
+
+
+        $today = now('Asia/Jakarta')->toDateString();
 
         $events = Transaction::where('status', 'approved')
-            ->where(function ($q) use ($today) {
-                $q->where(function ($q2) use ($today) {
-
-                    $q2->where('start', '<=', $today)
-                        ->where('end', '>=', $today);
-                })->orWhere('end', '<', $today);
-            })
-            ->orderBy('start', 'desc')
-            ->take(10)
-            ->get();
+            ->whereDate('start', $today)
+            ->orderBy('start', 'asc')
+            ->limit(10)
+            ->get();;
 
         // echo "<pre>";
         // print_r($events->toArray());

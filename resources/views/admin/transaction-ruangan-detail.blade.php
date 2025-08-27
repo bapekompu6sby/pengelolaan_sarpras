@@ -60,7 +60,7 @@
 
                                     <th>Tanggal</th>
                                     <th>Status</th>
-                                    
+
                                     <th>Actions</th>
 
                                     {{-- @if (Auth::user()->role == 'admin')
@@ -70,6 +70,7 @@
                             </thead>
                             <tbody class="table-border-bottom-0">
                                 @foreach ($transactions as $t)
+                                
                                     <tr>
                                         @if (Auth::user()->role == 'admin')
                                             <th>
@@ -105,6 +106,8 @@
 
                                         @if (Auth::user()->role == 'admin')
                                             <td>
+                                                
+
                                                 <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalCenter{{ $t->id }}">
                                                     {{-- <i class="bx bx-edit-alt me-2"></i> --}}
@@ -127,6 +130,7 @@
                                             </td>
                                         @endif
                                     </tr>
+
 
                                     @include('components.edit-modal')
                                 @endforeach

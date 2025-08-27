@@ -272,7 +272,8 @@
                                     <span class="badge bg-danger">Ditolak</span>
                                 @endif
                             </p>
-                            @if ($t->status == 'approved')
+                            @if ($t->status == 'approved' && ($t->properties->type == 'kamar' || $t->properties->type == 'asrama'))
+
                                 <p class="mt-3 mb-1"><strong>nama kamar:</strong></p>
                                 <ul>
                                     @foreach ($t->detailKamars as $k)
@@ -559,9 +560,12 @@
         </div>
     </div>
 
+
     {{-- form edit for peminjaman ruangan --}}
     <div class="modal fade" id="modalCenter{{ $t->id }}" tabindex="-1" data-bs-backdrop="static"
         role="dialog" aria-labelledby="editEventLabel" aria-hidden="true">
+
+
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <form action="{{ route('transactions.ruangan.update', $t->id) }}" method="POST"
@@ -613,8 +617,7 @@
                                     style="{{ $t->status == 'approved' ? '' : 'display:none' }}">
                                     <button class="nav-link border-0 fw-semibold text-secondary"
                                         id="room-tab-{{ $t->properties->id }}" data-bs-toggle="tab"
-                                        data-bs-target="#room-{{ $t->properties->id }}" type="button"
-                                        role="tab">
+                                        data-bs-target="#room-{{ $t->id }}" type="button" role="tab">
                                         Pemilihan Ruangan
                                     </button>
                                 </li>
@@ -687,10 +690,13 @@
                                     <input type="text" class="form-control" id="event" name="event"
                                         required value="{{ $t->kegiatan }}">
                                 </div>
+
+
                                 <div class="mb-3">
                                     <label for="ordered_unit" class="form-label">Jumlah Unit</label>
                                     <input type="number" class="form-control" id="ordered_unit" name="ordered_unit"
-                                        min="1" value="1" required>
+                                        min="1" value="{{ $t->ordered_unit }}" required>
+
                                     <span class="mt-1 text-sm text-danger">Untuk tipe Aula dan Kelas, hanya ada 1
                                         Ruangan</span>
                                 </div>
@@ -713,12 +719,7 @@
 
 
 
-                                    <script>
-                                        let ruanganData = <?php echo json_encode($ruangan->toArray()); ?>;
-                                        let propertiesData = <?php echo json_encode($t->toArray()); ?>;
-                                        console.log("Ruangan:", ruanganData);
-                                        console.log("Properties:", propertiesData);
-                                    </script>
+
                                 </div>
 
                                 <div class="row g-3">
@@ -818,80 +819,89 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="room-{{ $t->properties->id }}" role="tabpanel">
+
+                            <div class="tab-pane fade" id="room-{{ $t->id }}" role="tabpanel">
                                 <div class="mb-3">
 
+
+                                    {{-- Kamar yang sedang digunakan --}}
                                     {{-- Kamar yang sedang digunakan --}}
                                     <label class="form-label fw-bold">Kamar yang Dipakai</label>
-                                    @if ($t->detailKamars && $t->detailKamars->count())
-                                        <div class="row">
+                                    @if ($t->detailKamars->isNotEmpty())
+                                        <ul class="list-group mb-3">
                                             @foreach ($t->detailKamars as $dk)
-                                                <div class="col-md-6">
-                                                    <div class="card shadow-sm border-success mb-3">
-                                                        <div
-                                                            class="card-header bg-success text-white d-flex justify-content-between">
-                                                            <span><i class="bi bi-door-open"></i>
-                                                                {{ $dk->kamar->nama_kamar }}</span>
-                                                            <span class="badge bg-light text-success">Dipakai</span>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <p class="mb-1"><strong>Periode:</strong>
-                                                                {{ $dk->start }} s/d {{ $dk->end }}</p>
-                                                            <p class="mb-0"><strong>Kapasitas:</strong>
-                                                                {{ $dk->kamar->kapasitas }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <li
+                                                    class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>{{ $dk->kamar->nama_kamar }} <small
+                                                            class="text-muted">({{ $dk->start }} s/d
+                                                            {{ $dk->end }})</small></span>
+                                                    <span class="badge bg-success">Dipakai</span>
+                                                </li>
                                             @endforeach
-                                        </div>
+                                        </ul>
                                     @else
-                                        <p class="text-muted"><em>Belum ada kamar yang dipilih untuk transaksi
-                                                ini.</em></p>
+                                        <p class="text-muted"><em>Belum ada kamar dipilih untuk transaksi ini.</em></p>
                                     @endif
 
-                                    {{-- Daftar semua kamar --}}
-                                    <label class="form-label fw-bold mt-4">Daftar Semua Kamar</label>
+                                    {{-- Daftar semua kamar (untuk pilih/ubah) --}}
+                                    <label class="form-label fw-bold mt-2">Daftar Semua Kamar</label>
                                     <div class="card shadow-sm">
                                         <div class="card-header bg-primary text-white d-flex justify-content-between">
-                                            <span><i class="bi bi-building"></i> {{ $t->properties->name }}
-                                                ({{ ucfirst($t->properties->type) }})
-                                            </span>
-                                            <span class="badge bg-light text-primary">Unit yang di pesan:
+                                            <span>{{ $t->properties->name }}</span>
+                                            <span class="badge bg-light text-primary">Unit:
                                                 {{ $t->ordered_unit }}</span>
                                         </div>
                                         <div class="card-body">
-                                            @if ($t->properties->kamar->isEmpty())
-                                                <p class="text-muted">Belum ada kamar tersedia</p>
-                                            @else
-                                                <ul class="list-group list-group-flush">
-                                                    @foreach ($t->properties->kamar as $k)
-                                                        @php
-                                                            $isUsed = $t->detailKamars
-                                                                ->pluck('kamar_id')
-                                                                ->contains($k->id);
-                                                        @endphp
-                                                        <li
-                                                            class="list-group-item d-flex justify-content-between align-items-center">
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox"
-                                                                    name="kamar_id[]" value="{{ $k->id }}"
-                                                                    id="kamar-{{ $k->id }}"
-                                                                    @if ($isUsed) checked disabled @endif>
-                                                                <label class="form-check-label"
-                                                                    for="kamar-{{ $k->id }}">
-                                                                    {{ $k->nama_kamar }} - Kapasitas:
-                                                                    {{ $k->kapasitas }}
-                                                                </label>
-                                                            </div>
+                                            <ul class="list-group">
+                                                @foreach ($t->properties->kamar as $k)
+                                                    @php
+                                                        $isUsed = $t->detailKamars->pluck('kamar_id')->contains($k->id);
+                                                    @endphp
+                                                    <li
+                                                        class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div class="form-check">
+                                                            @php
+                                                                $isUsed = $t->detailKamars
+                                                                    ->pluck('kamar_id')
+                                                                    ->contains($k->id);
+                                                            @endphp
+
+                                                            <input class="form-check-input kamar-checkbox"
+                                                                type="checkbox" name="kamar_id[]"
+                                                                value="{{ $k->id }}"
+                                                                id="kamar-{{ $k->id }}"
+                                                                data-kamar="{{ $k->id }}"
+                                                                data-tx="{{ $t->id }}"
+                                                                data-preselected="{{ $isUsed ? '1' : '0' }}"
+                                                                data-validated="{{ $isUsed ? '1' : '0' }}"
+                                                                {{ $isUsed ? '' : 'disabled' }} {{-- yang belum dipakai -> terkunci --}}
+                                                                {{ $isUsed ? 'checked' : '' }} {{-- yang sudah dipakai -> boleh di-uncheck --}}>
+
+                                                            <label class="form-check-label"
+                                                                for="kamar-{{ $k->id }}">
+                                                                {{ $k->nama_kamar }} — Kapasitas:
+                                                                {{ $k->kapasitas }}
+                                                            </label>
+                                                        </div>
+                                                        <div>
                                                             @if ($isUsed)
                                                                 <span class="badge bg-success">Dipakai</span>
                                                             @endif
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            @endif
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-outline-info cek-ruangan-btn"
+                                                                data-tx="{{ $t->id }}"
+                                                                data-kamar="{{ $k->id }}">
+                                                                Cek Ruangan
+                                                            </button>
+
+
+                                                        </div>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -902,7 +912,113 @@
                 </form>
             </div>
         </div>
+
+
     </div>
+    @once
+        <script>
+            document.addEventListener('click', async function(e) {
+                const btn = e.target.closest('.cek-ruangan-btn');
+                if (!btn) return;
+
+                const txId = btn.dataset.tx;
+                const kamarId = btn.dataset.kamar;
+
+                const li = btn.closest('li');
+                const modal = btn.closest('.modal');
+                const cb = li.querySelector('.kamar-checkbox');
+
+                const startVal = modal?.querySelector('input[name="start"]')?.value;
+                const endVal = modal?.querySelector('input[name="end"]')?.value;
+
+                if (!startVal || !endVal) {
+                    alert('Isi tanggal mulai & selesai dulu ya ✋');
+                    return;
+                }
+
+                // build URL dari route
+                const base = "{{ route('kamar.check', [':tx', ':kamar']) }}";
+                const url = base
+                    .replace(':tx', encodeURIComponent(txId))
+                    .replace(':kamar', encodeURIComponent(kamarId)) +
+                    `?start=${encodeURIComponent(startVal)}&end=${encodeURIComponent(endVal)}`;
+
+                // loading state
+                btn.disabled = true;
+                const prev = btn.innerText;
+                btn.innerText = 'Cek...';
+
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+
+                    if (!data.ok) {
+                        alert(data.message || 'Gagal cek');
+                        return;
+                    }
+
+                    const badge = li.querySelector('.badge') || document.createElement('span');
+                    if (!badge.className) {
+                        badge.className = 'badge ms-2'; // ms-2 = margin-left kecil
+                        btn.insertAdjacentElement('afterend', badge); // ⬅ ganti appendChild jadi after btn
+                    }
+
+
+                    if (data.available) {
+                        // ✅ buka kunci & centang
+                        cb.disabled = false;
+                        cb.checked = true;
+                        cb.dataset.validated = '1';
+                        badge.className = 'badge bg-success ms-2';
+                        badge.textContent = 'Tersedia';
+                        alert(`✅ Kamar tersedia (${data.start} s/d ${data.end})`);
+                    } else {
+                        // ❌ tetap kunci & pastikan tidak tercentang
+                        cb.checked = false;
+                        cb.disabled = true;
+                        cb.dataset.validated = '0';
+                        badge.className = 'badge bg-danger ms-2';
+                        badge.textContent = 'Bentrok';
+                        const bentrok = data.conflicts.map(c => `${c.start}–${c.end}`).join(', ');
+                        alert(`❌ Bentrok: ${bentrok}`);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Terjadi error saat cek ruangan');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = prev;
+                }
+            });
+
+            // Jika tanggal diubah, reset validasi (wajib cek ulang)
+            document.addEventListener('input', function(e) {
+                if (!['start', 'end'].includes(e.target.name)) return;
+                const modal = e.target.closest('.modal');
+                modal.querySelectorAll('.kamar-checkbox').forEach(cb => {
+                    const pre = cb.dataset.preselected === '1';
+                    if (pre) {
+                        // yang sudah ada di transaksi boleh tetap aktif (biar bisa uncheck)
+                        cb.dataset.validated = '1';
+                    } else {
+                        cb.checked = false;
+                        cb.disabled = true;
+                        cb.dataset.validated = '0';
+                        const li = cb.closest('li');
+                        const badge = li.querySelector('.badge');
+                        if (badge) {
+                            badge.remove();
+                        }
+                    }
+                });
+            });
+        </script>
+    @endonce
+
+
+
+
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('#editTab{{ $t->id }} .nav-link');

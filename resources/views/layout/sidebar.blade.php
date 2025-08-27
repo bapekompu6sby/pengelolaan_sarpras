@@ -38,7 +38,7 @@
         <li class="menu-item {{ $route == 'tabelKegiatan' ? 'active' : '' }}">
             <a href="{{ route('tabelKegiatan') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                <div data-i18n="room">Tabel Kegiatan</div>
+                <div data-i18n="room">Kegiatan Hari Ini</div>
             </a>
         </li>
         <li class="menu-item {{ $route == 'calendar' ? 'active' : '' }}">
@@ -66,6 +66,13 @@
 
 
             @if ($role == 'admin' || $role == 'pakheru')
+                {{-- kamar terpakai --}}
+                <li class="menu-item {{ $route == 'kamarTerpakai' ? 'active' : '' }}">
+                    <a href="{{ route('kamarTerpakai') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                        <div data-i18n="room">Kamar Terpakai</div>
+                    </a>
+                </li>
                 <li class="menu-item {{ in_array($route, $menus) ? 'active open' : '' }}">
                     <a href="#" class="menu-link menu-toggle" id="data-master">
                         <i class="menu-icon tf-icons bx bx-coin-stack"></i>
