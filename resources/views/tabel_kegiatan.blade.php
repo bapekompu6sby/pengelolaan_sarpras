@@ -12,33 +12,91 @@
     <link href="{{ asset('/assets/vendor/libs/fullcalendar/lib/main.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('/assets/vendor/css/driver.css') }}">
     <link href="{{ asset('/assets/vendor/libs/datatables/datatables.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('/assets/css/kegiatan.css') }}" rel="stylesheet">
 @endsection
 
 @section('content')
     @if (session('success'))
-        <x-toast bgColor="bg-success" title="Success">
-            {{ session('success') }}
-        </x-toast>
+        <x-toast bgColor="bg-success" title="Success">{{ session('success') }}</x-toast>
+    @endif
+    @if (session('failed'))
+        <x-toast bgColor="bg-danger" title="Failed">{{ session('failed') }}</x-toast>
     @endif
 
-    @if (session('failed'))
-        <x-toast bgColor="bg-danger" title="Failed">
-            {{ session('failed') }}
-        </x-toast>
-    @endif
+    @php
+        // ===== Helper: Format rentang tanggal konsisten lokal =====
+        function tanggalRangeID($start, $end){
+            $s = \Carbon\Carbon::parse($start); $e = \Carbon\Carbon::parse($end);
+            if ($s->isSameDay($e)) return $s->translatedFormat('d M Y');
+            if ($s->isSameMonth($e) && $s->isSameYear($e)) return $s->translatedFormat('d').'–'.$e->translatedFormat('d M Y');
+            return $s->translatedFormat('d M Y').' — '.$e->translatedFormat('d M Y');
+        }
+    @endphp
 
     <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-4">
-            <span class="text-muted fw-light">Dashboard /</span> Kegiatan
-        </h4>
+        <h4 class="fw-bold py-3 mb-3"><span class="text-muted fw-light">Dashboard /</span> Kegiatan</h4>
+
+        {{-- ===================== SLIDER DI ATAS TABEL ===================== --}}
+        <div class="card mb-4" aria-labelledby="sliderTitle">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 id="sliderTitle" class="mb-0">
+                        <span class="badge bg-label-primary me-2"><i class='bx bx-slideshow'></i></span>
+                        Kegiatan Hari Ini
+                    </h5>
+                </div>
+
+                @php $count = $events->count(); @endphp
+
+                @if ($count > 0)
+                    <div id="kegiatanSlider" class="kegiatan-slider" role="region" aria-label="Slider kegiatan hari ini" aria-live="polite">
+                        <div class="progress" aria-hidden="true"><div class="bar" id="sliderProgress"></div></div>
+
+                        <div class="slides" id="sliderTrack" style="transform: translateX(0%)">
+                            @foreach ($events as $idx => $e)
+                                @php $rowId = 'row-'.($e->id ?? Str::slug(($e->kegiatan ?? 'kegiatan').'-'.($e->start ?? ''))); @endphp
+                                <article class="slide" data-index="{{ $idx }}" tabindex="0" aria-roledescription="slide" aria-label="Slide {{ $idx+1 }} dari {{ $count }}">
+                                    <div class="slide-content">
+                                        <span class="instansi"><i class='bx bxs-buildings'></i> {{ $e->instansi ?? '-' }}</span>
+                                        <div class="kegiatan-title">{{ ucfirst($e->kegiatan) }}</div>
+                                        <div class="tanggal">
+                                            <i class='bx bx-calendar'></i>
+                                            {{ tanggalRangeID($e->start, $e->end) }}
+                                        </div>
+                                        <div class="meta">
+                                            <span><i class='bx bx-map'></i> {{ $e->properties->name ?? '-' }}</span>
+                                        </div>
+                                        <div class="cta-link">
+                                            <a href="#{{ $rowId }}" class="btn btn-sm btn-outline-primary">Lihat di tabel</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+
+                        <button class="nav prev" type="button" id="btnPrev" aria-label="Slide sebelumnya"><i class='bx bx-chevron-left'></i></button>
+                        <button class="nav next" type="button" id="btnNext" aria-label="Slide berikutnya"><i class='bx bx-chevron-right'></i></button>
+
+                        <div class="dots" id="sliderDots" aria-label="Indikator slide">
+                            @for ($i = 0; $i < $count; $i++)
+                                <button class="dot {{ $i === 0 ? 'active' : '' }}" type="button" data-index="{{ $i }}" aria-label="Ke slide {{ $i+1 }}"></button>
+                            @endfor
+                        </div>
+                    </div>
+                @else
+                    <div class="alert alert-info mb-0" role="alert">
+                        <i class='bx bx-info-circle'></i> Tidak ada kegiatan terjadwal untuk hari ini.
+                    </div>
+                @endif
+            </div>
+        </div>
+        {{-- =================== END SLIDER =================== --}}
 
         <div class="card" id="kegiatan">
             <div class="card-body">
                 <div class="card-title">
                     <h4 class="text-nowrap mb-3">
-                        <span class="badge bg-label-success me-2">
-                            <i class="bx bx-task"></i>
-                        </span>
+                        <span class="badge bg-label-success me-2"><i class="bx bx-task"></i></span>
                         Daftar Kegiatan
                     </h4>
                 </div>
@@ -57,16 +115,16 @@
                         </thead>
                         <tbody>
                             @forelse ($events as $e)
-                                <tr>
+                                @php $rowId = 'row-'.($e->id ?? Str::slug(($e->kegiatan ?? 'kegiatan').'-'.($e->start ?? ''))); @endphp
+                                <tr id="{{ $rowId }}">
                                     <td>{{ $e->instansi }}</td>
                                     <td>
                                         <strong>{{ ucfirst($e->kegiatan) }}</strong><br>
                                         <small class="text-muted">{{ $e->description }}</small>
                                     </td>
-                                    <td>{{ date('d-m-Y', strtotime($e->start)) }} s/d
-                                        {{ date('d-m-Y', strtotime($e->end)) }}</td>
+                                    <td>{{ tanggalRangeID($e->start, $e->end) }}</td>
                                     <td>{{ $e->name }}</td>
-                                    <td>{{ $e->phone_number }}</td>
+                                    <td class="text-nowrap">{{ $e->phone_number }}</td>
                                     <td>{{ $e->properties->name ?? '-' }}</td>
                                 </tr>
                             @empty
@@ -84,35 +142,5 @@
 
 @section('script')
     <script src="{{ asset('/assets/vendor/libs/datatables/datatables.min.js') }}"></script>
-    <script>
-        $(document).ready(function() {
-            "use strict";
-
-            // Tabel kegiatan
-            $("#datatable-kegiatan").DataTable({
-                pageLength: 10,
-                lengthMenu: [5, 10, 25, 50],
-                order: [
-                    [2, "asc"]
-                ], // urutkan default berdasarkan tanggal
-                language: {
-                    search: "Cari:",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    zeroRecords: "Tidak ada hasil yang cocok",
-                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    infoEmpty: "Tidak ada data tersedia",
-                    infoFiltered: "(disaring dari total _MAX_ data)",
-                },
-                columnDefs: [{
-                        targets: [1],
-                        className: "fw-semibold"
-                    }, // bold kolom kegiatan
-                    {
-                        targets: [4],
-                        className: "text-nowrap"
-                    }, // no HP tidak kepotong
-                ],
-            });
-        });
-    </script>
+    <script src="{{ asset('/assets/js/kegiatan.js') }}"></script>
 @endsection

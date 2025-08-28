@@ -90,7 +90,7 @@ class DashboardController extends Controller
 
                     $q2->where('start', '<=', $today)
                         ->where('end', '>=', $today);
-                })->orWhere('end', '<', $today);
+                });
             })
             ->orderBy('start', 'desc')
             ->take(10)
@@ -158,13 +158,17 @@ class DashboardController extends Controller
     // tabel kegiatan
     public function tabelKegiatan()
     {
-
-
-
+        
         $today = now('Asia/Jakarta')->toDateString();
 
         $events = Transaction::where('status', 'approved')
-            ->whereDate('start', $today)
+            ->where(function ($q) use ($today) {
+                $q->where(function ($q2) use ($today) {
+
+                    $q2->where('start', '<=', $today)
+                        ->where('end', '>=', $today);
+                });
+            })
             ->orderBy('start', 'asc')
             ->limit(10)
             ->get();;
