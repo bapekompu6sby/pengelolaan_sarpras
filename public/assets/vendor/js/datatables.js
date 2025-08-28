@@ -19,7 +19,7 @@ $(document).ready(function () {
     });
 
     $("#datatable2").DataTable({
-        order: [[1, "asc"]],
+        order: [],
     });
 
     $("#datatable3").DataTable({
