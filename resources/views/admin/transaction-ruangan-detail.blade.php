@@ -60,6 +60,7 @@
 
                                     <th>Tanggal</th>
                                     <th>Status</th>
+
                                     <th>Actions</th>
 
                                     {{-- @if (Auth::user()->role == 'admin')
@@ -78,9 +79,31 @@
                                         <td>{{ $t->name }}</td>
                                         <td><strong>{{ ucfirst($t->instansi) }}</strong></td>
                                         <td>{{ $t->kegiatan }}</td>
-                                        <td>
-                                            {{ $t->properties->name }}
+                                        <td class="text-nowrap">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>{{ $t->properties->name }}</span>
+
+                                                @auth
+                                                    @if (Auth::user()->role === 'admin' &&
+                                                            $t->status === 'approved' &&
+                                                            in_array($t->properties->type, ['asrama', 'paviliun']))
+                                                        <!-- tombol buka modal -->
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalTambahPenghuni-{{ $t->id }}">
+                                                            <i class="bi bi-people-fill"></i>
+                                                        </button>
+                                                    @endif
+                                                @endauth
+                                            </div>
                                         </td>
+
+
+
+
+
+
                                         <td><span
                                                 class="me-1">{{ date('Y-m-d', strtotime($t->start)) . ' | ' . date('Y-m-d', strtotime($t->end)) }}</span>
                                         </td>
@@ -90,7 +113,7 @@
                                             @elseif ($t->status == 'approved')
                                                 <span class="badge bg-success">Disetujui</span>
                                             @elseif ($t->status == 'waiting_payment')
-                                                <span class="badge bg-success">Menunggu Pembayaran</span>
+                                                <span class="badge bg-info">Menunggu Pembayaran</span>
                                             @elseif ($t->status == 'rejected')
                                                 <span class="badge bg-danger">Ditolak</span>
                                             @endif
@@ -104,17 +127,19 @@
 
                                         @if (Auth::user()->role == 'admin')
                                             <td>
+
+
                                                 <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalCenter{{ $t->id }}">
-                                                    <i class="bx bx-edit-alt me-2"></i>
-                                                    Edit
+                                                    {{-- <i class="bx bx-edit-alt me-2"></i> --}}
+                                                    Detail/Edit
                                                 </button>
 
-                                                <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
+                                                {{-- <button class="btn btn-info btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalDetail{{ $t->id }}">
                                                     <i class="bx bx-detail me-2"></i>
                                                     Detail
-                                                </button>
+                                                </button> --}}
                                             </td>
                                         @else
                                             <td>
@@ -126,6 +151,7 @@
                                             </td>
                                         @endif
                                     </tr>
+
 
                                     @include('components.edit-modal')
                                 @endforeach

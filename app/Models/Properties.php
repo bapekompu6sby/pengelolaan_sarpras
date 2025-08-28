@@ -9,6 +9,8 @@ class Properties extends Model
 {
     use HasFactory;
 
+    protected $table = 'properties';
+
     protected $fillable = [
         'name',
         'type',
@@ -25,4 +27,10 @@ class Properties extends Model
     {
         return $this->hasMany(Transaction::class, 'property_id');
     }
+
+    public function kamar()
+    {
+        return $this->hasMany(Kamar::class, 'properties_id', 'id');
+    }
+    
 }

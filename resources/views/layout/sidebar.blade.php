@@ -34,6 +34,13 @@
                 <div data-i18n="room">Peminjaman</div>
             </a>
         </li> --}}
+        {{-- tabel kegiatan --}}
+        <li class="menu-item {{ $route == 'tabelKegiatan' ? 'active' : '' }}">
+            <a href="{{ route('tabelKegiatan') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                <div data-i18n="room">Kegiatan Hari Ini</div>
+            </a>
+        </li>
         <li class="menu-item {{ $route == 'calendar' ? 'active' : '' }}">
             <a href="{{ route('calendar') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
@@ -58,7 +65,14 @@
 
 
 
-            @if ($role == 'admin' || $role == 'pakheru')
+            @if ($role == 'admin' || $role == 'pakheru' || $role == 'supervisor')
+                {{-- kamar terpakai --}}
+                <li class="menu-item {{ $route == 'kamarTerpakai' ? 'active' : '' }}">
+                    <a href="{{ route('kamarTerpakai') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                        <div data-i18n="room">Kamar Terpakai</div>
+                    </a>
+                </li>
                 <li class="menu-item {{ in_array($route, $menus) ? 'active open' : '' }}">
                     <a href="#" class="menu-link menu-toggle" id="data-master">
                         <i class="menu-icon tf-icons bx bx-coin-stack"></i>
@@ -66,20 +80,28 @@
                     </a>
 
                     <ul class="menu-sub">
-                        @if ($role == 'admin')
+                        @if ($role == 'admin' || $role == 'supervisor')
                             <li class="menu-item {{ $route == 'properties' ? 'active' : '' }}" id="data-ruangan">
                                 <a href="{{ route('properties') }}" class="menu-link">
                                     <div data-i18n="going">Data Ruangan</div>
                                 </a>
                             </li>
-                        @endif
+                            {{-- kamar --}}
+                            <li class="menu-item {{ $route == 'kamar' ? 'active' : '' }}" id="data-kamar">
+                                <a href="{{ route('kamar') }}" class="menu-link">
+                                    <div data-i18n="going">Data Kamar</div>
+                                </a>
+                            </li>
 
-                        <li class="menu-item {{ $route == 'ruangan.detail' ? 'active' : '' }}" id="data-peminjaman">
-                            <a href="{{ route('ruangan.detail') }}" class="menu-link">
-                                <div data-i18n="going">Peminjaman Ruangan</div>
-                            </a>
-                        </li>
+                            <li class="menu-item {{ $route == 'ruangan.detail' ? 'active' : '' }}" id="data-peminjaman">
+                                <a href="{{ route('ruangan.detail') }}" class="menu-link">
+                                    <div data-i18n="going">Peminjaman Ruangan</div>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
+
+
                 </li>
             @endif
 

@@ -36,6 +36,10 @@
 
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+
+
     <!-- Page CSS -->
 
     <!-- Helpers -->
@@ -95,8 +99,9 @@
                                 <script>
                                     document.write(new Date().getFullYear());
                                 </script>
+                                {{-- | v2 MBKM ITATS 2025 --}}
                                 , by <span class="fw-bolder">Bapekom 6 Surabaya</span> colab with
-                                <span class="fw-bolder">v1 MBKM UTM 2024 | v2 MBKM ITATS 2025</span>
+                                <span class="fw-bolder">v1 MBKM UTM 2024 </span>
                             </div>
                         </div>
                     </footer>
@@ -113,6 +118,8 @@
 <script src="{{ asset('/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
 
 <script src="{{ asset('assets/vendor/js/menu.js/') }}"></script>
+
+
 
 @section('script')
 @show

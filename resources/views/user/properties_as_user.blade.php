@@ -76,11 +76,16 @@
                                                 {{ number_format($property->price, 0, ',', '.') }} / hari</p>
                                             <p class="mb-3 fs-5"><strong>Unit:</strong> {{ $property->unit }}</p>
 
-                                            <button class="btn btn-primary btn-pesan"
-                                                data-property-id="{{ $property->id }}" data-bs-toggle="modal"
-                                                data-bs-target="#addEvent">
-                                                Pesan Sekarang
-                                            </button>
+
+                                            @auth
+                                                @if (auth()->user()->role != 'supervisor')
+                                                    <button class="btn btn-primary btn-pesan"
+                                                        data-property-id="{{ $property->id }}" data-bs-toggle="modal"
+                                                        data-bs-target="#addEvent">
+                                                        Pesan Sekarang
+                                                    </button>
+                                                @endif
+                                            @endauth
                                         </div>
                                     </div>
                                 </div>
@@ -147,11 +152,9 @@
                         <div class="mb-3">
                             <label for="venue_name" class="form-label">Ruangan</label>
                             <!-- Ditampilkan ke user -->
-                            <input type="text" class="form-control" id="venue_name" value="{{ $property->name }}"
-                                readonly>
+                            <input type="text" class="form-control" id="venue_name" readonly>
+                            <input type="hidden" id="venue" name="venue">
 
-                            <!-- Disimpan ke database -->
-                            <input type="hidden" id="venue" name="venue" value="{{ $property->id }}">
                         </div>
 
 
@@ -360,6 +363,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
+                        console.log(data);
                         // Simpan harga per hari ke global variable
                         window.currentPrice = parseInt(data.property.price) || 0;
 
@@ -369,6 +373,10 @@
 
                         const modalTitle = modal.querySelector('.modal-title');
                         modalTitle.textContent = 'Pesan Ruangan: ' + data.property.name;
+
+                        modal.querySelector('#venue_name').value = data.property.name;
+                        modal.querySelector('#venue').value = data.property.id;
+
 
                         modal.querySelector('#name').value = data.user.name || '';
                         modal.querySelector('#email').value = data.user.email || '';

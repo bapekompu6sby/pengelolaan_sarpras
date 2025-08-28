@@ -19,6 +19,9 @@ class Transaction extends Model
         'color',
         'property_id',
         'status',
+        'rejection_reason',
+        'billing_code',
+        'billing_qr',
         'payment_receipt',
         'request_letter',
         'description',
@@ -38,17 +41,16 @@ class Transaction extends Model
         });
     }
 
-    
+
 
     public function calculateTotalPrice()
     {
         // Your logic here
         // Example: log, notify, update another table, etc.
         $total = 0;
-        if ($this->affiliation == 'internal_pu' || $this->end < $this->start){
+        if ($this->affiliation == 'internal_pu' || $this->end < $this->start) {
             $total = 0;
-        }
-        else{
+        } else {
             $price = $this->properties->price;
             $st = new DateTime($this->start);
             $ed = new DateTime($this->end);
@@ -70,5 +72,21 @@ class Transaction extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function kamar()
+    {
+        return $this->belongsTo(Kamar::class, 'kamar_id'); // kalau transaksi ada id kamar
+    }
+    public function kamars()
+    {
+        return $this->belongsToMany(Kamar::class, 'transaction_kamar')
+            ->withPivot(['start', 'end', 'nama_penghuni'])
+            ->withTimestamps();
+    }
+
+    public function detailKamars()
+    {
+        return $this->hasMany(DetailKamarTransaction::class, 'transaction_id');
     }
 }

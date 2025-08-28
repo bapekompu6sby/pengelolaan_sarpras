@@ -1,0 +1,57 @@
+/* =================== Brand Tokens (PUPR-friendly) =================== */
+:root {
+    --pupr-primary: #003A70; /* biru PUPR */
+    --pupr-accent:  #F5C518; /* kuning PUPR */
+    --ink-900: #0b1324;
+    --ink-700: #1f2a37;
+    --ink-500: #334155;
+    --ink-400: #475569;
+    --surface:  #ffffff;
+    --elev: rgba(2,6,23,.06);
+}
+
+/* =================== Card & spacing =================== */
+.card { border-radius: 12px; box-shadow: 0 8px 24px var(--elev); }
+.card + .card { margin-top: 24px; }
+
+/* =================== Slider Kegiatan Hari Ini (rev) =================== */
+.kegiatan-slider { position: relative; overflow: hidden; border-radius: 1rem; background: linear-gradient(135deg, #f0f7ff 0%, #fff 45%); border: 1px solid rgba(2,117,216,.08); box-shadow: 0 8px 22px rgba(0,0,0,.06); isolation: isolate; }
+.kegiatan-slider .slides { display: flex; transition: transform .6s ease-in-out; will-change: transform; }
+.kegiatan-slider .slide { min-width: 100%; padding: 2rem 1.5rem; }
+.kegiatan-slider .slide-content { display: grid; grid-template-columns: 1fr; gap: .5rem; text-align: center; min-height: 240px; align-content: center; max-width: 720px; margin-inline: auto; }
+
+.kegiatan-slider .instansi { font-size: 1rem; font-weight: 700; letter-spacing: .3px; display: inline-flex; align-items: center; gap: .5rem; width: max-content; margin: 0 auto; padding: .35rem .8rem; border-radius: 999px; background: rgba(0,58,112,.08); color: var(--pupr-primary); }
+.kegiatan-slider .kegiatan-title { font-size: 1.5rem; font-weight: 800; margin-top: .35rem; line-height: 1.35; color: var(--ink-700); }
+.kegiatan-slider .tanggal { font-size: 1rem; color: var(--ink-500); }
+.kegiatan-slider .meta { font-size: .95rem; color: var(--ink-400); display: flex; justify-content: center; gap: .75rem; margin-top: .25rem; }
+.kegiatan-slider .meta i { vertical-align: middle; }
+.kegiatan-slider .cta-link { margin-top: .5rem; }
+
+/* Controls */
+.kegiatan-slider .nav { position: absolute; top: 50%; transform: translateY(-50%); border: 0; background: rgba(255,255,255,.95); border-radius: 999px; box-shadow: 0 8px 22px rgba(0,0,0,.12); width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; transition: transform .15s ease, background .2s ease; z-index: 2; }
+.kegiatan-slider .nav:hover { transform: translateY(-50%) scale(1.07); }
+.kegiatan-slider .prev { left: .65rem; } .kegiatan-slider .next { right: .65rem; }
+
+/* Dots (bigger hit-area) */
+.kegiatan-slider .dots { position: absolute; left: 0; right: 0; bottom: .6rem; display: flex; justify-content: center; gap: .45rem; z-index: 2; }
+.kegiatan-slider .dot { width: 10px; height: 10px; padding: 7px; border-radius: 999px; background: rgba(2,117,216,.25); border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.kegiatan-slider .dot.active { background: var(--pupr-accent); }
+
+/* Progress bar 10 detik (lebih tebal) */
+.kegiatan-slider .progress { position: absolute; left: 0; right: 0; top: 0; height: 4px; background: rgba(13,110,253,.08); }
+.kegiatan-slider .bar { height: 100%; width: 0%; background: var(--pupr-primary); opacity: .95; }
+
+/* Focus ring */
+.kegiatan-slider :is(.nav, .dot):focus { outline: 3px solid rgba(13,110,253,.35); outline-offset: 2px; }
+
+@media (min-width: 768px) {
+    .kegiatan-slider .slide { padding: 2.25rem 2rem; }
+    .kegiatan-slider .kegiatan-title { font-size: 1.6rem; }
+    .kegiatan-slider .slide-content { min-height: 260px; }
+}
+
+/* =================== Tabel =================== */
+.table thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.table tbody tr:hover { background: #f8fafc; }
+.table-active { box-shadow: inset 0 0 0 2px var(--pupr-accent); }
+.badge.bg-label-primary { color: var(--pupr-primary); background: rgba(0,58,112,.08); }
