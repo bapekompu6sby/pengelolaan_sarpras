@@ -108,7 +108,7 @@
                                 <th>Instansi</th>
                                 <th>Kegiatan</th>
                                 <th>Tanggal</th>
-                                <th>Penanggung Jawab</th>
+                                <th>Pemesan/Penanggung Jawab</th>
                                 <th>Kontak</th>
                                 <th>Ruangan</th>
                             </tr>
