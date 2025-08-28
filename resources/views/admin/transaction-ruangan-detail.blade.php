@@ -70,7 +70,6 @@
                             </thead>
                             <tbody class="table-border-bottom-0">
                                 @foreach ($transactions as $t)
-                                
                                     <tr>
                                         @if (Auth::user()->role == 'admin')
                                             <th>
@@ -80,9 +79,31 @@
                                         <td>{{ $t->name }}</td>
                                         <td><strong>{{ ucfirst($t->instansi) }}</strong></td>
                                         <td>{{ $t->kegiatan }}</td>
-                                        <td>
-                                            {{ $t->properties->name }}
+                                        <td class="text-nowrap">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>{{ $t->properties->name }}</span>
+
+                                                @auth
+                                                    @if (Auth::user()->role === 'admin' &&
+                                                            $t->status === 'approved' &&
+                                                            in_array($t->properties->type, ['asrama', 'paviliun']))
+                                                        <!-- tombol buka modal -->
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#modalTambahPenghuni-{{ $t->id }}">
+                                                            <i class="bi bi-people-fill"></i>
+                                                        </button>
+                                                    @endif
+                                                @endauth
+                                            </div>
                                         </td>
+
+
+
+
+
+
                                         <td><span
                                                 class="me-1">{{ date('Y-m-d', strtotime($t->start)) . ' | ' . date('Y-m-d', strtotime($t->end)) }}</span>
                                         </td>
@@ -106,7 +127,7 @@
 
                                         @if (Auth::user()->role == 'admin')
                                             <td>
-                                                
+
 
                                                 <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
                                                     data-bs-target="#modalCenter{{ $t->id }}">

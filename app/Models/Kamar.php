@@ -13,9 +13,10 @@ class Kamar extends Model
     protected $table = 'kamar';
 
     protected $fillable = [
-        'penginapan_id',
+        'properties_id',
         'nama_kamar',
         'kapasitas',
+        'lantai',
         
         
     ];
@@ -24,7 +25,7 @@ class Kamar extends Model
     // Relasi ke Ruangan (penginapan)
     public function ruangan()
     {
-        return $this->belongsTo(Properties::class, 'penginapan_id');
+        return $this->belongsTo(Properties::class, 'properties_id');
     }
     public function transactions()
     {

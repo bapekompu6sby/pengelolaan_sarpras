@@ -30,7 +30,7 @@ class Properties extends Model
 
     public function kamar()
     {
-        return $this->hasMany(Kamar::class, 'penginapan_id', 'id');
+        return $this->hasMany(Kamar::class, 'properties_id', 'id');
     }
     
 }

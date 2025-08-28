@@ -65,7 +65,7 @@
 
 
 
-            @if ($role == 'admin' || $role == 'pakheru')
+            @if ($role == 'admin' || $role == 'pakheru' || $role == 'supervisor')
                 {{-- kamar terpakai --}}
                 <li class="menu-item {{ $route == 'kamarTerpakai' ? 'active' : '' }}">
                     <a href="{{ route('kamarTerpakai') }}" class="menu-link">
@@ -80,7 +80,7 @@
                     </a>
 
                     <ul class="menu-sub">
-                        @if ($role == 'admin')
+                        @if ($role == 'admin' || $role == 'supervisor')
                             <li class="menu-item {{ $route == 'properties' ? 'active' : '' }}" id="data-ruangan">
                                 <a href="{{ route('properties') }}" class="menu-link">
                                     <div data-i18n="going">Data Ruangan</div>
@@ -92,13 +92,13 @@
                                     <div data-i18n="going">Data Kamar</div>
                                 </a>
                             </li>
-                        @endif
 
-                        <li class="menu-item {{ $route == 'ruangan.detail' ? 'active' : '' }}" id="data-peminjaman">
-                            <a href="{{ route('ruangan.detail') }}" class="menu-link">
-                                <div data-i18n="going">Peminjaman Ruangan</div>
-                            </a>
-                        </li>
+                            <li class="menu-item {{ $route == 'ruangan.detail' ? 'active' : '' }}" id="data-peminjaman">
+                                <a href="{{ route('ruangan.detail') }}" class="menu-link">
+                                    <div data-i18n="going">Peminjaman Ruangan</div>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
 
 
