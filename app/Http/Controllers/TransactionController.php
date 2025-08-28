@@ -397,10 +397,11 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     {
         if (auth()->check()) {
             if (auth()->user()->role == 'admin') {
-                $transactions = Transaction::with(['properties.kamar', 'detailKamars.kamar'])->get();
+                $transactions = Transaction::with(['properties.kamar', 'detailKamars.kamar'])->latest()->get();
             } else {
                 $transactions = Transaction::with(['properties.kamar', 'detailKamars.kamar'])
                     ->where('user_id', auth()->user()->id)
+                    ->latest()
                     ->get();
             }
         }

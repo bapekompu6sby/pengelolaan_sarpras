@@ -18,9 +18,9 @@ $(document).ready(function () {
         ],
     });
 
-    $("#datatable2").DataTable({
-        order: [[1, "asc"]],
-    });
+    // $("#datatable2").DataTable({
+    //     order: [[1, "asc"]],
+    // });
 
     $("#datatable3").DataTable({
         scrollX: true,
