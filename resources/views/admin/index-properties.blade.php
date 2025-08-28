@@ -62,7 +62,9 @@
                                     <th>Jenis</th>
                                     <th>Kapasitas</th>
 
-                                    <th>Aksi</th>
+                                    @if (Auth::user()->role != 'supervisor')
+                                        <th>Aksi</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody class="table-border-bottom-0">
@@ -85,23 +87,25 @@
 
                                         <td>{{ ucfirst($property->type) }}</td>
                                         <td>{{ $property->capacity }}</td>
+                                        @if (Auth::user()->role != 'supervisor')
+                                            <td>
+                                                <button type="button" class="btn btn-warning btn-sm me-1"
+                                                    data-bs-toggle="modal" data-bs-target="#modalCenter{{ $property->id }}">
+                                                    Edit
+                                                </button>
 
-                                        <td>
-                                            <button type="button" class="btn btn-warning btn-sm me-1"
-                                                data-bs-toggle="modal" data-bs-target="#modalCenter{{ $property->id }}">
-                                                Edit
-                                            </button>
+                                                <button type="button" class="btn btn-danger btn-sm me-1"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalDelete{{ $property->id }}">
+                                                    Delete
+                                                </button>
 
-                                            <button type="button" class="btn btn-danger btn-sm me-1" data-bs-toggle="modal"
-                                                data-bs-target="#modalDelete{{ $property->id }}">
-                                                Delete
-                                            </button>
-
-                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#modalDetail{{ $property->id }}">
-                                                Detail
-                                            </button>
-                                        </td>
+                                                <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#modalDetail{{ $property->id }}">
+                                                    Detail
+                                                </button>
+                                            </td>
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>

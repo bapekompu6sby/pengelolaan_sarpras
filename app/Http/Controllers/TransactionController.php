@@ -118,7 +118,7 @@ class TransactionController extends Controller
     }
 
 
-    
+
 
 
 
@@ -264,26 +264,21 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'total_harga'      => 'required|numeric|min:0',
             'billing_code'     => 'nullable|string',
             'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
-
-            // penting: kamu pakai <select name="ruangan_id"> di form
             'ruangan_id'       => 'required|exists:properties,id',
 
-            // multi checkbox kamar
-            'kamar_id'         => 'sometimes|array',
-            'kamar_id.*'       => 'integer|exists:kamar,id', // tabel kamu: 'kamar' (singular)
         ]);
 
         DB::transaction(function () use ($request, $id) {
             $transaction = Transaction::findOrFail($id);
 
-            // file lama default
+
             $paymentReceipt   = $request->old_payment_receipt ?? $transaction->payment_receipt;
             $requestLetter    = $request->old_request_letter ?? $transaction->request_letter;
             $billingQr        = $transaction->billing_qr;
             $billingCode      = $transaction->billing_code;
             $rejectionReason  = $transaction->rejection_reason;
 
-            // upload baru (jika ada)
+
             if ($request->hasFile('payment_receipt')) {
                 $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
                 $paymentReceipt = basename($path);
@@ -308,10 +303,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 $rejectionReason = null;
             }
 
-            // Map: ruangan_id (dari form) -> property_id (kolom di DB)
             $propertyId = $request->ruangan_id ?? $transaction->property_id;
 
-            // update transaksi (header)
             $transaction->update([
                 'instansi'         => ucwords($request->office),
                 'kegiatan'         => ucwords($request->event),
@@ -331,33 +324,11 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'payment_receipt'  => $paymentReceipt,
                 'request_letter'   => $requestLetter,
             ]);
-
-            // === sync detail kamar ===
-            // hapus detail lama
-            $transaction->detailKamars()->delete();
-
-            // insert ulang sesuai pilihan checkbox
-            if ($request->filled('kamar_id')) {
-                $now = now();
-                $rows = collect($request->kamar_id)->map(function ($kamarId) use ($transaction, $request, $now) {
-                    return [
-                        'transaction_id' => $transaction->id,
-                        'kamar_id'       => $kamarId,
-                        'start'          => $request->start,
-                        'end'            => $request->end,
-                        'created_at'     => $now,
-                        'updated_at'     => $now,
-                    ];
-                })->toArray();
-
-                DetailKamarTransaction::insert($rows);
-            }
-
-            
         });
 
-        return back()->with('success', 'Transaksi & kamar berhasil diperbarui.');
+        return back()->with('success', 'Transaksi berhasil diperbarui (detail kamar tidak diubah).');
     }
+
 
 
 
@@ -395,20 +366,50 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
     public function ruangan_detail()
     {
-        if (auth()->check()) {
-            if (auth()->user()->role == 'admin') {
-                $transactions = Transaction::with(['properties.kamar', 'detailKamars.kamar'])->get();
-            } else {
-                $transactions = Transaction::with(['properties.kamar', 'detailKamars.kamar'])
-                    ->where('user_id', auth()->user()->id)
-                    ->get();
-            }
+        $user = auth()->user();
+
+        $txQuery = Transaction::query()
+            ->with([
+                
+                'properties:id,name,type,capacity,price,unit,image_path',
+                'properties.kamar' => function ($q) {
+                    $q->select('id', 'properties_id', 'nama_kamar', 'kapasitas', 'lantai')
+                        ->orderBy('lantai')
+                        ->orderBy('nama_kamar');
+                },
+
+                
+                'detailKamars.kamar:id,nama_kamar,kapasitas,lantai,properties_id',
+                'detailKamars.penghunis:id,detail_kamar_transaction_id,nama_penghuni',
+            ])
+            ->latest();
+
+        
+        if (!$user || $user->role !== 'admin') {
+            $txQuery->where('user_id', $user?->id);
         }
 
-        $ruangan = Properties::with('kamar')->get();
+        $transactions = $txQuery->get();
 
-        // kosongkan kamar untuk non asrama/paviliun (opsional)
-        $ruangan->map(function ($r) {
+        
+        $transactions->each(function ($t) {
+            $floors = collect($t->properties?->kamar ?? [])
+                ->filter(fn($k) => isset($k->lantai) && $k->lantai !== '' && (int)$k->lantai !== 0)
+                ->groupBy(fn($k) => (string) $k->lantai)
+                ->sortKeys(SORT_NATURAL);
+
+            $t->setAttribute('floors', $floors);
+        });
+
+        $ruangan = Properties::with([
+            'kamar' => function ($q) {
+                $q->select('id', 'properties_id', 'nama_kamar', 'kapasitas', 'lantai')
+                    ->orderBy('lantai')
+                    ->orderBy('nama_kamar');
+            }
+        ])->get();
+
+        $ruangan->transform(function ($r) {
             if (!in_array($r->type, ['asrama', 'paviliun'])) {
                 $r->setRelation('kamar', collect());
             }
@@ -417,6 +418,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
         return view('admin.transaction-ruangan-detail', compact('transactions', 'ruangan'));
     }
+
 
 
 

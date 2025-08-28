@@ -32,4 +32,8 @@ class DetailKamarTransaction extends Model
     {
         return $this->belongsTo(Kamar::class, 'kamar_id');
     }
+    public function penghunis() 
+{
+    return $this->hasMany(Penghuni::class, 'detail_kamar_transaction_id');
+}
 }

@@ -166,14 +166,23 @@ class PropertiesController extends Controller
 
     public function destroy($id)
     {
-        $ifFound = Properties::find($id);
-        if ($ifFound === null) {
-            return redirect()->route('properties')->with('failed', 'Data tidak ditemukan');
+        $property = Properties::find($id);
+
+        if (!$property) {
+            return redirect()->route('properties')
+                ->with('failed', 'Data tidak ditemukan');
         }
 
-        Properties::destroy($id);
-        return redirect()->route('properties')->with('success', 'Data berhasil dihapus');
+        // hapus semua transaksi yang terkait property ini
+        $property->transactions()->delete();
+
+        // hapus property
+        $property->delete();
+
+        return redirect()->route('properties')
+            ->with('success', 'Data beserta transaksi terkait berhasil dihapus');
     }
+
 
     public function showImage(Properties $properties)
     {

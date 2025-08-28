@@ -76,11 +76,16 @@
                                                 {{ number_format($property->price, 0, ',', '.') }} / hari</p>
                                             <p class="mb-3 fs-5"><strong>Unit:</strong> {{ $property->unit }}</p>
 
-                                            <button class="btn btn-primary btn-pesan"
-                                                data-property-id="{{ $property->id }}" data-bs-toggle="modal"
-                                                data-bs-target="#addEvent">
-                                                Pesan Sekarang
-                                            </button>
+
+                                            @auth
+                                                @if (auth()->user()->role != 'supervisor')
+                                                    <button class="btn btn-primary btn-pesan"
+                                                        data-property-id="{{ $property->id }}" data-bs-toggle="modal"
+                                                        data-bs-target="#addEvent">
+                                                        Pesan Sekarang
+                                                    </button>
+                                                @endif
+                                            @endauth
                                         </div>
                                     </div>
                                 </div>

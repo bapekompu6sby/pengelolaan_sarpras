@@ -10,6 +10,10 @@
 
 @section('head')
     <style>
+        .bg-secondary-subtle {
+            background: #f1f3f5 !important;
+        }
+
         .room-card {
             border: 1px solid #e9ecef;
             border-radius: .85rem;
@@ -128,24 +132,49 @@
                             <div class="mt-2">
                                 @forelse ($room['upcoming'] as $u)
                                     <ul class="list-compact">
-                                        <li
-                                            class="d-flex align-items-center justify-content-between small border-bottom py-1">
-                                            <div>
+                                        <li class="small py-1">
+                                            <div class="d-flex align-items-center justify-content-between">
                                                 <strong>{{ $u['range'] }}</strong>
-                                            </div>
-                                            <div class="text-end">
                                                 <span class="badge bg-light text-dark text-truncate-max"
-                                                    title="{{ $u['guest'] }}">{{ $u['guest'] }}</span>
+                                                    title="{{ $u['guest'] }}">
+                                                    {{ $u['guest'] }}
+                                                </span>
                                             </div>
+
+                                            @php
+                                                $names = collect($u['penghunis'] ?? []);
+                                                $limit = 3;
+                                                $extra = max(0, $names->count() - $limit);
+                                            @endphp
+
+                                            @if ($names->isNotEmpty())
+                                                <div class="mt-1 d-flex flex-wrap gap-1">
+                                                    @foreach ($names->take($limit) as $nm)
+                                                        <span
+                                                            class="badge rounded-pill bg-secondary-subtle text-dark border">{{ $nm }}</span>
+                                                    @endforeach
+                                                    @if ($extra > 0)
+                                                        <span
+                                                            class="badge rounded-pill bg-secondary-subtle text-dark border">+{{ $extra }}</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+
+
                                         </li>
                                     </ul>
-
                                 @empty
                                     <div class="text-muted small">Belum ada jadwal.</div>
                                 @endforelse
                             </div>
 
-                            <div class="mt-2 text-muted small">Total jadwal: {{ $room['total'] }}</div>
+                            {{-- Opsional: total penghuni di kamar ini (kalau dikirim dari controller) --}}
+                            @if (!empty($room['total_penghuni']))
+                                <div class="mt-2 text-muted small">
+                                    Total penghuni tercatat: {{ $room['total_penghuni'] }}
+                                </div>
+                            @endif
+
                         </div>
                     </div>
                 @endforeach
