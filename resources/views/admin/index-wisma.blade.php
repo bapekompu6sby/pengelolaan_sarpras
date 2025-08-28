@@ -137,8 +137,6 @@
 
 @section('script')
 
-<script src="{{ asset('/assets/vendor/libs/datatables/datatables.min.js') }}"></script>
-<script src="{{ asset('/assets/vendor/js/datatables.js') }}"></script>
 <script>
   const check = document.querySelectorAll('.form-check-input');
   const deleteBtn = document.getElementById('delete');

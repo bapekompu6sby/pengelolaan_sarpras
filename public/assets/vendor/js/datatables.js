@@ -1,6 +1,5 @@
 $(document).ready(function () {
     "use strict";
-
     $("#datatable").DataTable();
 
     $("#datatable1").DataTable({
@@ -55,27 +54,23 @@ $(document).ready(function () {
                 });
         },
     });
-});
-
-$(document).ready(function () {
-    "use strict";
 
     // Tabel kegiatan
-    $("#datatable-kegiatan").DataTable({
-        pageLength: 10,
-        lengthMenu: [5, 10, 25, 50],
-        order: [[2, "asc"]], 
-        language: {
-            search: "Cari:",
-            lengthMenu: "Tampilkan _MENU_ data",
-            zeroRecords: "Tidak ada hasil yang cocok",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-            infoEmpty: "Tidak ada data tersedia",
-            infoFiltered: "(disaring dari total _MAX_ data)",
-        },
-        columnDefs: [
-            { targets: [1], className: "fw-semibold" }, // kasih bold untuk kolom kegiatan
-            { targets: [4], className: "text-nowrap" }, // biar no HP tidak kepotong
-        ],
-    });
+    // $("#datatable-kegiatan").DataTable({
+    //     pageLength: 10,
+    //     lengthMenu: [5, 10, 25, 50],
+    //     order: [[2, "asc"]], 
+    //     language: {
+    //         search: "Cari:",
+    //         lengthMenu: "Tampilkan _MENU_ data",
+    //         zeroRecords: "Tidak ada hasil yang cocok",
+    //         info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+    //         infoEmpty: "Tidak ada data tersedia",
+    //         infoFiltered: "(disaring dari total _MAX_ data)",
+    //     },
+    //     columnDefs: [
+    //         { targets: [1], className: "fw-semibold" }, // kasih bold untuk kolom kegiatan
+    //         { targets: [4], className: "text-nowrap" }, // biar no HP tidak kepotong
+    //     ],
+    // });
 });

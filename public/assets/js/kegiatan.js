@@ -2,6 +2,7 @@
 
 $(document).ready(function() {
     // ==== DataTable: Daftar Kegiatan ====
+    console.log("kegiatan")
     $('#datatable-kegiatan').DataTable({
         pageLength: 10,
         lengthMenu: [5, 10, 25, 50],

@@ -118,7 +118,8 @@
 <script src="{{ asset('/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
 
 <script src="{{ asset('assets/vendor/js/menu.js/') }}"></script>
-
+<script src="{{ asset('/assets/vendor/libs/datatables/datatables.min.js') }}"></script>
+<script src="{{ asset('/assets/vendor/js/datatables.js') }}"></script>
 
 
 @section('script')

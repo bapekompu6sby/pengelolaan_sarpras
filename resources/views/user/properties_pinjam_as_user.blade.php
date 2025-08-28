@@ -218,8 +218,6 @@
 @endsection
 
 @section('script')
-    <script src="{{ asset('/assets/vendor/libs/datatables/datatables.min.js') }}"></script>
-    <script src="{{ asset('/assets/vendor/js/datatables.js') }}"></script>
 
     <script>
         document.getElementById('btnShowModal').addEventListener('click', function() {

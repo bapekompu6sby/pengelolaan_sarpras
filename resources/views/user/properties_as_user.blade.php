@@ -210,8 +210,6 @@
 @endsection
 
 @section('script')
-    <script src="{{ asset('/assets/vendor/libs/datatables/datatables.min.js') }}"></script>
-    <script src="{{ asset('/assets/vendor/js/datatables.js') }}"></script>
     <script src="{{ asset('/assets/vendor/libs/fullcalendar/lib/main.min.js') }}"></script>
     <script>
         const getEvents = async () => {
