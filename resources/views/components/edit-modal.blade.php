@@ -552,7 +552,7 @@
                                     <span class="badge bg-danger">Ditolak</span>
                                 @endif
                             </p>
-                            @if ($t->status == 'approved' && ($t->properties->type == 'kamar' || $t->properties->type == 'asrama'))
+                            @if ($t->status == 'approved' && ($t->properties->type == 'paviliun' || $t->properties->type == 'asrama'))
 
                                 <p class="mt-3 mb-1"><strong>nama kamar:</strong></p>
                                 <ul>
