@@ -22,34 +22,37 @@ class TransactionController extends Controller
 {
     public function history_transaction()
     {
-        if (auth()->check()) {
-            if (auth()->user()->role == 'admin') {
-                $transactions = Transaction::with([
-                    'properties.kamar',
-                    'detailKamars.kamar'
-                ])->get();
-            } else {
-                $transactions = Transaction::with([
-                    'properties.kamar',
-                    'detailKamars.kamar'
-                ])->where('user_id', auth()->user()->id)->get();
-            }
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
         }
 
-        $ruangan = Properties::all();
-        // echo "<pre>";
-        // print_r($ruangan->toArray());
-        // echo "</pre>";
+        $baseQuery = Transaction::with([
+            'properties.kamar',     // pastikan nama relasi sesuai model kamu
+            'detailKamars.kamar',
+        ]);
 
-        // echo "<pre>";
-        // print_r($transactions->toArray());
-        // echo "</pre>";
+        $transactions = $user->role === 'admin'
+            ? $baseQuery->get()
+            : $baseQuery->where('user_id', $user->id)->get();
+
+        // siapkan "floors" sebagai collection ter-group
+        $transactions->each(function ($t) {
+            $kamar = optional($t->properties)->kamar ?? collect();
+            // jika tidak ada kolom 'lantai', sesuaikan key group-nya
+            $floors = $kamar->groupBy(fn($k) => $k->lantai ?? 'Tanpa Lantai');
+            // "tanamkan" ke relasi virtual biar $t->floors bisa dipakai di Blade
+            $t->setRelation('floors', $floors);
+        });
+
+        $ruangan = Properties::all();
 
         return view('user.history_transaction', [
             'transactions' => $transactions,
-            'ruangan' => $ruangan,
+            'ruangan'      => $ruangan,
         ]);
     }
+
 
 
 
@@ -164,6 +167,9 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
     public function ruangan_store(Request $request)
     {
+        // echo "<pre>";
+        // print_r($request->toArray());
+        // echo "</pre>";
         $colors = [
             'primary'   => '#0d6efd',
             'secondary' => '#6c757d',
@@ -193,11 +199,19 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'total_harga' => 'required|integer',
         ]);
 
-        $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
-        if ($transactions->count() > 0) {
+        // $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
+
+        $property = Properties::findOrFail($request->venue);
+
+        $isExclusive = in_array($property->type, ['aula', 'kelas']);
+
+        $conflicts = $this->check_available_ruangan($request->start, $request->end, $property->id);
+
+        if ($isExclusive && $conflicts->isNotEmpty()) {
             return redirect()->route('transactions.ruangan.show')
                 ->with('failed', 'Ruangan sudah terpakai');
         }
+
 
 
         $paymentReceiptPath = null;
@@ -370,7 +384,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
         $txQuery = Transaction::query()
             ->with([
-                
+
                 'properties:id,name,type,capacity,price,unit,image_path',
                 'properties.kamar' => function ($q) {
                     $q->select('id', 'properties_id', 'nama_kamar', 'kapasitas', 'lantai')
@@ -378,20 +392,20 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                         ->orderBy('nama_kamar');
                 },
 
-                
+
                 'detailKamars.kamar:id,nama_kamar,kapasitas,lantai,properties_id',
                 'detailKamars.penghunis:id,detail_kamar_transaction_id,nama_penghuni',
             ])
             ->latest();
 
-        
+
         if (!$user || $user->role !== 'admin') {
             $txQuery->where('user_id', $user?->id);
         }
 
         $transactions = $txQuery->get();
 
-        
+
         $transactions->each(function ($t) {
             $floors = collect($t->properties?->kamar ?? [])
                 ->filter(fn($k) => isset($k->lantai) && $k->lantai !== '' && (int)$k->lantai !== 0)

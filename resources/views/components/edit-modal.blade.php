@@ -309,7 +309,7 @@
             </div>
         </div>
         @once
-            @section('script')
+            @push('scripts')
                 <script>
                     document.addEventListener('change', function(e) {
                         if (!e.target.classList.contains('room-check')) return;
@@ -474,7 +474,7 @@
                         if (submitBtn) submitBtn.disabled = !anyChecked;
                     }
                 </script>
-            @endsection
+            @endpush
         @endonce
     </div>
 
