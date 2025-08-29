@@ -73,9 +73,11 @@
                                     <tr>
                                         @if (Auth::user()->role == 'admin')
                                             <th>
-                                                <input type="checkbox" class="form-check-input" value="{{ $t->id }}">
+                                                <input type="checkbox" class="form-check-input js-bulk-check"
+                                                    value="{{ $t->id }}">
                                             </th>
                                         @endif
+
                                         <td>{{ $t->name }}</td>
                                         <td><strong>{{ ucfirst($t->instansi) }}</strong></td>
                                         <td>{{ $t->kegiatan }}</td>
@@ -98,12 +100,6 @@
                                                 @endauth
                                             </div>
                                         </td>
-
-
-
-
-
-
                                         <td><span
                                                 class="me-1">{{ date('Y-m-d', strtotime($t->start)) . ' | ' . date('Y-m-d', strtotime($t->end)) }}</span>
                                         </td>
@@ -193,34 +189,52 @@
                 </div>
             </div>
         </div>
+
+
+        @push('scripts')
+            <script>
+                (function() {
+                    const table = document.getElementById('datatable2');
+                    const deleteBtn = document.getElementById('delete');
+                    const selectedEl = document.getElementById('selected');
+                    let selected = [];
+
+                    // Delegated listener: aman terhadap redraw DataTables
+                    table.addEventListener('change', function(e) {
+                        if (!e.target.classList.contains('js-bulk-check')) return;
+
+                        const id = parseInt(e.target.value, 10);
+                        if (e.target.checked) {
+                            if (!selected.includes(id)) selected.push(id);
+                        } else {
+                            selected = selected.filter(s => s !== id);
+                        }
+
+                        // sinkronkan ke input hidden (kirim sebagai CSV)
+                        selectedEl.value = selected.join(',');
+
+                        // tampil/sembunyikan tombol delete
+                        if (selected.length > 0) {
+                            deleteBtn.classList.remove('d-none');
+                        } else {
+                            deleteBtn.classList.add('d-none');
+                        }
+                    });
+
+                    // (opsional) kalau kamu inisialisasi DataTables di tempat lain, 
+                    // tambahkan handler redraw untuk re-sync tampilan tombol
+                    document.addEventListener('draw.dt', function() {
+                        // pastikan tombol sesuai state 'selected'
+                        if (selected.length > 0) {
+                            deleteBtn.classList.remove('d-none');
+                        } else {
+                            deleteBtn.classList.add('d-none');
+                        }
+                    });
+                })();
+            </script>
+        @endpush
+
     </div>
     <!-- / Content -->
-@endsection
-
-@section('script')
-    <script>
-        const check = document.querySelectorAll('.form-check-input');
-        const deleteBtn = document.getElementById('delete');
-        let formSelected = document.getElementById('selected');
-        let selected = [];
-
-        check.forEach((c) => {
-            c.addEventListener('change', (e) => {
-                let value = parseInt(e.target.value)
-                if (e.target.checked) {
-                    selected.push(value);
-                } else {
-                    selected = selected.filter((s) => s !== value);
-                }
-                formSelected.value = selected;
-                console.log(formSelected);
-
-                if (selected.length > 0) {
-                    deleteBtn.classList.remove('d-none');
-                } else {
-                    deleteBtn.classList.add('d-none');
-                }
-            });
-        });
-    </script>
 @endsection

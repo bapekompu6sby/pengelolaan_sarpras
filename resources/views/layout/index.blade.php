@@ -109,6 +109,7 @@
             </div>
         </div>
     </div>
+
 </body>
 
 
@@ -120,6 +121,8 @@
 <script src="{{ asset('assets/vendor/js/menu.js/') }}"></script>
 <script src="{{ asset('/assets/vendor/libs/datatables/datatables.min.js') }}"></script>
 <script src="{{ asset('/assets/vendor/js/datatables.js') }}"></script>
+{{-- sebelum </body> --}}
+@stack('scripts')
 
 
 @section('script')

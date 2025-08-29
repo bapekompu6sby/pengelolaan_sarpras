@@ -213,269 +213,276 @@
                     @csrf
 
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalTambahPenghuniLabel-{{ $t->id }}">
-                            Pilih Kamar & Input Penghuni — {{ $t->properties->name }}
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Tutup"></button>
+                        <div class="d-flex flex-column">
+                            <h5 class="modal-title d-flex align-items-center gap-2 m-0"
+                                id="modalTambahPenghuniLabel-{{ $t->id }}">
+                                Pilih Kamar & Input Penghuni — {{ $t->properties->name }}({{ $t->name }})
+
+                            </h5>
+                            <div class="mt-1 fs-5 fw-semibold text-muted">Ordered unit: {{ $t->ordered_unit }}
+                        </div>
+
+
                     </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
 
-                    <div class="modal-body">
-                        {{-- kirim info transaksi --}}
-                        <input type="hidden" name="transaction_id" value="{{ $t->id }}">
-                        <input type="hidden" name="start" value="{{ $t->start }}">
-                        <input type="hidden" name="end" value="{{ $t->end }}">
 
-                        {{-- Tabs lantai (hanya yang punya lantai) --}}
-                        @if ($t->floors->isEmpty())
-                            <div class="alert alert-warning small mb-3">
-                                Tidak ada kamar dengan data lantai. Lengkapi kolom <em>lantai</em> pada data kamar.
-                            </div>
-                        @else
-                            <ul class="nav nav-tabs lantai-tabs mb-3" id="lantaiTab-{{ $t->id }}"
-                                role="tablist">
-                                @foreach ($t->floors as $lantai => $roomsOnFloor)
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link {{ $loop->first ? 'active' : '' }}"
-                                            id="lantai-{{ $t->id }}-tab-{{ $lantai }}"
-                                            data-bs-toggle="tab"
-                                            data-bs-target="#lantai-{{ $t->id }}-pane-{{ $lantai }}"
-                                            type="button" role="tab"
-                                            aria-controls="lantai-{{ $t->id }}-pane-{{ $lantai }}"
-                                            aria-selected="{{ $loop->first ? 'true' : 'false' }}">
-                                            Lantai {{ $lantai }}
-                                            <span class="badge bg-secondary ms-1">{{ $roomsOnFloor->count() }}</span>
-                                        </button>
-                                    </li>
-                                @endforeach
-                            </ul>
 
-                            <div class="tab-content" id="lantaiTabContent-{{ $t->id }}">
-                                @foreach ($t->floors as $lantai => $roomsOnFloor)
-                                    <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}"
-                                        id="lantai-{{ $t->id }}-pane-{{ $lantai }}" role="tabpanel"
-                                        aria-labelledby="lantai-{{ $t->id }}-tab-{{ $lantai }}"
-                                        tabindex="0">
 
-                                        <div class="row g-3">
-                                            @foreach ($roomsOnFloor as $k)
-                                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                                                    <div class="border rounded-3 p-3 h-100">
-                                                        <div class="d-flex justify-content-between align-items-start">
-                                                            <div>
-                                                                <div class="fw-bold">{{ $k->nama_kamar }}</div>
-                                                                <div class="text-muted small">
-                                                                    Kapasitas: {{ $k->kapasitas }} · Lantai
-                                                                    {{ $k->lantai }}
-                                                                </div>
-                                                            </div>
 
-                                                            <div class="form-check">
-                                                                <input class="form-check-input room-check"
-                                                                    type="checkbox"
-                                                                    id="room-{{ $t->id }}-{{ $k->id }}"
-                                                                    name="kamar_id[]" value="{{ $k->id }}"
-                                                                    data-capacity="{{ (int) $k->kapasitas }}"
-                                                                    data-target="#penghuni-wrap-{{ $t->id }}-{{ $k->id }}">
-                                                            </div>
+            <div class="modal-body">
+                {{-- kirim info transaksi --}}
+                <input type="hidden" name="transaction_id" value="{{ $t->id }}">
+                <input type="hidden" name="start" value="{{ $t->start }}">
+                <input type="hidden" name="end" value="{{ $t->end }}">
+
+                {{-- Tabs lantai (hanya yang punya lantai) --}}
+                @if ($t->floors->isEmpty())
+                    <div class="alert alert-warning small mb-3">
+                        Tidak ada kamar dengan data lantai. Lengkapi kolom <em>lantai</em> pada data kamar.
+                    </div>
+                @else
+                    <ul class="nav nav-tabs lantai-tabs mb-3" id="lantaiTab-{{ $t->id }}" role="tablist">
+                        @foreach ($t->floors as $lantai => $roomsOnFloor)
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ $loop->first ? 'active' : '' }}"
+                                    id="lantai-{{ $t->id }}-tab-{{ $lantai }}" data-bs-toggle="tab"
+                                    data-bs-target="#lantai-{{ $t->id }}-pane-{{ $lantai }}"
+                                    type="button" role="tab"
+                                    aria-controls="lantai-{{ $t->id }}-pane-{{ $lantai }}"
+                                    aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                                    Lantai {{ $lantai }}
+                                    <span class="badge bg-secondary ms-1">{{ $roomsOnFloor->count() }}</span>
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <div class="tab-content" id="lantaiTabContent-{{ $t->id }}">
+                        @foreach ($t->floors as $lantai => $roomsOnFloor)
+                            <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}"
+                                id="lantai-{{ $t->id }}-pane-{{ $lantai }}" role="tabpanel"
+                                aria-labelledby="lantai-{{ $t->id }}-tab-{{ $lantai }}" tabindex="0">
+
+                                <div class="row g-3">
+                                    @foreach ($roomsOnFloor as $k)
+                                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                                            <div class="border rounded-3 p-3 h-100">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <div class="fw-bold">{{ $k->nama_kamar }}</div>
+                                                        <div class="text-muted small">
+                                                            Kapasitas: {{ $k->kapasitas }} · Lantai
+                                                            {{ $k->lantai }}
                                                         </div>
+                                                    </div>
 
-                                                        <div id="status-{{ $t->id }}-{{ $k->id }}"
-                                                            class="small mt-2"></div>
-                                                        <div id="penghuni-wrap-{{ $t->id }}-{{ $k->id }}"
-                                                            class="mt-2"></div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input room-check" type="checkbox"
+                                                            id="room-{{ $t->id }}-{{ $k->id }}"
+                                                            name="kamar_id[]" value="{{ $k->id }}"
+                                                            data-capacity="{{ (int) $k->kapasitas }}"
+                                                            data-target="#penghuni-wrap-{{ $t->id }}-{{ $k->id }}">
                                                     </div>
                                                 </div>
-                                            @endforeach
+
+                                                <div id="status-{{ $t->id }}-{{ $k->id }}"
+                                                    class="small mt-2"></div>
+                                                <div id="penghuni-wrap-{{ $t->id }}-{{ $k->id }}"
+                                                    class="mt-2"></div>
+                                            </div>
                                         </div>
+                                    @endforeach
+                                </div>
 
-                                    </div>
-                                @endforeach
                             </div>
-                        @endif
-
-
-
-
-                        <small class="text-muted d-block mt-3">
-                            Centang kamar yang akan dipakai, lalu isi nama penghuni (maksimal sesuai kapasitas kamar).
-                        </small>
+                        @endforeach
                     </div>
+                @endif
 
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </div>
-                </form>
+
+
+
+                <small class="text-muted d-block mt-3">
+                    Centang kamar yang akan dipakai, lalu isi nama penghuni (maksimal sesuai kapasitas kamar).
+                </small>
             </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+            </form>
         </div>
-        @once
-            @push('scripts')
-                <script>
-                    document.addEventListener('change', function(e) {
-                        if (!e.target.classList.contains('room-check')) return;
+    </div>
+    @once
+        @section('script')
+            <script>
+                document.addEventListener('change', function(e) {
+                    if (!e.target.classList.contains('room-check')) return;
 
-                        const modal = e.target.closest('.modal');
-                        const formEl = modal.querySelector('form'); // <-- ambil form ID yg benar
-                        const wrap = modal.querySelector(e.target.dataset.target);
-                        const cap = parseInt(e.target.dataset.capacity || '1', 10);
-                        if (!wrap) return;
+                    const modal = e.target.closest('.modal');
+                    const formEl = modal.querySelector('form'); // <-- ambil form ID yg benar
+                    const wrap = modal.querySelector(e.target.dataset.target);
+                    const cap = parseInt(e.target.dataset.capacity || '1', 10);
+                    if (!wrap) return;
 
-                        wrap.innerHTML = '';
+                    wrap.innerHTML = '';
 
-                        if (!e.target.checked) {
-                            toggleSubmit(modal);
-                            return;
-                        }
-
-                        for (let i = 1; i <= Math.max(1, cap); i++) {
-                            // bikin group
-                            const group = document.createElement('div');
-                            group.className = 'input-group input-group-sm mb-2';
-
-                            // bikin span #
-                            const span = document.createElement('span');
-                            span.className = 'input-group-text';
-                            span.textContent = `#${i}`;
-
-                            // bikin input
-                            const input = document.createElement('input');
-                            input.type = 'text';
-                            input.name = `nama_penghuni[${e.target.value}][]`; // <--- penting: name bersarang per kamar
-                            input.className = 'form-control';
-                            input.placeholder = `Nama penghuni ${i}`;
-
-                            // trik penting: force asosiasi ke form
-                            input.setAttribute('form', formEl.id); // <--- kunci agar masuk ke request
-
-                            group.appendChild(span);
-                            group.appendChild(input);
-                            wrap.appendChild(group);
-                        }
-
+                    if (!e.target.checked) {
                         toggleSubmit(modal);
-                    });
-
-                    function toggleSubmit(modal) {
-                        if (!modal) return;
-                        const anyChecked = modal.querySelectorAll('.room-check:checked').length > 0;
-                        const submitBtn = modal.querySelector('button[type="submit"]');
-                        if (submitBtn) submitBtn.disabled = !anyChecked;
+                        return;
                     }
 
-                    // (opsional) debug: lihat apa yang akan terkirim
-                    document.addEventListener('submit', function(e) {
-                        const form = e.target;
-                        const modal = form.closest('.modal');
-                        if (!modal || !form.id?.startsWith('formTambahPenghuni-')) return;
+                    for (let i = 1; i <= Math.max(1, cap); i++) {
+                        // bikin group
+                        const group = document.createElement('div');
+                        group.className = 'input-group input-group-sm mb-2';
 
-                        // uncomment kalau mau cek di console
-                        // const fd = new FormData(form);
-                        // for (const [k,v] of fd.entries()) console.log(k, '=>', v);
-                    });
-                </script>
-                <script>
-                    // helper: buat badge cepat
-                    function badge(html, type = 'secondary') {
-                        return `<span class="badge bg-${type}">${html}</span>`;
+                        // bikin span #
+                        const span = document.createElement('span');
+                        span.className = 'input-group-text';
+                        span.textContent = `#${i}`;
+
+                        // bikin input
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.name = `nama_penghuni[${e.target.value}][]`; // <--- penting: name bersarang per kamar
+                        input.className = 'form-control';
+                        input.placeholder = `Nama penghuni ${i}`;
+
+                        // trik penting: force asosiasi ke form
+                        input.setAttribute('form', formEl.id); // <--- kunci agar masuk ke request
+
+                        group.appendChild(span);
+                        group.appendChild(input);
+                        wrap.appendChild(group);
                     }
 
-                    document.addEventListener('change', async function(e) {
-                        if (!e.target.classList.contains('room-check')) return;
+                    toggleSubmit(modal);
+                });
 
-                        const modal = e.target.closest('.modal');
-                        const formEl = modal.querySelector('form');
-                        const txId = modal.querySelector('input[name="transaction_id"]').value;
-                        const start = modal.querySelector('input[name="start"]').value;
-                        const end = modal.querySelector('input[name="end"]').value;
-                        const kamarId = e.target.value;
+                function toggleSubmit(modal) {
+                    if (!modal) return;
+                    const anyChecked = modal.querySelectorAll('.room-check:checked').length > 0;
+                    const submitBtn = modal.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.disabled = !anyChecked;
+                }
 
-                        const wrap = modal.querySelector(e.target.dataset.target); // penghuni-wrap
-                        const status = modal.querySelector(`#status-${txId}-${kamarId}`);
-                        const cap = parseInt(e.target.dataset.capacity || '1', 10);
+                // (opsional) debug: lihat apa yang akan terkirim
+                document.addEventListener('submit', function(e) {
+                    const form = e.target;
+                    const modal = form.closest('.modal');
+                    if (!modal || !form.id?.startsWith('formTambahPenghuni-')) return;
 
-                        // reset area
-                        wrap.innerHTML = '';
-                        status.innerHTML = '';
+                    // uncomment kalau mau cek di console
+                    // const fd = new FormData(form);
+                    // for (const [k,v] of fd.entries()) console.log(k, '=>', v);
+                });
+            </script>
+            <script>
+                // helper: buat badge cepat
+                function badge(html, type = 'secondary') {
+                    return `<span class="badge bg-${type}">${html}</span>`;
+                }
 
-                        // kalau uncheck: cukup update tombol submit
-                        if (!e.target.checked) {
+                document.addEventListener('change', async function(e) {
+                    if (!e.target.classList.contains('room-check')) return;
+
+                    const modal = e.target.closest('.modal');
+                    const formEl = modal.querySelector('form');
+                    const txId = modal.querySelector('input[name="transaction_id"]').value;
+                    const start = modal.querySelector('input[name="start"]').value;
+                    const end = modal.querySelector('input[name="end"]').value;
+                    const kamarId = e.target.value;
+
+                    const wrap = modal.querySelector(e.target.dataset.target); // penghuni-wrap
+                    const status = modal.querySelector(`#status-${txId}-${kamarId}`);
+                    const cap = parseInt(e.target.dataset.capacity || '1', 10);
+
+                    // reset area
+                    wrap.innerHTML = '';
+                    status.innerHTML = '';
+
+                    // kalau uncheck: cukup update tombol submit
+                    if (!e.target.checked) {
+                        toggleSubmit(modal);
+                        return;
+                    }
+
+                    // panggil route check
+                    const base = "{{ route('kamar.check', [':tx', ':kamar']) }}";
+                    const url = base
+                        .replace(':tx', encodeURIComponent(txId))
+                        .replace(':kamar', encodeURIComponent(kamarId)) +
+                        `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+
+                    // loading state kecil
+                    status.innerHTML = badge('Cek...', 'light');
+
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+
+                        if (!data.ok) {
+                            status.innerHTML = badge(data.message || 'Gagal cek', 'danger');
+                            e.target.checked = false;
                             toggleSubmit(modal);
                             return;
                         }
 
-                        // panggil route check
-                        const base = "{{ route('kamar.check', [':tx', ':kamar']) }}";
-                        const url = base
-                            .replace(':tx', encodeURIComponent(txId))
-                            .replace(':kamar', encodeURIComponent(kamarId)) +
-                            `?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+                        if (data.available) {
+                            // render input nama penghuni sesuai kapasitas
+                            for (let i = 1; i <= Math.max(1, cap); i++) {
+                                const group = document.createElement('div');
+                                group.className = 'input-group input-group-sm mb-2';
 
-                        // loading state kecil
-                        status.innerHTML = badge('Cek...', 'light');
+                                const span = document.createElement('span');
+                                span.className = 'input-group-text';
+                                span.textContent = `#${i}`;
 
-                        try {
-                            const res = await fetch(url);
-                            const data = await res.json();
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.name = `nama_penghuni[${kamarId}][]`;
+                                input.className = 'form-control';
+                                input.placeholder = `Nama penghuni ${i}`;
+                                input.setAttribute('form', formEl.id); // force ikut submit
 
-                            if (!data.ok) {
-                                status.innerHTML = badge(data.message || 'Gagal cek', 'danger');
-                                e.target.checked = false;
-                                toggleSubmit(modal);
-                                return;
+                                group.appendChild(span);
+                                group.appendChild(input);
+                                wrap.appendChild(group);
                             }
 
-                            if (data.available) {
-                                // render input nama penghuni sesuai kapasitas
-                                for (let i = 1; i <= Math.max(1, cap); i++) {
-                                    const group = document.createElement('div');
-                                    group.className = 'input-group input-group-sm mb-2';
-
-                                    const span = document.createElement('span');
-                                    span.className = 'input-group-text';
-                                    span.textContent = `#${i}`;
-
-                                    const input = document.createElement('input');
-                                    input.type = 'text';
-                                    input.name = `nama_penghuni[${kamarId}][]`;
-                                    input.className = 'form-control';
-                                    input.placeholder = `Nama penghuni ${i}`;
-                                    input.setAttribute('form', formEl.id); // force ikut submit
-
-                                    group.appendChild(span);
-                                    group.appendChild(input);
-                                    wrap.appendChild(group);
-                                }
-
-                                status.innerHTML = badge('Tersedia', 'success');
-                            } else {
-                                // tampilkan konflik lalu uncheck
-                                const bentroks = (data.conflicts || [])
-                                    .map(c => `${c.start}–${c.end}`)
-                                    .join(', ');
-                                status.innerHTML = badge('Bentrok', 'danger') +
-                                    (bentroks ? ` <div class="text-muted mt-1">(${bentroks})</div>` : '');
-                                e.target.checked = false;
-                            }
-
-                        } catch (err) {
-                            console.error(err);
-                            status.innerHTML = badge('Error cek ruangan', 'danger');
+                            status.innerHTML = badge('Tersedia', 'success');
+                        } else {
+                            // tampilkan konflik lalu uncheck
+                            const bentroks = (data.conflicts || [])
+                                .map(c => `${c.start}–${c.end}`)
+                                .join(', ');
+                            status.innerHTML = badge('Bentrok', 'danger') +
+                                (bentroks ? ` <div class="text-muted mt-1">(${bentroks})</div>` : '');
                             e.target.checked = false;
                         }
 
-                        toggleSubmit(modal);
-                    });
-
-                    // aktif/nonaktifkan tombol submit per modal
-                    function toggleSubmit(modal) {
-                        if (!modal) return;
-                        const anyChecked = modal.querySelectorAll('.room-check:checked').length > 0;
-                        const submitBtn = modal.querySelector('button[type="submit"]');
-                        if (submitBtn) submitBtn.disabled = !anyChecked;
+                    } catch (err) {
+                        console.error(err);
+                        status.innerHTML = badge('Error cek ruangan', 'danger');
+                        e.target.checked = false;
                     }
-                </script>
-            @endpush
-        @endonce
+
+                    toggleSubmit(modal);
+                });
+
+                // aktif/nonaktifkan tombol submit per modal
+                function toggleSubmit(modal) {
+                    if (!modal) return;
+                    const anyChecked = modal.querySelectorAll('.room-check:checked').length > 0;
+                    const submitBtn = modal.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.disabled = !anyChecked;
+                }
+            </script>
+        @endsection
+    @endonce
     </div>
 
 

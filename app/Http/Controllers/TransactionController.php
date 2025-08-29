@@ -443,7 +443,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     {
         $ids = explode(',', request()->selected);
         Transaction::destroy($ids);
-        return redirect()->route('transactions.ruangan.show');
+        // arilmubin
+        return redirect()->back()->with('success', 'Transaksi berhasil dihapus');
     }
 
     public function ruangan_export()
