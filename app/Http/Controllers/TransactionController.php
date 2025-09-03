@@ -201,16 +201,9 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
         // $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
 
-        $property = Properties::findOrFail($request->venue);
-
-        $isExclusive = in_array($property->type, ['aula', 'kelas']);
-
-        $conflicts = $this->check_available_ruangan($request->start, $request->end, $property->id);
-
-        if ($isExclusive && $conflicts->isNotEmpty()) {
-            return redirect()->route('transactions.ruangan.show')
-                ->with('failed', 'Ruangan sudah terpakai');
-        }
+        // if ($transactions->count() > 0) {
+        //     return redirect()->back()->with('failed', 'Ruangan tidak tersedia');
+        // }
 
 
 
