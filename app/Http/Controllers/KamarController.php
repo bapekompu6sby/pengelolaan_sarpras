@@ -21,6 +21,7 @@ class KamarController extends Controller
                 ->orderBy('nama_kamar'),
         ])
             ->whereIn('type', ['asrama', 'paviliun'])
+            ->orderBy('name', 'asc')
             ->get();
 
 
