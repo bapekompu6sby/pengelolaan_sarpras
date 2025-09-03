@@ -1062,6 +1062,16 @@
                                     <input type="file" name="request_letter" class="form-control mt-2"
                                         accept=".pdf,.jpg,.jpeg,.png">
                                 </div>
+                                {{-- hanya menampilkan file download billing qr --}}
+                                <div class="mb-3">
+                                    <p><strong>Billing Code:</strong></p>
+                                    @if ($t->billing_qr)
+                                        <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                            target="_blank">Download</a>
+                                    @else
+                                        <em>Billing code belum diupload di status "menunggu pembayaran"</em>
+                                    @endif
+                                </div>
                             </div>
 
                             {{-- Status --}}
@@ -1101,14 +1111,14 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="billing_qr-{{ $t->id }}" class="form-label">QR
-                                            Code/Barcode</label>
+                                        <label for="billing_qr-{{ $t->id }}" class="form-label">File code
+                                            pembayaran</label>
                                         <input type="file" class="form-control"
                                             id="billing_qr-{{ $t->id }}" name="billing_qr"
                                             accept=".pdf,image/*">
                                         <small class="text-muted">Optional — PDF or Image allowed</small>
                                         @if ($t->billing_qr)
-                                            <p class="mt-2">Current File:
+                                            <p class="mt-2">File saat ini:
                                                 <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
                                                     target="_blank">Download</a>
                                             </p>
