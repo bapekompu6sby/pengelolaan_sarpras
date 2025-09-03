@@ -138,29 +138,44 @@
                                                 @endif
 
                                                 <div class="row g-3">
-                                                    <div class="col-6"><strong>Tipe
-                                                            Ruangan:</strong><br>{{ $property->room_type ?: '-' }}</div>
                                                     <div class="col-6">
-                                                        <strong>Luas:</strong><br>{{ $property->area ?: '-' }} m²
-                                                    </div>
-                                                    <div class="col-6">
-                                                        <strong>Fasilitas:</strong><br>{{ $property->facilities ?: '-' }}
+                                                        <strong>Tipe Ruangan:</strong><br>
+                                                        <span class="text-break">{{ $property->room_type ?: '-' }}</span>
                                                     </div>
                                                     <div class="col-6">
-                                                        <strong>Harga:</strong><br>{{ $property->price ? 'Rp ' . number_format($property->price, 0, ',', '.') : '-' }}
+                                                        <strong>Luas:</strong><br>
+                                                        {{ $property->area ?: '-' }} m²
                                                     </div>
-                                                    <div class="col-6"><strong>Unit:</strong><br>{{ $property->unit }}
+                                                    <div class="col-6">
+                                                        <strong>Fasilitas:</strong><br>
+                                                        <div
+                                                            style="word-break: break-word; white-space: normal; max-height: 6rem; overflow-y: auto;">
+                                                            {{ $property->facilities ?: '-' }}
+                                                        </div>
                                                     </div>
-                                                    <div class="col-6"><strong>Jenis Ruangan:</strong><br><span
+                                                    <div class="col-6">
+                                                        <strong>Harga:</strong><br>
+                                                        {{ $property->price ? 'Rp ' . number_format($property->price, 0, ',', '.') : '-' }}
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <strong>Unit:</strong><br>
+                                                        <span class="text-break">{{ $property->unit }}</span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <strong>Jenis Ruangan:</strong><br>
+                                                        <span
                                                             class="badge bg-primary">{{ ucfirst($property->type) }}</span>
                                                     </div>
-                                                    <div class="col-6"><strong>Kapasitas:</strong><br><span
-                                                            class="badge bg-success">{{ $property->capacity }} orang</span>
+                                                    <div class="col-6">
+                                                        <strong>Kapasitas:</strong><br>
+                                                        <span class="badge bg-success">{{ $property->capacity }}
+                                                            orang</span>
                                                     </div>
                                                     <div class="col-6">
-                                                        <strong>Dibuat
-                                                            pada:</strong><br>{{ $property->created_at->format('d M Y H:i') }}
+                                                        <strong>Dibuat pada:</strong><br>
+                                                        {{ $property->created_at->format('d M Y H:i') }}
                                                     </div>
+
                                                 </div>
                                             </div>
 
@@ -278,4 +293,3 @@
 
 
 @endsection
-
