@@ -35,8 +35,8 @@
                                     </option>
                                     <option value="asrama" {{ $property->type == 'asrama' ? 'selected' : '' }}>Asrama
                                     </option>
-                                    <option value="pavilion" {{ $property->type == 'pavilion' ? 'selected' : '' }}>
-                                        Pavilion
+                                    <option value="paviliun" {{ $property->type == 'paviliun' ? 'selected' : '' }}>
+                                        Paviliun
                                     </option>
                                 </select>
                             </div>
