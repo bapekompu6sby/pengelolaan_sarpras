@@ -133,19 +133,29 @@
                                 @forelse ($room['upcoming'] as $u)
                                     <ul class="list-compact">
                                         <li class="small py-1">
+                                            @php
+                                                // Backward-compat: dukung 'pemesan' (baru) atau 'guest' (lama)
+                                                $pemesan = $u['pemesan'] ?? ($u['guest'] ?? '—');
+                                                $kegiatan = $u['kegiatan'] ?? null;
+                                                $names = collect($u['penghunis'] ?? []);
+                                                $limit = 5;
+                                                $extra = max(0, $names->count() - $limit);
+                                            @endphp
+
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <strong>{{ $u['range'] }}</strong>
                                                 <span class="badge bg-light text-dark text-truncate-max"
-                                                    title="{{ $u['guest'] }}">
-                                                    {{ $u['guest'] }}
+                                                    title="{{ $pemesan }}">
+                                                    {{ $pemesan }}
                                                 </span>
                                             </div>
 
-                                            @php
-                                                $names = collect($u['penghunis'] ?? []);
-                                                $limit = 3;
-                                                $extra = max(0, $names->count() - $limit);
-                                            @endphp
+                                            @if (!empty($kegiatan))
+                                                <div class="mt-1 text-truncate-max" title="{{ $kegiatan }}">
+                                                    Kegiatan: {{ $kegiatan }}
+                                                </div>
+                                            @endif
+
 
                                             @if ($names->isNotEmpty())
                                                 <div class="mt-1 d-flex flex-wrap gap-1">
@@ -159,9 +169,8 @@
                                                     @endif
                                                 </div>
                                             @endif
-
-
                                         </li>
+
                                     </ul>
                                 @empty
                                     <div class="text-muted small">Belum ada jadwal.</div>

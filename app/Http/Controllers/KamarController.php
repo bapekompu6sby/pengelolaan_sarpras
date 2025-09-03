@@ -27,8 +27,8 @@ class KamarController extends Controller
         $properties->transform(function ($p) {
             $p->floors = $p->kamar
                 ->filter(fn($k) => !is_null($k->lantai) && (int)$k->lantai !== 0)
-                ->groupBy(fn($k) => (int) $k->lantai)  
-                ->sortKeys();                            
+                ->groupBy(fn($k) => (int) $k->lantai)
+                ->sortKeys();
 
             return $p;
         });
@@ -71,11 +71,14 @@ class KamarController extends Controller
         };
 
         $rooms = DetailKamarTransaction::with([
-            'kamar',                    // id, properties_id, nama_kamar, kapasitas
-            'transaction.user',        // pemesan (name)
-            'penghunis'                // list penghuni
+            'kamar:id,properties_id,nama_kamar,kapasitas',
+            // load relasi transaction sekalian kolom kegiatan & name
+            'transaction:id,name,kegiatan', // NEW
+            // kalau butuh data user-nya juga, boleh tetap load:
+            'transaction.user:id,name',
+            // optional: batasi kolom penghuni biar ringan
+            'penghunis:id,detail_kamar_transaction_id,nama_penghuni',
         ])
-            // ambil yang masih relevan dari hari ini ke depan (termasuk yang masih menginap)
             ->whereDate('end', '>=', $today)
             ->orderBy('start', 'asc')
             ->get()
@@ -91,28 +94,29 @@ class KamarController extends Controller
                     return [
                         'range'          => $formatRange($d->start, $d->end),
                         'tx'             => $d->transaction_id,
-                        'guest'          => data_get($d, 'transaction.name', '—'),
-                        'penghunis'      => $d->penghunis->pluck('nama_penghuni')->values(),
+                        'kegiatan'       => data_get($d, 'transaction.kegiatan', '—'), // NEW
+                        'pemesan'        => data_get($d, 'transaction.name', '—'),     // (rename biar konsisten)
+                        'penghunis'      => $d->penghunis->pluck('nama_penghuni')->values()->all(), // kecil perbaikan: jadikan array
                         'count_penghuni' => $d->penghunis->count(),
                     ];
                 })->values();
 
-                // opsional: daftar lengkap booking kamar ini (kalau mau dipakai nanti)
+                // daftar lengkap booking kamar ini
                 $bookings = $items->sortBy('start')->map(function ($d) use ($formatRange) {
                     return [
-                        'detail_id'  => $d->id,
+                        'detail_id'   => $d->id,
                         'transaction' => $d->transaction_id,
-                        'range'      => $formatRange($d->start, $d->end),
-                        'start'      => $d->start,
-                        'end'        => $d->end,
-                        'pemesan'    => data_get($d, 'transaction.name', '—'),
-                        'penghunis' => $d->penghunis->pluck('nama_penghuni')->values()->all(),
-
+                        'range'       => $formatRange($d->start, $d->end),
+                        'start'       => $d->start,
+                        'end'         => $d->end,
+                        'pemesan'     => data_get($d, 'transaction.name', '—'),
+                        'kegiatan'    => data_get($d, 'transaction.kegiatan', '—'), // NEW
+                        'penghunis'   => $d->penghunis->pluck('nama_penghuni')->values()->all(),
                     ];
                 })->values();
 
                 return [
-                    'kamar'           => $kamar, // biar Blade tetap bisa $room['kamar']->nama_kamar
+                    'kamar'           => $kamar,
                     'kapasitas'       => $kamar->kapasitas ?? 1,
                     'occupied'        => $occupiedNow,
                     'upcoming'        => $upcoming,
@@ -121,12 +125,15 @@ class KamarController extends Controller
                     'total_penghuni'  => $items->sum(fn($d) => $d->penghunis->count()),
                 ];
             })
-            ->values(); // biar index numerik
+            ->values();
+
 
 
         // Debug rapi (pilih salah satu):
         // return response()->json($rooms);
         // logger()->info('kamarTerpakai', ['rooms' => $rooms->toArray()]);
+        // echo '<pre>' . print_r($rooms->toArray(), true) . '</pre>';
+        // exit;
 
         return view('admin.kamar_terpakai', compact('rooms'));
     }

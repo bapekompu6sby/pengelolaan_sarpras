@@ -63,18 +63,26 @@
                                         <div class="card-body d-flex flex-column justify-content-between"
                                             style="height: 100%;">
                                             <h2 class="card-title ">{{ $property->name }}</h2>
-                                            <p class="mb-1 fs-5"><strong>Tipe:</strong>
-                                                {{ strtoupper($property->room_type) }}
+                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
+                                                <strong>Tipe:</strong> {{ strtoupper($property->room_type) }}
                                             </p>
-                                            <p class="mb-1 fs-5"><strong>Kapasitas:</strong> {{ $property->capacity }} orang
+                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
+                                                <strong>Kapasitas:</strong> {{ $property->capacity }} orang
                                             </p>
-                                            <p class="mb-1 fs-5"><strong>Luas:</strong> {{ $property->area }} m<sup>2</sup>
+                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
+                                                <strong>Luas:</strong> {{ $property->area }} m<sup>2</sup>
                                             </p>
-                                            <p class="mb-1 fs-5"><strong>Fasilitas:</strong> {{ $property->facilities }}
+                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
+                                                <strong>Fasilitas:</strong> {{ $property->facilities }}
                                             </p>
-                                            <p class="mb-1 fs-5"><strong>Harga:</strong> Rp
-                                                {{ number_format($property->price, 0, ',', '.') }} / hari</p>
-                                            <p class="mb-3 fs-5"><strong>Unit:</strong> {{ $property->unit }}</p>
+                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
+                                                <strong>Harga:</strong> Rp
+                                                {{ number_format($property->price, 0, ',', '.') }} / hari
+                                            </p>
+                                            <p class="mb-3 fs-6 fs-md-5 text-wrap text-break">
+                                                <strong>Unit:</strong> {{ $property->unit }}
+                                            </p>
+
 
 
                                             @auth
