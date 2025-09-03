@@ -25,6 +25,14 @@
     @endif
 
     <div class="container-xxl flex-grow-1 container-p-y">
+        {{-- Pesan tambahan --}}
+        <div class="alert alert-info d-flex align-items-center mb-4" role="alert"
+            style="border-left: 5px solid #0dcaf0; background: #e8f9fd;">
+            <i class="bx bx-info-circle me-2 fs-4"></i>
+            <div>
+                Untuk buku panduan website versi terbaru akan segera kami upload, jadi pantau terus halaman ini ya ✨
+            </div>
+        </div>
 
         @auth
             <h4 class="fw-bold py-3 mb-4">
