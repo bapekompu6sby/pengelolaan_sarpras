@@ -30,6 +30,7 @@ class TransactionController extends Controller
         $baseQuery = Transaction::with([
             'properties.kamar',     // pastikan nama relasi sesuai model kamu
             'detailKamars.kamar',
+            'detailKamars.penghunis',
         ]);
 
         $transactions = $user->role === 'admin'

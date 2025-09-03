@@ -101,8 +101,8 @@
             <div class="room-meta">
                 <span class="status-chip" title="Sedang dipakai hari ini"><span class="dot dot-red"></span>Terpakai</span>
                 <span class="status-chip" title="Ada jadwal mendatang"><span class="dot dot-amber"></span>Terjadwal</span>
-                <span class="status-chip" title="Tidak ada jadwal & tidak terpakai hari ini"><span
-                        class="dot dot-green"></span>Free</span>
+                {{-- <span class="status-chip" title="Tidak ada jadwal & tidak terpakai hari ini"><span
+                        class="dot dot-green"></span>Free</span> --}}
             </div>
         </div>
 

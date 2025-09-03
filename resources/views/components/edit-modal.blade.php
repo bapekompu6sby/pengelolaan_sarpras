@@ -552,6 +552,16 @@
                                 </div>
                             </form>
 
+                            {{-- download file billing qr, if null show not found --}}
+                            <p class="mt-3 mb-1"><strong>File code billing: </strong>
+                                @if ($t->billing_qr)
+                                    <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                        target="_blank">Download</a>
+                                @else
+                                    <em>Belum di upload admin</em>
+                                @endif
+                            
+
                             {{-- Status --}}
                             <p class="mt-3 mb-1"><strong>Status :</strong>
                                 @if ($t->status == 'pending')
@@ -570,6 +580,15 @@
                                 <ul>
                                     @foreach ($t->detailKamars as $k)
                                         <li>{{ $k->kamar->nama_kamar }}</li>
+                                    @endforeach
+                                </ul>
+                                {{-- penghuni --}}
+                                <p class="mt-3 mb-1"><strong>nama penghuni:</strong></p>
+                                <ul>
+                                    @foreach ($t->detailKamars as $k)
+                                        @foreach ($k->penghunis as $p)
+                                            <li style="margin-bottom: -5px">{{ $p->nama_penghuni }}</li>
+                                        @endforeach
                                     @endforeach
                                 </ul>
                             @endif
@@ -625,10 +644,11 @@
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <p><strong>QR Survey Kepuasan:</strong></p>
+                                <p class="text-muted small mb-0">atau juga bisa klik barcode berikut:</p>
                                 <a href="https://qr.me-qr.com/SY98Pagj" target="_blank">
                                     <img src="{{ asset('storage/barcode_kepuasan/qr_kepuasan.jpg') }}"
                                         alt="QR Survey Kepuasan" class="img-fluid rounded shadow-sm"
-                                        style="max-width: 250px;">
+                                        style="max-width: 150px;">
                                 </a>
                             </div>
                         </div>

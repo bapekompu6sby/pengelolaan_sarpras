@@ -50,11 +50,14 @@
                                     <div class="col-md-4 d-flex justify-content-center align-items-center">
                                         <div
                                             style="width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px;">
-                                            <img src="{{ asset('uploads/' . $property->image_path) }}"
+                                            <img src="{{ $property->image_path
+                                                ? asset('uploads/' . $property->image_path)
+                                                : 'https://placehold.co/400?text=No+Image' }}"
                                                 style="width: 100%; height: 100%; object-fit: cover;"
-                                                alt="{{ $property->name }}">
+                                                alt="{{ $property->name ?? 'No image' }}">
                                         </div>
                                     </div>
+
 
 
 
