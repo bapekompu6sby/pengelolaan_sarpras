@@ -560,9 +560,9 @@
                                 @else
                                     <em>Belum di upload admin</em>
                                 @endif
-                            
 
-                            {{-- Status --}}
+
+                                {{-- Status --}}
                             <p class="mt-3 mb-1"><strong>Status :</strong>
                                 @if ($t->status == 'pending')
                                     <span class="badge bg-warning">Menunggu</span>
@@ -1055,6 +1055,23 @@
 
                             {{-- Dokumen --}}
                             <div class="tab-pane fade" id="dokumen-{{ $t->id }}" role="tabpanel">
+                                <style>
+                                    /* Paksa semua teks di dalamnya bisa membungkus baris */
+                                    .force-wrap {
+                                        display: block;
+                                        max-width: 100%;
+                                        white-space: normal !important;
+                                        word-break: break-word !important;
+                                        overflow-wrap: anywhere;
+                                        hyphens: auto;
+                                    }
+
+                                    /* Kalau parent-nya flex, ini wajib supaya child boleh mengecil */
+                                    .min-w-0 {
+                                        min-width: 0 !important;
+                                    }
+                                </style>
+
                                 <div class="mb-3">
                                     <p><strong>Bukti Pembayaran:</strong></p>
                                     @if ($t->payment_receipt)
@@ -1063,7 +1080,7 @@
                                         <input type="hidden" name="old_payment_receipt"
                                             value="{{ $t->payment_receipt }}">
                                     @else
-                                        <em>Tidak ada</em>
+                                        <em class="d-block text-mobile-wrap fs-mobile-6">Tidak ada</em>
                                     @endif
                                     <input type="file" name="payment_receipt" class="form-control mt-2"
                                         accept=".pdf,.jpg,.jpeg,.png">
@@ -1077,21 +1094,24 @@
                                         <input type="hidden" name="old_request_letter"
                                             value="{{ $t->request_letter }}">
                                     @else
-                                        <em>Tidak ada</em>
+                                        <em class="d-block text-mobile-wrap fs-mobile-6">Tidak ada</em>
                                     @endif
                                     <input type="file" name="request_letter" class="form-control mt-2"
                                         accept=".pdf,.jpg,.jpeg,.png">
                                 </div>
                                 {{-- hanya menampilkan file download billing qr --}}
-                                <div class="mb-3">
-                                    <p><strong>Billing Code:</strong></p>
+                                <div class="mb-3 min-w-0"> {{-- min-w-0 penting kalau parent flex --}}
+                                    <p class="mb-1"><strong>Billing Code:</strong></p>
                                     @if ($t->billing_qr)
                                         <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
-                                            target="_blank">Download</a>
+                                            target="_blank" class="force-wrap">Download</a>
                                     @else
-                                        <em>Billing code belum diupload di status "menunggu pembayaran"</em>
+                                        <em class="force-wrap">
+                                            Billing code belum diupload di status "menunggu pembayaran"
+                                        </em>
                                     @endif
                                 </div>
+
                             </div>
 
                             {{-- Status --}}
