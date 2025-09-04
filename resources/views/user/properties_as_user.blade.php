@@ -50,9 +50,7 @@
                                     <div class="col-md-4 d-flex justify-content-center align-items-center">
                                         <div
                                             style="width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px;">
-                                            <img src="{{ $property->image_path
-                                                ? asset('uploads/' . $property->image_path)
-                                                : 'https://placehold.co/400?text=No+Image' }}"
+                                            <img src="{{ $property->image_path ? asset('uploads/' . $property->image_path) : 'https://placehold.co/400?text=No+Image' }}"
                                                 style="width: 100%; height: 100%; object-fit: cover;"
                                                 alt="{{ $property->name ?? 'No image' }}">
                                         </div>
@@ -65,13 +63,17 @@
                                     <div class="col-md-8">
                                         <div class="card-body d-flex flex-column justify-content-between"
                                             style="height: 100%;">
-                                            <h2 class="card-title ">{{ $property->name }}</h2>
+                                            <h2 class="card-title text-wrap text-break">
+                                                {{ $property->name }}
+                                            </h2>
+
                                             <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
                                                 <strong>Tipe:</strong> {{ strtoupper($property->room_type) }}
                                             </p>
                                             <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
-                                                <strong>Kapasitas:</strong> {{ $property->capacity }} orang
+                                                <strong>Kapasitas:</strong> ±{{ $property->capacity }} orang
                                             </p>
+
                                             <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
                                                 <strong>Luas:</strong> {{ $property->area }} m<sup>2</sup>
                                             </p>
