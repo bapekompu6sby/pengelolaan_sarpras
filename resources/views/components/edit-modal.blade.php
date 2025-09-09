@@ -564,14 +564,26 @@
 
                                 {{-- Status --}}
                             <p class="mt-3 mb-1"><strong>Status :</strong>
-                                @if ($t->status == 'pending')
-                                    <span class="badge bg-warning">Menunggu</span>
-                                @elseif ($t->status == 'waiting_payment')
-                                    <span class="badge bg-info">Menunggu Pembayaran</span>
-                                @elseif ($t->status == 'approved')
-                                    <span class="badge bg-success">Disetujui</span>
-                                @elseif ($t->status == 'rejected')
+                                @if ($t->status === 'rejected')
                                     <span class="badge bg-danger">Ditolak</span>
+                                @elseif ($t->status === 'waiting_payment')
+                                    <span class="badge bg-info">Menunggu Pembayaran</span>
+                                @elseif ($t->status === 'pending')
+                                    <span class="badge bg-warning ">Menunggu</span>
+                                @elseif ($t->status === 'approved')
+                                    @php
+                                        $isInternal = ($t->affiliation ?? '') === 'internal_pu';
+                                        $hasBilling = !empty($t->billing_qr);
+                                    @endphp
+
+                                    @if (!$isInternal && !$hasBilling)
+                                        <span class="badge bg-warning ">Disetujui tapi belum
+                                            bayar</span>
+                                    @else
+                                        <span class="badge bg-success">Disetujui</span>
+                                    @endif
+                                @else
+                                    <span class="badge bg-secondary">-</span>
                                 @endif
                             </p>
                             @if ($t->status == 'approved' && ($t->properties->type == 'paviliun' || $t->properties->type == 'asrama'))
@@ -1099,18 +1111,25 @@
                                     <input type="file" name="request_letter" class="form-control mt-2"
                                         accept=".pdf,.jpg,.jpeg,.png">
                                 </div>
-                                {{-- hanya menampilkan file download billing qr --}}
-                                <div class="mb-3 min-w-0"> {{-- min-w-0 penting kalau parent flex --}}
-                                    <p class="mb-1"><strong>Billing Code:</strong></p>
+                                {{-- Dokumen: Billing Code + QR/File --}}
+                                <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Billing Code (File):</strong></p>
+
                                     @if ($t->billing_qr)
                                         <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
                                             target="_blank" class="force-wrap">Download</a>
+                                        <input type="hidden" name="old_billing_qr" value="{{ $t->billing_qr }}">
                                     @else
-                                        <em class="force-wrap">
-                                            Billing code belum diupload di status "menunggu pembayaran"
-                                        </em>
+                                        <em class="force-wrap">Belum ada</em>
                                     @endif
+
+                                    <input type="file" id="billing_qr_doc-{{ $t->id }}" name="billing_qr"
+                                        class="form-control mt-2" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                    @error('billing_qr')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
+
 
                             </div>
 
@@ -1139,24 +1158,14 @@
                                     <textarea id="rejection_reason-{{ $t->id }}" name="rejection_reason" class="form-control">{{ $t->rejection_reason ?? '' }}</textarea>
                                 </div>
 
-                                {{-- Billing Information --}}
-                                <div id="waitingPaymentForm-{{ $t->id }}" style="display: none;"
+                                <div id="waitingPaymentForm-{{ $t->id }}" style="display:none"
                                     class="mt-3">
                                     <div class="mb-3">
-                                        <label for="billing_code-{{ $t->id }}" class="form-label">Code
-                                            Pembayaran</label>
-                                        <input type="text" class="form-control"
-                                            id="billing_code-{{ $t->id }}" name="billing_code"
-                                            value="{{ $t->billing_code ?? '' }}">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="billing_qr-{{ $t->id }}" class="form-label">File code
-                                            pembayaran</label>
+                                        <label for="billing_qr_status-{{ $t->id }}" class="form-label">File
+                                            kode pembayaran</label>
                                         <input type="file" class="form-control"
-                                            id="billing_qr-{{ $t->id }}" name="billing_qr"
+                                            id="billing_qr_status-{{ $t->id }}" name="billing_qr"
                                             accept=".pdf,image/*">
-                                        <small class="text-muted">Optional — PDF or Image allowed</small>
                                         @if ($t->billing_qr)
                                             <p class="mt-2">File saat ini:
                                                 <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
@@ -1165,6 +1174,7 @@
                                         @endif
                                     </div>
                                 </div>
+
                             </div>
 
 
@@ -1308,22 +1318,105 @@
     {{-- Script untuk toggle rejection/billing --}}
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            let statusSelect = document.getElementById("statusSelect-{{ $t->id }}");
-            let rejectionForm = document.getElementById("rejectionForm-{{ $t->id }}");
-            let waitingPaymentForm = document.getElementById("waitingPaymentForm-{{ $t->id }}");
+            const statusSelect = document.getElementById("statusSelect-{{ $t->id }}");
+            const rejectionForm = document.getElementById("rejectionForm-{{ $t->id }}");
+            const waitingPaymentForm = document.getElementById("waitingPaymentForm-{{ $t->id }}");
 
+            const docInput = document.getElementById("billing_qr_doc-{{ $t->id }}"); // di Dokumen
+            const statusInput = document.getElementById("billing_qr_status-{{ $t->id }}"); // di Status
 
-            function toggleForms() {
-                rejectionForm.style.display = (statusSelect.value === "rejected") ? "block" : "none";
-                waitingPaymentForm.style.display = (statusSelect.value === "waiting_payment") ? "block" : "none";
+            const form = statusSelect?.closest("form");
 
+            function setDefaultByStatus() {
+                const isRejected = statusSelect.value === "rejected";
+                const isWaiting = statusSelect.value === "waiting_payment";
 
+                // show/hide section
+                if (rejectionForm) rejectionForm.style.display = isRejected ? "block" : "none";
+                if (waitingPaymentForm) waitingPaymentForm.style.display = isWaiting ? "block" : "none";
+
+                // default aktif: waiting_payment -> statusInput, selain itu -> docInput
+                if (docInput) {
+                    docInput.disabled = !!isWaiting;
+                    if (isWaiting) {
+                        try {
+                            docInput.value = "";
+                        } catch (e) {}
+                    }
+                }
+                if (statusInput) {
+                    statusInput.disabled = !isWaiting;
+                    if (!isWaiting) {
+                        try {
+                            statusInput.value = "";
+                        } catch (e) {}
+                    }
+                }
             }
 
-            statusSelect.addEventListener("change", toggleForms);
-            toggleForms();
+            function preferDocInput() {
+                if (!docInput || !statusInput) return;
+                // user pilih file di Dokumen -> aktifkan Dokumen, matikan Status
+                if (docInput.files && docInput.files.length > 0) {
+                    statusInput.disabled = true;
+                    try {
+                        statusInput.value = "";
+                    } catch (e) {}
+                    docInput.disabled = false;
+                }
+            }
+
+            function preferStatusInput() {
+                if (!docInput || !statusInput) return;
+                // user pilih file di Status -> aktifkan Status, matikan Dokumen
+                if (statusInput.files && statusInput.files.length > 0) {
+                    docInput.disabled = true;
+                    try {
+                        docInput.value = "";
+                    } catch (e) {}
+                    statusInput.disabled = false;
+                }
+            }
+
+            function beforeSubmitEnsureSingle() {
+                if (!form) return;
+                form.addEventListener('submit', function() {
+                    // kalau dua-duanya kosong, biarkan apa adanya (tidak mengubah file)
+                    const hasDoc = docInput && docInput.files && docInput.files.length > 0;
+                    const hasStatus = statusInput && statusInput.files && statusInput.files.length > 0;
+
+                    if (hasDoc && hasStatus) {
+                        // kalau (jarang) keduanya terisi, prioritaskan input yang terakhir diubah:
+                        // heuristik: pilih statusInput (skenario umum saat waiting_payment)
+                        docInput.disabled = true;
+                    } else if (hasDoc) {
+                        // kirim yang dokumen, disable status
+                        if (statusInput) statusInput.disabled = true;
+                    } else if (hasStatus) {
+                        // kirim yang status, disable dokumen
+                        if (docInput) docInput.disabled = true;
+                    } else {
+                        // tidak upload baru -> disable keduanya agar tidak kirim field kosong dobel
+                        if (docInput) docInput.disabled = true;
+                        if (statusInput) statusInput.disabled = true;
+                    }
+                }, {
+                    once: true
+                });
+            }
+
+            if (statusSelect) {
+                statusSelect.addEventListener("change", setDefaultByStatus);
+                setDefaultByStatus(); // set kondisi awal
+            }
+
+            if (docInput) docInput.addEventListener('change', preferDocInput);
+            if (statusInput) statusInput.addEventListener('change', preferStatusInput);
+
+            beforeSubmitEnsureSingle();
         });
     </script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const modal = document.getElementById("modalCenter{{ $t->id }}");

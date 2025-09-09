@@ -279,14 +279,14 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         DB::transaction(function () use ($request, $id) {
             $transaction = Transaction::findOrFail($id);
 
+            // fallback lama
+            $paymentReceipt  = $request->old_payment_receipt ?? $transaction->payment_receipt;
+            $requestLetter   = $request->old_request_letter  ?? $transaction->request_letter;
+            $billingQr       = $request->old_billing_qr      ?? $transaction->billing_qr;
+            $billingCode     = $transaction->billing_code;
+            $rejectionReason = $transaction->rejection_reason;
 
-            $paymentReceipt   = $request->old_payment_receipt ?? $transaction->payment_receipt;
-            $requestLetter    = $request->old_request_letter ?? $transaction->request_letter;
-            $billingQr        = $transaction->billing_qr;
-            $billingCode      = $transaction->billing_code;
-            $rejectionReason  = $transaction->rejection_reason;
-
-
+            // file umum
             if ($request->hasFile('payment_receipt')) {
                 $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
                 $paymentReceipt = basename($path);
@@ -296,19 +296,23 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 $requestLetter = basename($path);
             }
 
-            if ($request->status === 'rejected') {
-                $rejectionReason = $request->rejection_reason;
-                $billingCode = null;
-                $billingQr   = null;
+            // billing: terima dari mana pun (dokumen/status)
+            if ($request->filled('billing_code')) {
+                $billingCode = $request->billing_code;
+            }
+            if ($request->hasFile('billing_qr')) {
+                $path = $request->file('billing_qr')->store('uploads/billing_qr', 'public');
+                $billingQr = basename($path);
             }
 
-            if ($request->status === 'waiting_payment') {
-                $billingCode = $request->billing_code;
-                if ($request->hasFile('billing_qr')) {
-                    $path = $request->file('billing_qr')->store('uploads/billing_qr', 'public');
-                    $billingQr = basename($path);
-                }
-                $rejectionReason = null;
+            // status-based overrides
+            if ($request->status === 'rejected') {
+                $rejectionReason = $request->rejection_reason; // valid by rule
+                $billingCode = null;
+                $billingQr   = null;
+            } elseif ($request->filled('rejection_reason')) {
+                // optional: update alasan walau bukan rejected
+                $rejectionReason = $request->rejection_reason;
             }
 
             $propertyId = $request->ruangan_id ?? $transaction->property_id;
@@ -333,6 +337,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'request_letter'   => $requestLetter,
             ]);
         });
+
 
         return back()->with('success', 'Transaksi berhasil diperbarui (detail kamar tidak diubah).');
     }

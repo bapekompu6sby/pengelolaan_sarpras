@@ -77,16 +77,30 @@
                                         <td>{{ date('d-m-Y', strtotime($t->start)) }} |
                                             {{ date('d-m-Y', strtotime($t->end)) }}</td>
                                         <td>
-                                            @if ($t->status == 'pending')
-                                                <span class="badge bg-warning">Menunggu</span>
-                                            @elseif ($t->status == 'approved')
-                                                <span class="badge bg-success">Disetujui</span>
-                                            @elseif ($t->status == 'waiting_payment')
-                                                <span class="badge bg-info">Menunggu Pembayaran</span>
-                                            @elseif ($t->status == 'rejected')
+                                            @if ($t->status === 'rejected')
                                                 <span class="badge bg-danger">Ditolak</span>
+                                            @elseif ($t->status === 'waiting_payment')
+                                                <span class="badge bg-info">Menunggu Pembayaran</span>
+                                            @elseif ($t->status === 'pending')
+                                                <span class="badge bg-warning ">Menunggu</span>
+                                            @elseif ($t->status === 'approved')
+                                                @php
+                                                    $isInternal = ($t->affiliation ?? '') === 'internal_pu';
+                                                    $hasBilling = !empty($t->billing_qr);
+                                                @endphp
+
+                                                @if (!$isInternal && !$hasBilling)
+                                                    <span class="badge bg-warning ">Disetujui tapi belum
+                                                        bayar</span>
+                                                @else
+                                                    <span class="badge bg-success">Disetujui</span>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-secondary">-</span>
                                             @endif
                                         </td>
+
+
                                         <td>
                                             @if (Auth::user()->role == 'admin')
                                                 <button class="btn btn-warning btn-sm mb-2" data-bs-toggle="modal"
@@ -117,15 +131,29 @@
                                     <p class="mb-1"><strong>Tanggal:</strong> {{ date('d-m-Y', strtotime($t->start)) }} -
                                         {{ date('d-m-Y', strtotime($t->end)) }}</p>
                                     <p class="mb-2"><strong>Status:</strong>
-                                        @if ($t->status == 'pending')
-                                            <span class="badge bg-warning">Menunggu</span>
-                                        @elseif ($t->status == 'approved')
-                                            <span class="badge bg-success">Disetujui</span>
-                                        @elseif ($t->status == 'waiting_payment')
-                                            <span class="badge bg-info">Menunggu Pembayaran</span>
-                                        @elseif ($t->status == 'rejected')
+
+                                        @if ($t->status === 'rejected')
                                             <span class="badge bg-danger">Ditolak</span>
+                                        @elseif ($t->status === 'waiting_payment')
+                                            <span class="badge bg-info">Menunggu Pembayaran</span>
+                                        @elseif ($t->status === 'pending')
+                                            <span class="badge bg-warning ">Menunggu</span>
+                                        @elseif ($t->status === 'approved')
+                                            @php
+                                                $isInternal = ($t->affiliation ?? '') === 'internal_pu';
+                                                $hasBilling = !empty($t->billing_qr);
+                                            @endphp
+
+                                            @if (!$isInternal && !$hasBilling)
+                                                <span class="badge bg-warning ">Disetujui tapi belum
+                                                    bayar</span>
+                                            @else
+                                                <span class="badge bg-success">Disetujui</span>
+                                            @endif
+                                        @else
+                                            <span class="badge bg-secondary">-</span>
                                         @endif
+
                                     </p>
                                     <div class="d-flex gap-2">
                                         @if (Auth::user()->role == 'admin')
