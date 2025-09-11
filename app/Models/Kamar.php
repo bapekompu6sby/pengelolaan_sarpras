@@ -33,4 +33,9 @@ class Kamar extends Model
             ->withPivot(['start', 'end', 'nama_penghuni'])
             ->withTimestamps();
     }
+
+    public function properties()
+    {
+        return $this->belongsTo(Properties::class, 'properties_id');
+    }
 }

@@ -39,23 +39,17 @@ class KamarController extends Controller
 
 
 
-
-
-
     public function kamarTerpakai()
     {
         $today = Carbon::today();
 
-        // Format rentang tanggal (end eksklusif = checkout)
         $formatRange = function ($start, $end) {
             $s = Carbon::parse($start);
             $e = Carbon::parse($end);
-            $diff = $s->diffInDays($e);
-
-            if ($diff === 1) {
-                return $s->format('d M Y') . ' – ' . $e->format('d M Y'); // 1 malam (tetap tampil keduanya)
+            if ($s->diffInDays($e) === 1) {
+                return $s->format('d M Y') . ' – ' . $e->format('d M Y');
             }
-            $last = $e->copy()->subDay(); // tampil s/d end-1
+            $last = $e->copy()->subDay();
             if ($s->isSameMonth($last) && $s->isSameYear($last)) {
                 return $s->format('d') . '–' . $last->format('d M Y');
             } elseif ($s->isSameYear($last)) {
@@ -64,20 +58,18 @@ class KamarController extends Controller
             return $s->format('d M Y') . ' – ' . $last->format('d M Y');
         };
 
-        // Occupied jika start <= today < end
         $isOccupiedToday = function ($start, $end) use ($today) {
             $s = Carbon::parse($start)->startOfDay();
             $e = Carbon::parse($end)->startOfDay();
             return $today->betweenIncluded($s, $e->copy()->subDay());
         };
 
-        $rooms = DetailKamarTransaction::with([
+        $rooms = \App\Models\DetailKamarTransaction::with([
+            // pastikan relasi Kamar -> properties ada (belongsTo Properties::class, 'properties_id')
             'kamar:id,properties_id,nama_kamar,kapasitas',
-            // load relasi transaction sekalian kolom kegiatan & name
-            'transaction:id,name,kegiatan', // NEW
-            // kalau butuh data user-nya juga, boleh tetap load:
+            'kamar.properties:id,name',
+            'transaction:id,name,kegiatan',
             'transaction.user:id,name',
-            // optional: batasi kolom penghuni biar ringan
             'penghunis:id,detail_kamar_transaction_id,nama_penghuni',
         ])
             ->whereDate('end', '>=', $today)
@@ -85,24 +77,24 @@ class KamarController extends Controller
             ->get()
             ->groupBy('kamar_id')
             ->map(function ($items) use ($formatRange, $isOccupiedToday) {
-                $first = $items->first();
-                $kamar = $first->kamar;
+                $first  = $items->first();
+                $kamar  = $first->kamar;
+                $propId = $kamar->properties_id;
+                $propNm = data_get($kamar, 'properties.name', '(Tanpa Properti)');
 
                 $occupiedNow = $items->contains(fn($d) => $isOccupiedToday($d->start, $d->end));
 
-                // ringkasan 3 jadwal terdekat + penghuni
                 $upcoming = $items->sortBy('start')->take(3)->map(function ($d) use ($formatRange) {
                     return [
                         'range'          => $formatRange($d->start, $d->end),
                         'tx'             => $d->transaction_id,
-                        'kegiatan'       => data_get($d, 'transaction.kegiatan', '—'), // NEW
-                        'pemesan'        => data_get($d, 'transaction.name', '—'),     // (rename biar konsisten)
-                        'penghunis'      => $d->penghunis->pluck('nama_penghuni')->values()->all(), // kecil perbaikan: jadikan array
+                        'kegiatan'       => data_get($d, 'transaction.kegiatan', '—'),
+                        'pemesan'        => data_get($d, 'transaction.name', '—'),
+                        'penghunis'      => $d->penghunis->pluck('nama_penghuni')->values()->all(),
                         'count_penghuni' => $d->penghunis->count(),
                     ];
                 })->values();
 
-                // daftar lengkap booking kamar ini
                 $bookings = $items->sortBy('start')->map(function ($d) use ($formatRange) {
                     return [
                         'detail_id'   => $d->id,
@@ -111,33 +103,139 @@ class KamarController extends Controller
                         'start'       => $d->start,
                         'end'         => $d->end,
                         'pemesan'     => data_get($d, 'transaction.name', '—'),
-                        'kegiatan'    => data_get($d, 'transaction.kegiatan', '—'), // NEW
+                        'kegiatan'    => data_get($d, 'transaction.kegiatan', '—'),
                         'penghunis'   => $d->penghunis->pluck('nama_penghuni')->values()->all(),
                     ];
                 })->values();
 
                 return [
-                    'kamar'           => $kamar,
-                    'kapasitas'       => $kamar->kapasitas ?? 1,
-                    'occupied'        => $occupiedNow,
-                    'upcoming'        => $upcoming,
-                    'bookings'        => $bookings,
-                    'total'           => $items->count(),
-                    'total_penghuni'  => $items->sum(fn($d) => $d->penghunis->count()),
+                    'property_id'    => $propId,
+                    'property_name'  => $propNm,
+                    'kamar'          => $kamar,
+                    'kapasitas'      => $kamar->kapasitas ?? 1,
+                    'occupied'       => $occupiedNow,
+                    'upcoming'       => $upcoming,
+                    'bookings'       => $bookings,
+                    'total'          => $items->count(),
+                    'total_penghuni' => $items->sum(fn($d) => $d->penghunis->count()),
                 ];
             })
             ->values();
 
+        // Group per properti untuk tabs
+        $groups = $rooms->groupBy('property_name')->sortKeys();
 
+        // (Opsional) statistik untuk pill filter
+        $stats = [
+            'total'     => $rooms->count(),
+            'occupied'  => $rooms->where('occupied', true)->count(),
+            'scheduled' => $rooms->filter(fn($r) => !$r['occupied'] && collect($r['upcoming'])->isNotEmpty())->count(),
+            'free'      => $rooms->filter(fn($r) => !$r['occupied'] && collect($r['upcoming'])->isEmpty())->count(),
+        ];
 
-        // Debug rapi (pilih salah satu):
-        // return response()->json($rooms);
-        // logger()->info('kamarTerpakai', ['rooms' => $rooms->toArray()]);
-        // echo '<pre>' . print_r($rooms->toArray(), true) . '</pre>';
-        // exit;
-
-        return view('admin.kamar_terpakai', compact('rooms'));
+        return view('admin.kamar_terpakai', compact('rooms', 'groups', 'stats'));
     }
+
+
+
+
+
+    // public function kamarTerpakai()
+    // {
+    //     $today = Carbon::today();
+
+    //     // Format rentang tanggal (end eksklusif = checkout)
+    //     $formatRange = function ($start, $end) {
+    //         $s = Carbon::parse($start);
+    //         $e = Carbon::parse($end);
+    //         $diff = $s->diffInDays($e);
+
+    //         if ($diff === 1) {
+    //             return $s->format('d M Y') . ' – ' . $e->format('d M Y'); // 1 malam (tetap tampil keduanya)
+    //         }
+    //         $last = $e->copy()->subDay(); // tampil s/d end-1
+    //         if ($s->isSameMonth($last) && $s->isSameYear($last)) {
+    //             return $s->format('d') . '–' . $last->format('d M Y');
+    //         } elseif ($s->isSameYear($last)) {
+    //             return $s->format('d M') . '–' . $last->format('d M Y');
+    //         }
+    //         return $s->format('d M Y') . ' – ' . $last->format('d M Y');
+    //     };
+
+    //     // Occupied jika start <= today < end
+    //     $isOccupiedToday = function ($start, $end) use ($today) {
+    //         $s = Carbon::parse($start)->startOfDay();
+    //         $e = Carbon::parse($end)->startOfDay();
+    //         return $today->betweenIncluded($s, $e->copy()->subDay());
+    //     };
+
+    //     $rooms = DetailKamarTransaction::with([
+    //         'kamar:id,properties_id,nama_kamar,kapasitas',
+    //         // load relasi transaction sekalian kolom kegiatan & name
+    //         'transaction:id,name,kegiatan', // NEW
+    //         // kalau butuh data user-nya juga, boleh tetap load:
+    //         'transaction.user:id,name',
+    //         // optional: batasi kolom penghuni biar ringan
+    //         'penghunis:id,detail_kamar_transaction_id,nama_penghuni',
+    //     ])
+    //         ->whereDate('end', '>=', $today)
+    //         ->orderBy('start', 'asc')
+    //         ->get()
+    //         ->groupBy('kamar_id')
+    //         ->map(function ($items) use ($formatRange, $isOccupiedToday) {
+    //             $first = $items->first();
+    //             $kamar = $first->kamar;
+
+    //             $occupiedNow = $items->contains(fn($d) => $isOccupiedToday($d->start, $d->end));
+
+    //             // ringkasan 3 jadwal terdekat + penghuni
+    //             $upcoming = $items->sortBy('start')->take(3)->map(function ($d) use ($formatRange) {
+    //                 return [
+    //                     'range'          => $formatRange($d->start, $d->end),
+    //                     'tx'             => $d->transaction_id,
+    //                     'kegiatan'       => data_get($d, 'transaction.kegiatan', '—'), // NEW
+    //                     'pemesan'        => data_get($d, 'transaction.name', '—'),     // (rename biar konsisten)
+    //                     'penghunis'      => $d->penghunis->pluck('nama_penghuni')->values()->all(), // kecil perbaikan: jadikan array
+    //                     'count_penghuni' => $d->penghunis->count(),
+    //                 ];
+    //             })->values();
+
+    //             // daftar lengkap booking kamar ini
+    //             $bookings = $items->sortBy('start')->map(function ($d) use ($formatRange) {
+    //                 return [
+    //                     'detail_id'   => $d->id,
+    //                     'transaction' => $d->transaction_id,
+    //                     'range'       => $formatRange($d->start, $d->end),
+    //                     'start'       => $d->start,
+    //                     'end'         => $d->end,
+    //                     'pemesan'     => data_get($d, 'transaction.name', '—'),
+    //                     'kegiatan'    => data_get($d, 'transaction.kegiatan', '—'), // NEW
+    //                     'penghunis'   => $d->penghunis->pluck('nama_penghuni')->values()->all(),
+    //                 ];
+    //             })->values();
+
+    //             return [
+    //                 'kamar'           => $kamar,
+    //                 'kapasitas'       => $kamar->kapasitas ?? 1,
+    //                 'occupied'        => $occupiedNow,
+    //                 'upcoming'        => $upcoming,
+    //                 'bookings'        => $bookings,
+    //                 'total'           => $items->count(),
+    //                 'total_penghuni'  => $items->sum(fn($d) => $d->penghunis->count()),
+    //             ];
+    //         })
+    //         ->values();
+
+
+
+    //     // Debug rapi (pilih salah satu):
+    //     // return response()->json($rooms);
+    //     // logger()->info('kamarTerpakai', ['rooms' => $rooms->toArray()]);
+    //     // echo '<pre>' . print_r($rooms->toArray(), true) . '</pre>';
+    //     // exit;
+
+    //     return view('admin.kamar_terpakai', compact('rooms'));
+    // }
 
 
 

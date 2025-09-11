@@ -58,7 +58,7 @@
                                 <article class="slide" data-index="{{ $idx }}" tabindex="0" aria-roledescription="slide" aria-label="Slide {{ $idx+1 }} dari {{ $count }}">
                                     <div class="slide-content">
                                         <span class="instansi"><i class='bx bxs-buildings'></i> {{ $e->instansi ?? '-' }}</span>
-                                        <div class="kegiatan-title">{{ ucfirst($e->kegiatan) }}</div>
+                                        <div class="kegiatan-title text-break">{{ ucfirst($e->kegiatan) }}</div>
                                         <div class="tanggal">
                                             <i class='bx bx-calendar'></i>
                                             {{ tanggalRangeID($e->start, $e->end) }}
@@ -119,8 +119,8 @@
                                 <tr id="{{ $rowId }}">
                                     <td>{{ $e->instansi }}</td>
                                     <td>
-                                        <strong>{{ ucfirst($e->kegiatan) }}</strong><br>
-                                        <small class="text-muted">{{ $e->description }}</small>
+                                        <strong class="text-break">{{ ucfirst($e->kegiatan) }}</strong><br>
+                                        <small class="text-muted text-break">{{ $e->description }}</small>
                                     </td>
                                     <td>{{ tanggalRangeID($e->start, $e->end) }}</td>
                                     <td>{{ $e->name }}</td>

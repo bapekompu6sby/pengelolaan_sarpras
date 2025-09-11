@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
+use App\Providers\RouteServiceProvider;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -23,12 +24,24 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request)
     {
-        $request->authenticate();
+        $request->validate([
+            'login'    => ['required', 'string'],
+            'password' => ['required', 'string'],
+            'remember' => ['sometimes'],
+        ]);
+
+        $login = $request->input('login');
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+
+        if (! Auth::attempt([$field => $login, 'password' => $request->password], $request->boolean('remember'))) {
+            throw ValidationException::withMessages([
+                'login' => 'Email/username atau password salah.',
+            ]);
+        }
 
         $request->session()->regenerate();
-
         return redirect()->intended(RouteServiceProvider::HOME)->with('success', 'Login berhasil');
     }
 

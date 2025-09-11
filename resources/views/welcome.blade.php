@@ -55,7 +55,7 @@
                                 @foreach ($events as $e)
                                     <tbody>
                                         <tr>
-                                            <td>{{ ucfirst($e->kegiatan) }}</td>
+                                            <td class="text-break">{{ ucfirst($e->kegiatan) }}</td>
                                             <td>{{ date('d-m-Y', strtotime($e->start)) . ' | ' . date('d-m-Y', strtotime($e->end)) }}
                                             </td>
                                             <td>{{ $e->properties->name }}</td>
