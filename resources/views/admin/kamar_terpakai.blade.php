@@ -200,6 +200,15 @@
                                                             @endif
                                                         </div>
                                                     @endif
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-primary mt-2 btn-edit-penghuni"
+                                                        data-detail="{{ $u['detail_id'] }}"
+                                                        data-kapasitas="{{ $room['kapasitas'] }}"
+                                                        data-names='@json($u['penghunis'] ?? [])' data-bs-toggle="modal"
+                                                        data-bs-target="#editPenghuniModal">
+                                                        Edit Penghuni
+                                                    </button>
+
                                                 </li>
                                             </ul>
                                         @empty
@@ -285,6 +294,15 @@
                                                         @endif
                                                     </div>
                                                 @endif
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-primary mt-2 btn-edit-penghuni"
+                                                    data-detail="{{ $u['detail_id'] }}"
+                                                    data-kapasitas="{{ $room['kapasitas'] }}"
+                                                    data-names='@json($u['penghunis'] ?? [])' data-bs-toggle="modal"
+                                                    data-bs-target="#editPenghuniModal">
+                                                    Edit Penghuni
+                                                </button>
+
                                             </li>
                                         </ul>
                                     @empty
@@ -303,6 +321,75 @@
                 </div>
             @endif
         @endif
+        <!-- Modal Edit Penghuni (reusable) -->
+        <div class="modal fade" id="editPenghuniModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form method="POST" action="{{ route('penghuni.update') }}" class="modal-content">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="detail_id" id="ep-detail-id">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Nama Penghuni</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">
+                            Isi sesuai kapasitas. Boleh dikosongkan jika belum terisi.
+                        </p>
+                        <div id="ep-fields" class="vstack gap-2">
+                            <!-- input nama akan di-inject via JS -->
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.btn-edit-penghuni');
+                if (!btn) return;
+
+                const detailId = btn.dataset.detail;
+                const kapasitas = parseInt(btn.dataset.kapasitas || '1', 10);
+                let names = [];
+                try {
+                    names = JSON.parse(btn.dataset.names || '[]');
+                } catch (_) {}
+
+                // isi hidden detail_id
+                document.getElementById('ep-detail-id').value = detailId;
+
+                // render fields
+                const wrap = document.getElementById('ep-fields');
+                wrap.innerHTML = '';
+                for (let i = 0; i < kapasitas; i++) {
+                    const val = (names[i] ?? '').toString();
+                    const group = document.createElement('div');
+                    group.className = 'input-group';
+
+                    const span = document.createElement('span');
+                    span.className = 'input-group-text';
+                    span.textContent = `Penghuni ${i+1}`;
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = 'names[]';
+                    input.className = 'form-control';
+                    input.placeholder = 'Kosongkan bila tidak ada';
+                    input.value = val;
+
+                    group.appendChild(span);
+                    group.appendChild(input);
+                    wrap.appendChild(group);
+                }
+            });
+        </script>
 
     </div>
 @endsection

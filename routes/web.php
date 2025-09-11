@@ -115,6 +115,9 @@ Route::group(['middleware' => 'auth'], function () {
                 ->name('transactions.wisma.destroy');
 
         Route::group(['middleware' => 'checkRole:admin'], function () {
+                Route::put('/penghunis/update', [KamarController::class, 'updatePenghunis'])
+                        ->name('penghuni.update');
+
                 // prefik untuk admin
                 Route::prefix('admin')->group(function () {
                         Route::post('/properties/store', [PropertiesController::class, 'store'])->name('properties.store');

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kamar;
+use App\Models\Penghuni;
 use App\Models\Properties;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Models\DetailKamarTransaction;
 
 class KamarController extends Controller
@@ -35,6 +37,62 @@ class KamarController extends Controller
         });
 
         return view('admin.kamar', compact('properties'));
+    }
+
+
+    public function updatePenghunis(Request $request)
+    {
+        $request->validate([
+            'detail_id'    => 'required|integer|exists:detail_kamar_transaction,id',
+            'names'        => 'array',
+            'names.*'      => 'nullable|string|max:100',
+        ]);
+
+        $detail = DetailKamarTransaction::with(['kamar:id,kapasitas', 'penghunis'])->findOrFail($request->detail_id);
+        $kapasitas = max(1, (int) data_get($detail, 'kamar.kapasitas', 1));
+
+        // potong jumlah input sesuai kapasitas
+        $names = array_slice($request->input('names', []), 0, $kapasitas);
+
+        DB::transaction(function () use ($detail, $names, $kapasitas) {
+            // urutkan existing penghunis by id untuk dipasangkan per-index
+            $existing = $detail->penghunis()->orderBy('id')->get()->values();
+
+            for ($i = 0; $i < $kapasitas; $i++) {
+                $name = trim((string) ($names[$i] ?? ''));
+
+                if ($existing->has($i)) {
+                    $row = $existing[$i];
+                    if ($name === '') {
+                        // kosong => hapus baris ini
+                        $row->delete();
+                    } else {
+                        // update nama
+                        $row->nama_penghuni = $name;
+                        $row->save();
+                    }
+                } else {
+                    // belum ada baris ke-i
+                    if ($name !== '') {
+                        Penghuni::create([
+                            'detail_kamar_transaction_id' => $detail->id,
+                            'nama_penghuni'               => $name,
+                        ]);
+                    }
+                }
+            }
+
+            // jaga-jaga: jika existing lebih banyak dari kapasitas (data lama), hapus sisanya
+            if ($existing->count() > $kapasitas) {
+                $detail->penghunis()
+                    ->orderBy('id')
+                    ->skip($kapasitas)
+                    ->take(PHP_INT_MAX)
+                    ->delete();
+            }
+        });
+
+        return back()->with('success', 'Nama penghuni berhasil diperbarui.');
     }
 
 
@@ -86,6 +144,7 @@ class KamarController extends Controller
 
                 $upcoming = $items->sortBy('start')->take(3)->map(function ($d) use ($formatRange) {
                     return [
+                        'detail_id'       => $d->id,
                         'range'          => $formatRange($d->start, $d->end),
                         'tx'             => $d->transaction_id,
                         'kegiatan'       => data_get($d, 'transaction.kegiatan', '—'),
