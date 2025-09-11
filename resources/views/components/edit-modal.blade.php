@@ -658,7 +658,7 @@
 
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
-                            <p><strong>Dipesan pada:</strong> {{ $t->created_at->format('d-m-Y H:i') }}</p>
+                            <p><strong>Dipesan pada:</strong> {{ $t->created_at->format('Y-m-d') }}</p>
                         </div>
                     </div>
                     @if ($t->status == 'approved')
