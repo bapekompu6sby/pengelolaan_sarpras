@@ -100,7 +100,7 @@ class KamarController extends Controller
         DB::transaction(function () use ($id) {
             $detail = DetailKamarTransaction::with('penghunis')->findOrFail($id);
 
- 
+
             foreach ($detail->penghunis as $p) {
                 $p->delete();
             }
@@ -200,6 +200,9 @@ class KamarController extends Controller
                     'total'          => $items->count(),
                     'total_penghuni' => $items->sum(fn($d) => $d->penghunis->count()),
                 ];
+            })
+            ->sortBy(function ($r) {
+                return strval($r['kamar']->nama_kamar);
             })
             ->values();
 
