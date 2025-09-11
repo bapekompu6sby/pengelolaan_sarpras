@@ -254,147 +254,6 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
 
 
-    public function ruangan_update(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'user_id'          => 'required|integer',
-            'office'           => 'required|string|max:32',
-            'affiliation'      => 'required|string|in:internal_pu,external_pu',
-            'phone_number'     => 'required|string|max:15',
-            'email'            => 'required|email',
-            'event'            => 'required|string|max:100',
-            'ordered_unit'     => 'required|integer|min:1',
-            'description'      => 'nullable|string',
-            'start'            => 'required|date',
-            'end'              => 'required|date|after_or_equal:start',
-            'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
-            'rejection_reason' => 'required_if:status,rejected',
-            'total_harga'      => 'required|numeric|min:0',
-
-            'billing_code'     => 'nullable|string',
-            'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf,webp|max:20480',
-
-            'response_letter'  => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
-            'payment_receipt'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
-            'request_letter'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
-
-            // flags hapus
-            'remove_payment_receipt' => 'nullable|boolean',
-            'remove_request_letter'  => 'nullable|boolean',
-            'remove_response_letter' => 'nullable|boolean',
-            'remove_billing_qr'      => 'nullable|boolean',
-
-            'ruangan_id'       => 'required|exists:properties,id',
-        ]);
-
-        DB::transaction(function () use ($request, $id) {
-            $transaction = Transaction::findOrFail($id);
-
-            // fallback lama
-            $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
-            $requestLetter  = $request->old_request_letter  ?? $transaction->request_letter;
-            $responseLetter = $request->old_response_letter ?? $transaction->response_letter;
-            $billingQr      = $request->old_billing_qr      ?? $transaction->billing_qr;
-            $billingCode    = $transaction->billing_code;
-            $rejectionReason = $transaction->rejection_reason;
-
-            // ====== HAPUS FILE (jika ditandai) ======
-            if ($request->boolean('remove_payment_receipt') && $paymentReceipt) {
-                Storage::disk('public')->delete('uploads/payment_receipt/' . $paymentReceipt);
-                $paymentReceipt = null;
-            }
-            if ($request->boolean('remove_request_letter') && $requestLetter) {
-                Storage::disk('public')->delete('uploads/request_letter/' . $requestLetter);
-                $requestLetter = null;
-            }
-            if ($request->boolean('remove_response_letter') && $responseLetter) {
-                Storage::disk('public')->delete('uploads/response_letter/' . $responseLetter);
-                $responseLetter = null;
-            }
-            if ($request->boolean('remove_billing_qr') && $billingQr) {
-                Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
-                $billingQr = null;
-            }
-
-            // ====== UPLOAD BARU (timpa yang lama) ======
-            if ($request->hasFile('payment_receipt')) {
-                if ($paymentReceipt) {
-                    Storage::disk('public')->delete('uploads/payment_receipt/' . $paymentReceipt);
-                }
-                $paymentReceipt = basename($request->file('payment_receipt')->store('uploads/payment_receipt', 'public'));
-            }
-
-            if ($request->hasFile('request_letter')) {
-                if ($requestLetter) {
-                    Storage::disk('public')->delete('uploads/request_letter/' . $requestLetter);
-                }
-                $requestLetter = basename($request->file('request_letter')->store('uploads/request_letter', 'public'));
-            }
-
-            if ($request->hasFile('response_letter')) {
-                if ($responseLetter) {
-                    Storage::disk('public')->delete('uploads/response_letter/' . $responseLetter);
-                }
-                $responseLetter = basename($request->file('response_letter')->store('uploads/response_letter', 'public'));
-            }
-
-            if ($request->hasFile('billing_qr')) {
-                if ($billingQr) {
-                    Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
-                }
-                $billingQr = basename($request->file('billing_qr')->store('uploads/billing_qr', 'public'));
-            }
-
-            // ====== Billing code (teks) ======
-            if ($request->filled('billing_code')) {
-                $billingCode = $request->billing_code;
-            }
-            // Opsional: kalau mau ada tombol hapus untuk billing_code, tambahkan flag 'remove_billing_code' boolean di form + validasi,
-            // lalu di sini:
-            // if ($request->boolean('remove_billing_code')) { $billingCode = null; }
-
-            // ====== Status-based overrides ======
-            if ($request->status === 'rejected') {
-                $rejectionReason = $request->rejection_reason; // valid by rule
-                $billingCode = null;
-                if ($billingQr) {
-                    Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
-                }
-                $billingQr   = null;
-            } elseif ($request->filled('rejection_reason')) {
-                $rejectionReason = $request->rejection_reason;
-            }
-
-            $propertyId = $request->ruangan_id ?? $transaction->property_id;
-
-            $transaction->update([
-                'instansi'         => ucwords($request->office),
-                'kegiatan'         => ucwords($request->event),
-                'property_id'      => $propertyId,
-                'description'      => $request->description,
-                'status'           => $request->status,
-                'rejection_reason' => $rejectionReason,
-                'billing_code'     => $billingCode,
-                'billing_qr'       => $billingQr,
-                'start'            => $request->start,
-                'end'              => $request->end,
-                'total_harga'      => $request->total_harga,
-                'phone_number'     => $request->phone_number,
-                'email'            => $request->email,
-                'affiliation'      => $request->affiliation,
-                'ordered_unit'     => $request->ordered_unit ?? $transaction->ordered_unit,
-                'payment_receipt'  => $paymentReceipt,
-                'request_letter'   => $requestLetter,
-                'response_letter'  => $responseLetter,
-            ]);
-        });
-
-        return back()->with('success', 'Transaksi berhasil diperbarui.');
-    }
-
-
-
-
     // public function ruangan_update(Request $request, $id)
     // {
     //     $validated = $request->validate([
@@ -411,54 +270,98 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     //         'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
     //         'rejection_reason' => 'required_if:status,rejected',
     //         'total_harga'      => 'required|numeric|min:0',
-    //         'billing_code'     => 'nullable|string',
-    //         'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
-    //         'ruangan_id'       => 'required|exists:properties,id',
 
+    //         'billing_code'     => 'nullable|string',
+    //         'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf,webp|max:20480',
+
+    //         'response_letter'  => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
+    //         'payment_receipt'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
+    //         'request_letter'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
+
+    //         // flags hapus
+    //         'remove_payment_receipt' => 'nullable|boolean',
+    //         'remove_request_letter'  => 'nullable|boolean',
+    //         'remove_response_letter' => 'nullable|boolean',
+    //         'remove_billing_qr'      => 'nullable|boolean',
+
+    //         'ruangan_id'       => 'required|exists:properties,id',
     //     ]);
 
     //     DB::transaction(function () use ($request, $id) {
     //         $transaction = Transaction::findOrFail($id);
 
     //         // fallback lama
-    //         $paymentReceipt  = $request->old_payment_receipt ?? $transaction->payment_receipt;
-    //         $requestLetter   = $request->old_request_letter  ?? $transaction->request_letter;
-    //         $responseLetter  = $request->old_response_letter ?? $transaction->response_letter;
-    //         $billingQr       = $request->old_billing_qr      ?? $transaction->billing_qr;
-    //         $billingCode     = $transaction->billing_code;
+    //         $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
+    //         $requestLetter  = $request->old_request_letter  ?? $transaction->request_letter;
+    //         $responseLetter = $request->old_response_letter ?? $transaction->response_letter;
+    //         $billingQr      = $request->old_billing_qr      ?? $transaction->billing_qr;
+    //         $billingCode    = $transaction->billing_code;
     //         $rejectionReason = $transaction->rejection_reason;
 
-    //         // file umum
-    //         if ($request->hasFile('payment_receipt')) {
-    //             $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
-    //             $paymentReceipt = basename($path);
+    //         // ====== HAPUS FILE (jika ditandai) ======
+    //         if ($request->boolean('remove_payment_receipt') && $paymentReceipt) {
+    //             Storage::disk('public')->delete('uploads/payment_receipt/' . $paymentReceipt);
+    //             $paymentReceipt = null;
     //         }
-    //         if ($request->hasFile('request_letter')) {
-    //             $path = $request->file('request_letter')->store('uploads/request_letter', 'public');
-    //             $requestLetter = basename($path);
+    //         if ($request->boolean('remove_request_letter') && $requestLetter) {
+    //             Storage::disk('public')->delete('uploads/request_letter/' . $requestLetter);
+    //             $requestLetter = null;
     //         }
-    //         // response_letter
-    //         if ($request->hasFile('response_letter')) {
-    //             $path = $request->file('response_letter')->store('uploads/response_letter', 'public');
-    //             $responseLetter = basename($path);
+    //         if ($request->boolean('remove_response_letter') && $responseLetter) {
+    //             Storage::disk('public')->delete('uploads/response_letter/' . $responseLetter);
+    //             $responseLetter = null;
+    //         }
+    //         if ($request->boolean('remove_billing_qr') && $billingQr) {
+    //             Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
+    //             $billingQr = null;
     //         }
 
-    //         // billing: terima dari mana pun (dokumen/status)
+    //         // ====== UPLOAD BARU (timpa yang lama) ======
+    //         if ($request->hasFile('payment_receipt')) {
+    //             if ($paymentReceipt) {
+    //                 Storage::disk('public')->delete('uploads/payment_receipt/' . $paymentReceipt);
+    //             }
+    //             $paymentReceipt = basename($request->file('payment_receipt')->store('uploads/payment_receipt', 'public'));
+    //         }
+
+    //         if ($request->hasFile('request_letter')) {
+    //             if ($requestLetter) {
+    //                 Storage::disk('public')->delete('uploads/request_letter/' . $requestLetter);
+    //             }
+    //             $requestLetter = basename($request->file('request_letter')->store('uploads/request_letter', 'public'));
+    //         }
+
+    //         if ($request->hasFile('response_letter')) {
+    //             if ($responseLetter) {
+    //                 Storage::disk('public')->delete('uploads/response_letter/' . $responseLetter);
+    //             }
+    //             $responseLetter = basename($request->file('response_letter')->store('uploads/response_letter', 'public'));
+    //         }
+
+    //         if ($request->hasFile('billing_qr')) {
+    //             if ($billingQr) {
+    //                 Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
+    //             }
+    //             $billingQr = basename($request->file('billing_qr')->store('uploads/billing_qr', 'public'));
+    //         }
+
+    //         // ====== Billing code (teks) ======
     //         if ($request->filled('billing_code')) {
     //             $billingCode = $request->billing_code;
     //         }
-    //         if ($request->hasFile('billing_qr')) {
-    //             $path = $request->file('billing_qr')->store('uploads/billing_qr', 'public');
-    //             $billingQr = basename($path);
-    //         }
+    //         // Opsional: kalau mau ada tombol hapus untuk billing_code, tambahkan flag 'remove_billing_code' boolean di form + validasi,
+    //         // lalu di sini:
+    //         // if ($request->boolean('remove_billing_code')) { $billingCode = null; }
 
-    //         // status-based overrides
+    //         // ====== Status-based overrides ======
     //         if ($request->status === 'rejected') {
     //             $rejectionReason = $request->rejection_reason; // valid by rule
     //             $billingCode = null;
+    //             if ($billingQr) {
+    //                 Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
+    //             }
     //             $billingQr   = null;
     //         } elseif ($request->filled('rejection_reason')) {
-    //             // optional: update alasan walau bukan rejected
     //             $rejectionReason = $request->rejection_reason;
     //         }
 
@@ -486,9 +389,106 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     //         ]);
     //     });
 
-
-    //     return back()->with('success', 'Transaksi berhasil diperbarui (detail kamar tidak diubah).');
+    //     return back()->with('success', 'Transaksi berhasil diperbarui.');
     // }
+
+
+
+
+    public function ruangan_update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'user_id'          => 'required|integer',
+            'office'           => 'required|string|max:32',
+            'affiliation'      => 'required|string|in:internal_pu,external_pu',
+            'phone_number'     => 'required|string|max:15',
+            'email'            => 'required|email',
+            'event'            => 'required|string|max:100',
+            'ordered_unit'     => 'required|integer|min:1',
+            'description'      => 'nullable|string',
+            'start'            => 'required|date',
+            'end'              => 'required|date|after_or_equal:start',
+            'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
+            'rejection_reason' => 'required_if:status,rejected',
+            'total_harga'      => 'required|numeric|min:0',
+            'billing_code'     => 'nullable|string',
+            'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
+            'ruangan_id'       => 'required|exists:properties,id',
+
+        ]);
+
+        DB::transaction(function () use ($request, $id) {
+            $transaction = Transaction::findOrFail($id);
+
+            // fallback lama
+            $paymentReceipt  = $request->old_payment_receipt ?? $transaction->payment_receipt;
+            $requestLetter   = $request->old_request_letter  ?? $transaction->request_letter;
+            $responseLetter  = $request->old_response_letter ?? $transaction->response_letter;
+            $billingQr       = $request->old_billing_qr      ?? $transaction->billing_qr;
+            $billingCode     = $transaction->billing_code;
+            $rejectionReason = $transaction->rejection_reason;
+
+            // file umum
+            if ($request->hasFile('payment_receipt')) {
+                $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+                $paymentReceipt = basename($path);
+            }
+            if ($request->hasFile('request_letter')) {
+                $path = $request->file('request_letter')->store('uploads/request_letter', 'public');
+                $requestLetter = basename($path);
+            }
+            // response_letter
+            if ($request->hasFile('response_letter')) {
+                $path = $request->file('response_letter')->store('uploads/response_letter', 'public');
+                $responseLetter = basename($path);
+            }
+
+            // billing: terima dari mana pun (dokumen/status)
+            if ($request->filled('billing_code')) {
+                $billingCode = $request->billing_code;
+            }
+            if ($request->hasFile('billing_qr')) {
+                $path = $request->file('billing_qr')->store('uploads/billing_qr', 'public');
+                $billingQr = basename($path);
+            }
+
+            // status-based overrides
+            if ($request->status === 'rejected') {
+                $rejectionReason = $request->rejection_reason; // valid by rule
+                $billingCode = null;
+                $billingQr   = null;
+            } elseif ($request->filled('rejection_reason')) {
+                // optional: update alasan walau bukan rejected
+                $rejectionReason = $request->rejection_reason;
+            }
+
+            $propertyId = $request->ruangan_id ?? $transaction->property_id;
+
+            $transaction->update([
+                'instansi'         => ucwords($request->office),
+                'kegiatan'         => ucwords($request->event),
+                'property_id'      => $propertyId,
+                'description'      => $request->description,
+                'status'           => $request->status,
+                'rejection_reason' => $rejectionReason,
+                'billing_code'     => $billingCode,
+                'billing_qr'       => $billingQr,
+                'start'            => $request->start,
+                'end'              => $request->end,
+                'total_harga'      => $request->total_harga,
+                'phone_number'     => $request->phone_number,
+                'email'            => $request->email,
+                'affiliation'      => $request->affiliation,
+                'ordered_unit'     => $request->ordered_unit ?? $transaction->ordered_unit,
+                'payment_receipt'  => $paymentReceipt,
+                'request_letter'   => $requestLetter,
+                'response_letter'  => $responseLetter,
+            ]);
+        });
+
+
+        return back()->with('success', 'Transaksi berhasil diperbarui (detail kamar tidak diubah).');
+    }
 
 
 

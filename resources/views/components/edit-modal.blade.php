@@ -1095,7 +1095,7 @@
                                 </style>
 
                                 {{-- Bukti Pembayaran --}}
-                                <div class="mb-3 min-w-0">
+                                {{-- <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Bukti Pembayaran:</strong></p>
 
                                     @if ($t->payment_receipt)
@@ -1128,7 +1128,7 @@
                                 </div>
 
                                 {{-- Surat Permohonan --}}
-                                <div class="mb-3 min-w-0">
+                                {{-- <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Surat Permohonan:</strong></p>
 
                                     @if ($t->request_letter)
@@ -1158,10 +1158,10 @@
                                     <input type="file" id="input_request_letter-{{ $t->id }}"
                                         name="request_letter" class="form-control mt-2"
                                         accept=".pdf,.jpg,.jpeg,.png">
-                                </div>
+                                </div> --}}
 
                                 {{-- Kode Pembayaran (File) --}}
-                                <div class="mb-3 min-w-0">
+                                {{-- <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Kode Pembayaran:</strong></p>
 
                                     @if ($t->billing_qr)
@@ -1194,10 +1194,10 @@
                                     @error('billing_qr')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> --}}
 
                                 {{-- Surat Balasan Permohonan --}}
-                                <div class="mb-3 min-w-0">
+                                {{-- <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Surat Balasan Permohonan:</strong></p>
 
                                     @if ($t->response_letter)
@@ -1230,11 +1230,11 @@
                                     @error('response_letter')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> --}} 
                                 {{-- sebelumnya --}}
 
 
-                                {{-- <div class="mb-3 min-w-0">
+                                <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Bukti Pembayaran:</strong></p>
                                     @if ($t->payment_receipt)
                                         <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
@@ -1260,9 +1260,9 @@
                                     @endif
                                     <input type="file" name="request_letter" class="form-control mt-2"
                                         accept=".pdf,.jpg,.jpeg,.png">
-                                </div> --}}
+                                </div>
                                 {{-- Dokumen: Billing Code + QR/File --}}
-                                {{-- <div class="mb-3 min-w-0">
+                                <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Kode Pembayaran:</strong></p>
 
                                     @if ($t->billing_qr)
@@ -1278,11 +1278,11 @@
                                     @error('billing_qr')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
-                                </div> --}}
+                                </div>
 
                                 {{-- response_letter --}}
 
-                                {{-- <div class="mb-3 min-w-0">
+                                <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Surat Balasan Permohonan:</strong></p>
 
                                     @if ($t->response_letter)
@@ -1300,7 +1300,7 @@
                                     @error('response_letter')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
-                                </div> --}}
+                                </div>
 
                             </div>
 
