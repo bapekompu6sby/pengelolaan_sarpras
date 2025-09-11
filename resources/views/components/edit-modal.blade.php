@@ -1094,7 +1094,147 @@
                                     }
                                 </style>
 
+                                {{-- Bukti Pembayaran --}}
                                 <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Bukti Pembayaran:</strong></p>
+
+                                    @if ($t->payment_receipt)
+                                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                            <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
+                                                target="_blank">Download</a>
+
+                                            <input type="hidden" name="old_payment_receipt"
+                                                value="{{ $t->payment_receipt }}">
+                                            <input type="hidden" name="remove_payment_receipt" value="0">
+
+                                            <div class="form-check m-0">
+                                                <input class="form-check-input toggle-remove" type="checkbox"
+                                                    id="remove_payment_receipt-{{ $t->id }}"
+                                                    name="remove_payment_receipt" value="1"
+                                                    data-target="#input_payment_receipt-{{ $t->id }}">
+                                                <label class="form-check-label"
+                                                    for="remove_payment_receipt-{{ $t->id }}">
+                                                    Hapus file lama saat simpan
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <em class="d-block text-mobile-wrap fs-mobile-6">Tidak ada</em>
+                                    @endif
+
+                                    <input type="file" id="input_payment_receipt-{{ $t->id }}"
+                                        name="payment_receipt" class="form-control mt-2"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                </div>
+
+                                {{-- Surat Permohonan --}}
+                                <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Surat Permohonan:</strong></p>
+
+                                    @if ($t->request_letter)
+                                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                            <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
+                                                target="_blank">Download</a>
+
+                                            <input type="hidden" name="old_request_letter"
+                                                value="{{ $t->request_letter }}">
+                                            <input type="hidden" name="remove_request_letter" value="0">
+
+                                            <div class="form-check m-0">
+                                                <input class="form-check-input toggle-remove" type="checkbox"
+                                                    id="remove_request_letter-{{ $t->id }}"
+                                                    name="remove_request_letter" value="1"
+                                                    data-target="#input_request_letter-{{ $t->id }}">
+                                                <label class="form-check-label"
+                                                    for="remove_request_letter-{{ $t->id }}">
+                                                    Hapus file lama saat simpan
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <em class="d-block text-mobile-wrap fs-mobile-6">Tidak ada</em>
+                                    @endif
+
+                                    <input type="file" id="input_request_letter-{{ $t->id }}"
+                                        name="request_letter" class="form-control mt-2"
+                                        accept=".pdf,.jpg,.jpeg,.png">
+                                </div>
+
+                                {{-- Kode Pembayaran (File) --}}
+                                <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Kode Pembayaran:</strong></p>
+
+                                    @if ($t->billing_qr)
+                                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                            <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                                target="_blank" class="force-wrap">Download</a>
+
+                                            <input type="hidden" name="old_billing_qr"
+                                                value="{{ $t->billing_qr }}">
+                                            <input type="hidden" name="remove_billing_qr" value="0">
+
+                                            <div class="form-check m-0">
+                                                <input class="form-check-input toggle-remove" type="checkbox"
+                                                    id="remove_billing_qr-{{ $t->id }}"
+                                                    name="remove_billing_qr" value="1"
+                                                    data-target="#input_billing_qr-{{ $t->id }}">
+                                                <label class="form-check-label"
+                                                    for="remove_billing_qr-{{ $t->id }}">
+                                                    Hapus file lama saat simpan
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <em class="force-wrap">Tidak ada</em>
+                                    @endif
+
+                                    <input type="file" id="input_billing_qr-{{ $t->id }}"
+                                        name="billing_qr" class="form-control mt-2"
+                                        accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                    @error('billing_qr')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Surat Balasan Permohonan --}}
+                                <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Surat Balasan Permohonan:</strong></p>
+
+                                    @if ($t->response_letter)
+                                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                                            <a href="{{ asset('storage/uploads/response_letter/' . $t->response_letter) }}"
+                                                target="_blank" class="force-wrap">Download</a>
+
+                                            <input type="hidden" name="old_response_letter"
+                                                value="{{ $t->response_letter }}">
+                                            <input type="hidden" name="remove_response_letter" value="0">
+
+                                            <div class="form-check m-0">
+                                                <input class="form-check-input toggle-remove" type="checkbox"
+                                                    id="remove_response_letter-{{ $t->id }}"
+                                                    name="remove_response_letter" value="1"
+                                                    data-target="#input_response_letter-{{ $t->id }}">
+                                                <label class="form-check-label"
+                                                    for="remove_response_letter-{{ $t->id }}">
+                                                    Hapus file lama saat simpan
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <em class="force-wrap">Tidak ada</em>
+                                    @endif
+
+                                    <input type="file" id="input_response_letter-{{ $t->id }}"
+                                        name="response_letter" class="form-control mt-2"
+                                        accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                    @error('response_letter')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                {{-- sebelumnya --}}
+
+
+                                {{-- <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Bukti Pembayaran:</strong></p>
                                     @if ($t->payment_receipt)
                                         <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
@@ -1120,9 +1260,9 @@
                                     @endif
                                     <input type="file" name="request_letter" class="form-control mt-2"
                                         accept=".pdf,.jpg,.jpeg,.png">
-                                </div>
+                                </div> --}}
                                 {{-- Dokumen: Billing Code + QR/File --}}
-                                <div class="mb-3 min-w-0">
+                                {{-- <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Kode Pembayaran:</strong></p>
 
                                     @if ($t->billing_qr)
@@ -1138,11 +1278,11 @@
                                     @error('billing_qr')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> --}}
 
                                 {{-- response_letter --}}
 
-                                <div class="mb-3 min-w-0">
+                                {{-- <div class="mb-3 min-w-0">
                                     <p class="mb-1"><strong>Surat Balasan Permohonan:</strong></p>
 
                                     @if ($t->response_letter)
@@ -1160,7 +1300,7 @@
                                     @error('response_letter')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> --}}
 
                             </div>
 
@@ -1212,7 +1352,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Edit</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -1221,6 +1361,18 @@
 
     </div>
     @once
+        <script>
+            document.addEventListener('change', function(e) {
+                if (!e.target.classList.contains('toggle-remove')) return;
+                const targetSel = e.target.getAttribute('data-target');
+                const input = document.querySelector(targetSel);
+                if (!input) return;
+                input.disabled = e.target.checked; // centang -> nonaktifkan upload
+            });
+        </script>
+
+
+
         <script>
             document.addEventListener('click', async function(e) {
                 const btn = e.target.closest('.cek-ruangan-btn');
