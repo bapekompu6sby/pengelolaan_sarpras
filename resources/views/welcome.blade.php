@@ -47,7 +47,7 @@
                             <table class="table table-hover mb-3">
                                 <thead>
                                     <tr>
-                                        <th>Event</th>
+                                        <th>Kegiatan</th>
                                         <th>Tanggal</th>
                                         <th>Ruangan</th>
                                     </tr>

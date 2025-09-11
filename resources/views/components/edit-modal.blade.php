@@ -561,8 +561,18 @@
                                     <em>Belum di upload admin</em>
                                 @endif
 
+                            </p>
 
-                                {{-- Status --}}
+                            {{-- response_letter --}}
+                            @if ($t->response_letter)
+                                <p class="mt-3 mb-1"><strong>Surat Balasan Permohonan: </strong>
+                                    <a href="{{ asset('storage/uploads/response_letter/' . $t->response_letter) }}"
+                                        target="_blank">Download</a>
+                                </p>
+                            @endif
+
+
+                            {{-- Status --}}
                             <p class="mt-3 mb-1"><strong>Status :</strong>
                                 @if ($t->status === 'rejected')
                                     <span class="badge bg-danger">Ditolak</span>
@@ -1084,8 +1094,8 @@
                                     }
                                 </style>
 
-                                <div class="mb-3">
-                                    <p><strong>Bukti Pembayaran:</strong></p>
+                                <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Bukti Pembayaran:</strong></p>
                                     @if ($t->payment_receipt)
                                         <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
                                             target="_blank">Download</a>
@@ -1098,8 +1108,8 @@
                                         accept=".pdf,.jpg,.jpeg,.png">
                                 </div>
 
-                                <div class="mb-3">
-                                    <p><strong>Surat Permohonan:</strong></p>
+                                <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Surat Permohonan:</strong></p>
                                     @if ($t->request_letter)
                                         <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
                                             target="_blank">Download</a>
@@ -1113,14 +1123,14 @@
                                 </div>
                                 {{-- Dokumen: Billing Code + QR/File --}}
                                 <div class="mb-3 min-w-0">
-                                    <p class="mb-1"><strong>Billing Code (File):</strong></p>
+                                    <p class="mb-1"><strong>Kode Pembayaran:</strong></p>
 
                                     @if ($t->billing_qr)
                                         <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
                                             target="_blank" class="force-wrap">Download</a>
                                         <input type="hidden" name="old_billing_qr" value="{{ $t->billing_qr }}">
                                     @else
-                                        <em class="force-wrap">Belum ada</em>
+                                        <em class="force-wrap">Tidak ada</em>
                                     @endif
 
                                     <input type="file" id="billing_qr_doc-{{ $t->id }}" name="billing_qr"
@@ -1130,6 +1140,27 @@
                                     @enderror
                                 </div>
 
+                                {{-- response_letter --}}
+
+                                <div class="mb-3 min-w-0">
+                                    <p class="mb-1"><strong>Surat Balasan Permohonan:</strong></p>
+
+                                    @if ($t->response_letter)
+                                        <a href="{{ asset('storage/uploads/response_letter/' . $t->response_letter) }}"
+                                            target="_blank" class="force-wrap">Download</a>
+                                        <input type="hidden" name="old_response_letter"
+                                            value="{{ $t->response_letter }}">
+                                    @else
+                                        <em class="force-wrap">Tidak ada</em>
+                                    @endif
+
+                                    <input type="file" id="response_letter_doc-{{ $t->id }}"
+                                        name="response_letter" class="form-control mt-2"
+                                        accept=".pdf,.jpg,.jpeg,.png,.webp">
+                                    @error('response_letter')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
                             </div>
 

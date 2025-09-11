@@ -282,6 +282,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             // fallback lama
             $paymentReceipt  = $request->old_payment_receipt ?? $transaction->payment_receipt;
             $requestLetter   = $request->old_request_letter  ?? $transaction->request_letter;
+            $responseLetter  = $request->old_response_letter ?? $transaction->response_letter;
             $billingQr       = $request->old_billing_qr      ?? $transaction->billing_qr;
             $billingCode     = $transaction->billing_code;
             $rejectionReason = $transaction->rejection_reason;
@@ -294,6 +295,11 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             if ($request->hasFile('request_letter')) {
                 $path = $request->file('request_letter')->store('uploads/request_letter', 'public');
                 $requestLetter = basename($path);
+            }
+            // response_letter
+            if ($request->hasFile('response_letter')) {
+                $path = $request->file('response_letter')->store('uploads/response_letter', 'public');
+                $responseLetter = basename($path);
             }
 
             // billing: terima dari mana pun (dokumen/status)
@@ -335,6 +341,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'ordered_unit'     => $request->ordered_unit ?? $transaction->ordered_unit,
                 'payment_receipt'  => $paymentReceipt,
                 'request_letter'   => $requestLetter,
+                'response_letter'  => $responseLetter,
             ]);
         });
 

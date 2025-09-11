@@ -25,11 +25,17 @@
 
     @php
         // ===== Helper: Format rentang tanggal konsisten lokal =====
-        function tanggalRangeID($start, $end){
-            $s = \Carbon\Carbon::parse($start); $e = \Carbon\Carbon::parse($end);
-            if ($s->isSameDay($e)) return $s->translatedFormat('d M Y');
-            if ($s->isSameMonth($e) && $s->isSameYear($e)) return $s->translatedFormat('d').'–'.$e->translatedFormat('d M Y');
-            return $s->translatedFormat('d M Y').' — '.$e->translatedFormat('d M Y');
+        function tanggalRangeID($start, $end)
+        {
+            $s = \Carbon\Carbon::parse($start);
+            $e = \Carbon\Carbon::parse($end);
+            if ($s->isSameDay($e)) {
+                return $s->translatedFormat('d M Y');
+            }
+            if ($s->isSameMonth($e) && $s->isSameYear($e)) {
+                return $s->translatedFormat('d') . '–' . $e->translatedFormat('d M Y');
+            }
+            return $s->translatedFormat('d M Y') . ' — ' . $e->translatedFormat('d M Y');
         }
     @endphp
 
@@ -49,15 +55,21 @@
                 @php $count = $events->count(); @endphp
 
                 @if ($count > 0)
-                    <div id="kegiatanSlider" class="kegiatan-slider" role="region" aria-label="Slider kegiatan hari ini" aria-live="polite">
-                        <div class="progress" aria-hidden="true"><div class="bar" id="sliderProgress"></div></div>
+                    <div id="kegiatanSlider" class="kegiatan-slider" role="region" aria-label="Slider kegiatan hari ini"
+                        aria-live="polite">
+                        <div class="progress" aria-hidden="true">
+                            <div class="bar" id="sliderProgress"></div>
+                        </div>
 
                         <div class="slides" id="sliderTrack" style="transform: translateX(0%)">
                             @foreach ($events as $idx => $e)
                                 @php $rowId = 'row-'.($e->id ?? Str::slug(($e->kegiatan ?? 'kegiatan').'-'.($e->start ?? ''))); @endphp
-                                <article class="slide" data-index="{{ $idx }}" tabindex="0" aria-roledescription="slide" aria-label="Slide {{ $idx+1 }} dari {{ $count }}">
+                                <article class="slide" data-index="{{ $idx }}" tabindex="0"
+                                    aria-roledescription="slide"
+                                    aria-label="Slide {{ $idx + 1 }} dari {{ $count }}">
                                     <div class="slide-content">
-                                        <span class="instansi"><i class='bx bxs-buildings'></i> {{ $e->instansi ?? '-' }}</span>
+                                        <span class="instansi"><i class='bx bxs-buildings'></i>
+                                            {{ $e->instansi ?? '-' }}</span>
                                         <div class="kegiatan-title text-break">{{ ucfirst($e->kegiatan) }}</div>
                                         <div class="tanggal">
                                             <i class='bx bx-calendar'></i>
@@ -67,19 +79,23 @@
                                             <span><i class='bx bx-map'></i> {{ $e->properties->name ?? '-' }}</span>
                                         </div>
                                         <div class="cta-link">
-                                            <a href="#{{ $rowId }}" class="btn btn-sm btn-outline-primary">Lihat di tabel</a>
+                                            <a href="#{{ $rowId }}" class="btn btn-sm btn-outline-primary">Lihat di
+                                                tabel</a>
                                         </div>
                                     </div>
                                 </article>
                             @endforeach
                         </div>
 
-                        <button class="nav prev" type="button" id="btnPrev" aria-label="Slide sebelumnya"><i class='bx bx-chevron-left'></i></button>
-                        <button class="nav next" type="button" id="btnNext" aria-label="Slide berikutnya"><i class='bx bx-chevron-right'></i></button>
+                        <button class="nav prev" type="button" id="btnPrev" aria-label="Slide sebelumnya"><i
+                                class='bx bx-chevron-left'></i></button>
+                        <button class="nav next" type="button" id="btnNext" aria-label="Slide berikutnya"><i
+                                class='bx bx-chevron-right'></i></button>
 
                         <div class="dots" id="sliderDots" aria-label="Indikator slide">
                             @for ($i = 0; $i < $count; $i++)
-                                <button class="dot {{ $i === 0 ? 'active' : '' }}" type="button" data-index="{{ $i }}" aria-label="Ke slide {{ $i+1 }}"></button>
+                                <button class="dot {{ $i === 0 ? 'active' : '' }}" type="button"
+                                    data-index="{{ $i }}" aria-label="Ke slide {{ $i + 1 }}"></button>
                             @endfor
                         </div>
                     </div>
@@ -120,7 +136,7 @@
                                     <td>{{ $e->instansi }}</td>
                                     <td>
                                         <strong class="text-break">{{ ucfirst($e->kegiatan) }}</strong><br>
-                                        <small class="text-muted text-break">{{ $e->description }}</small>
+                                        <small class="text-muted">{{ $e->description }}</small>
                                     </td>
                                     <td>{{ tanggalRangeID($e->start, $e->end) }}</td>
                                     <td>{{ $e->name }}</td>

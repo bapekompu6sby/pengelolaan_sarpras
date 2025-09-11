@@ -24,6 +24,7 @@ class Transaction extends Model
         'billing_qr',
         'payment_receipt',
         'request_letter',
+        'response_letter',
         'description',
         'user_id',
         'affiliation',
