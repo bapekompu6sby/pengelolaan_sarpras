@@ -414,6 +414,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'billing_code'     => 'nullable|string',
             'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
             'ruangan_id'       => 'required|exists:properties,id',
+            'rejection_reason' => 'nullable|string|max:255',
 
         ]);
 

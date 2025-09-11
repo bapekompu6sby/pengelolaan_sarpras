@@ -10,6 +10,7 @@ use App\Http\Controllers\CustomerServiceController;
 use App\Http\Controllers\PropertiesControllerAsUser;
 use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 use App\Http\Controllers\DetailTransactionController;
+use App\Models\Kamar;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,6 +118,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::group(['middleware' => 'checkRole:admin'], function () {
                 Route::put('/penghunis/update', [KamarController::class, 'updatePenghunis'])
                         ->name('penghuni.update');
+                // routes/web.php
+                Route::delete('/detail-kamar/{id}', [KamarController::class, 'destroyPenghunis'])
+                        ->name('detail.destroy');
+
 
                 // prefik untuk admin
                 Route::prefix('admin')->group(function () {

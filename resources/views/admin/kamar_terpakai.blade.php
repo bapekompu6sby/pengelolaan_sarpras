@@ -208,6 +208,15 @@
                                                         data-bs-target="#editPenghuniModal">
                                                         Edit Penghuni
                                                     </button>
+                                                    <form action="{{ route('detail.destroy', $u['detail_id']) }}"
+                                                        method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger mt-2"
+                                                            onclick="return confirm('Yakin ingin menghapus jadwal kamar ini? Semua data penghuni yang terkait juga akan dihapus.');">
+                                                            Hapus
+                                                        </button>
+                                                    </form>
 
                                                 </li>
                                             </ul>
@@ -302,6 +311,15 @@
                                                     data-bs-target="#editPenghuniModal">
                                                     Edit Penghuni
                                                 </button>
+                                                <form action="{{ route('detail.destroy', $u['detail_id']) }}"
+                                                    method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger mt-2"
+                                                        onclick="return confirm('Yakin ingin menghapus jadwal kamar ini? Semua data penghuni yang terkait juga akan dihapus.');">
+                                                        Hapus
+                                                    </button>
+                                                </form>
 
                                             </li>
                                         </ul>

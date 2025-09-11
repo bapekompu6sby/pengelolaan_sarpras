@@ -95,6 +95,22 @@ class KamarController extends Controller
         return back()->with('success', 'Nama penghuni berhasil diperbarui.');
     }
 
+    public function destroyPenghunis($id)
+    {
+        DB::transaction(function () use ($id) {
+            $detail = DetailKamarTransaction::with('penghunis')->findOrFail($id);
+
+ 
+            foreach ($detail->penghunis as $p) {
+                $p->delete();
+            }
+
+            $detail->delete();
+        });
+
+        return back()->with('success', 'Jadwal kamar & data penghuni berhasil dihapus.');
+    }
+
 
 
     public function kamarTerpakai()
@@ -127,10 +143,16 @@ class KamarController extends Controller
             'kamar:id,properties_id,nama_kamar,kapasitas',
             'kamar.properties:id,name',
             'transaction:id,name,kegiatan',
+            'transaction:id,name,kegiatan,status',
             'transaction.user:id,name',
             'penghunis:id,detail_kamar_transaction_id,nama_penghuni',
         ])
             ->whereDate('end', '>=', $today)
+            // ===== ONLY APPROVED =====
+            ->whereHas('transaction', function ($q) {
+                $q->where('status', 'approved');
+            })
+            // =========================
             ->orderBy('start', 'asc')
             ->get()
             ->groupBy('kamar_id')
