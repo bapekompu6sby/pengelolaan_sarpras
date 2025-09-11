@@ -511,6 +511,30 @@
                             <p><strong>Description:</strong> {{ $t->description }}</p>
                             <p><strong>Unit:</strong> {{ $t->ordered_unit }}</p>
                             <p><strong>Total Harga:</strong> Rp. {{ number_format($t->total_harga, 0, ',', '.') }}</p>
+                            {{-- Status --}}
+                            <p class="mt-3 mb-1"><strong>Status :</strong>
+                                @if ($t->status === 'rejected')
+                                    <span class="badge bg-danger">Ditolak</span>
+                                @elseif ($t->status === 'waiting_payment')
+                                    <span class="badge bg-info">Menunggu Pembayaran</span>
+                                @elseif ($t->status === 'pending')
+                                    <span class="badge bg-warning ">Menunggu</span>
+                                @elseif ($t->status === 'approved')
+                                    @php
+                                        $isInternal = ($t->affiliation ?? '') === 'internal_pu';
+                                        $hasBilling = !empty($t->billing_qr);
+                                    @endphp
+
+                                    @if (!$isInternal && !$hasBilling)
+                                        <span class="badge bg-warning ">Disetujui tapi belum
+                                            bayar</span>
+                                    @else
+                                        <span class="badge bg-success">Disetujui</span>
+                                    @endif
+                                @else
+                                    <span class="badge bg-secondary">-</span>
+                                @endif
+                            </p>
                         </div>
                         <div class="col-12 col-md-6">
 
@@ -572,48 +596,24 @@
                             @endif
 
 
-                            {{-- Status --}}
-                            <p class="mt-3 mb-1"><strong>Status :</strong>
-                                @if ($t->status === 'rejected')
-                                    <span class="badge bg-danger">Ditolak</span>
-                                @elseif ($t->status === 'waiting_payment')
-                                    <span class="badge bg-info">Menunggu Pembayaran</span>
-                                @elseif ($t->status === 'pending')
-                                    <span class="badge bg-warning ">Menunggu</span>
-                                @elseif ($t->status === 'approved')
-                                    @php
-                                        $isInternal = ($t->affiliation ?? '') === 'internal_pu';
-                                        $hasBilling = !empty($t->billing_qr);
-                                    @endphp
 
-                                    @if (!$isInternal && !$hasBilling)
-                                        <span class="badge bg-warning ">Disetujui tapi belum
-                                            bayar</span>
-                                    @else
-                                        <span class="badge bg-success">Disetujui</span>
-                                    @endif
-                                @else
-                                    <span class="badge bg-secondary">-</span>
-                                @endif
-                            </p>
-                            @if ($t->status == 'approved' && ($t->properties->type == 'paviliun' || $t->properties->type == 'asrama'))
+                            @if ($t->status == 'approved' && in_array($t->properties->type, ['paviliun', 'asrama']))
+                                <p class="mt-3 mb-1"><strong>Kamar & Penghuni:</strong></p>
 
-                                <p class="mt-3 mb-1"><strong>nama kamar:</strong></p>
-                                <ul>
-                                    @foreach ($t->detailKamars as $k)
-                                        <li>{{ $k->kamar->nama_kamar }}</li>
-                                    @endforeach
-                                </ul>
-                                {{-- penghuni --}}
-                                <p class="mt-3 mb-1"><strong>nama penghuni:</strong></p>
-                                <ul>
-                                    @foreach ($t->detailKamars as $k)
-                                        @foreach ($k->penghunis as $p)
-                                            <li style="margin-bottom: -5px">{{ $p->nama_penghuni }}</li>
-                                        @endforeach
-                                    @endforeach
-                                </ul>
+                                @foreach ($t->detailKamars as $dk)
+                                    <div class="mb-2">
+                                        <div class="fw-semibold">{{ $dk->kamar->nama_kamar }}</div>
+                                        @if ($dk->penghunis->isNotEmpty())
+                                            @foreach ($dk->penghunis as $p)
+                                                <div>- {{ $p->nama_penghuni }}</div>
+                                            @endforeach
+                                        @else
+                                            <div class="text-muted">- (belum ada penghuni)</div>
+                                        @endif
+                                    </div>
+                                @endforeach
                             @endif
+
 
 
                             @if ($t->status == 'rejected')
@@ -1230,7 +1230,7 @@
                                     @error('response_letter')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
-                                </div> --}} 
+                                </div> --}}
                                 {{-- sebelumnya --}}
 
 
