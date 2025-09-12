@@ -9,9 +9,12 @@ use App\Models\Properties;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Exports\WismaExports;
+use Illuminate\Support\Carbon;
 use App\Exports\RuanganExports;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\DetailKamarTransaction;
 use Illuminate\Support\Facades\Storage;
@@ -167,11 +170,93 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         // return response()->json($transactions);
     }
 
+    // public function ruangan_store(Request $request)
+    // {
+    //     // echo "<pre>";
+    //     // print_r($request->toArray());
+    //     // echo "</pre>";
+    //     $colors = [
+    //         'primary'   => '#0d6efd',
+    //         'secondary' => '#6c757d',
+    //         'success'   => '#198754',
+    //         'info'      => '#0dcaf0',
+    //         'warning'   => '#ffc107',
+    //         'danger'    => '#dc3545',
+    //         'dark'      => '#212529',
+    //     ];
+
+
+
+    //     $request->validate([
+    //         'name' => 'required|string',
+    //         'office' => 'required|string|max:32',
+    //         'event' => 'required|string|max:32',
+    //         'start' => 'required|date',
+    //         'end' => 'required|date',
+    //         'venue' => 'required',
+    //         // 'payment_receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+    //         'request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+    //         'description' => 'nullable|string',
+    //         'phone_number' => 'nullable|string',
+    //         'email' => 'nullable|string',
+    //         'affiliation' => 'required|string',
+    //         'ordered_unit' => 'required|integer',
+    //         'total_harga' => 'required|integer',
+    //     ]);
+
+    //     // $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
+
+    //     // if ($transactions->count() > 0) {
+    //     //     return redirect()->back()->with('failed', 'Ruangan tidak tersedia');
+    //     // }
+
+
+
+    //     $paymentReceiptPath = null;
+    //     if ($request->hasFile('payment_receipt')) {
+    //         $paymentReceiptPath = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+    //     }
+
+
+    //     $requestLetterPath = null;
+    //     if ($request->hasFile('request_letter')) {
+    //         $requestLetterPath = $request->file('request_letter')->store('uploads/request_letter', 'public');
+    //     }
+
+    //     $namePaymentReceipt = $paymentReceiptPath ? basename($paymentReceiptPath) : null;
+    //     $nameRequestLetter = $requestLetterPath ? basename($requestLetterPath) : null;
+
+
+
+
+
+    //     $color = array_rand($colors, 1);
+
+    //     Transaction::create([
+    //         'name' => ucfirst($request->name),
+    //         'instansi' => ucfirst($request->office),
+    //         'kegiatan' => ucfirst($request->event),
+    //         'start' => $request->start,
+    //         'end' => $request->end,
+    //         'total_harga' => $request->total_harga,
+    //         'color' => $colors[$color],
+    //         'property_id' => $request->venue,
+    //         'payment_receipt' => $namePaymentReceipt,
+    //         'request_letter' => $nameRequestLetter,
+    //         'description' => $request->description,
+    //         'user_id' => auth()->user()->id,
+    //         'email' => $request->email,
+    //         'phone_number' => $request->phone_number,
+    //         'status' => 'pending',
+    //         'affiliation' => $request->affiliation,
+    //         'ordered_unit' => $request->ordered_unit,
+    //     ]);
+
+    //     return redirect()->route('ruangan.detail')->with('success', 'Jadwal berhasil dibuat');
+    // }
+
     public function ruangan_store(Request $request)
     {
-        // echo "<pre>";
-        // print_r($request->toArray());
-        // echo "</pre>";
         $colors = [
             'primary'   => '#0d6efd',
             'secondary' => '#6c757d',
@@ -182,38 +267,26 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'dark'      => '#212529',
         ];
 
-
-
         $request->validate([
-            'name' => 'required|string',
-            'office' => 'required|string|max:32',
-            'event' => 'required|string|max:32',
-            'start' => 'required|date',
-            'end' => 'required|date',
-            'venue' => 'required',
-            // 'payment_receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'name'           => 'required|string',
+            'office'         => 'required|string|max:32',
+            'event'          => 'required|string|max:32',
+            'start'          => 'required|date',
+            'end'            => 'required|date',
+            'venue'          => 'required',
             'request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-            'description' => 'nullable|string',
-            'phone_number' => 'nullable|string',
-            'email' => 'nullable|string',
-            'affiliation' => 'required|string',
-            'ordered_unit' => 'required|integer',
-            'total_harga' => 'required|integer',
+            'description'    => 'nullable|string',
+            'phone_number'   => 'nullable|string',
+            'email'          => 'nullable|string',
+            'affiliation'    => 'required|string',
+            'ordered_unit'   => 'required|integer',
+            'total_harga'    => 'required|integer',
         ]);
-
-        // $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
-
-        // if ($transactions->count() > 0) {
-        //     return redirect()->back()->with('failed', 'Ruangan tidak tersedia');
-        // }
-
-
 
         $paymentReceiptPath = null;
         if ($request->hasFile('payment_receipt')) {
             $paymentReceiptPath = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
         }
-
 
         $requestLetterPath = null;
         if ($request->hasFile('request_letter')) {
@@ -221,35 +294,92 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         }
 
         $namePaymentReceipt = $paymentReceiptPath ? basename($paymentReceiptPath) : null;
-        $nameRequestLetter = $requestLetterPath ? basename($requestLetterPath) : null;
+        $nameRequestLetter  = $requestLetterPath ? basename($requestLetterPath) : null;
 
+        $colorKey = array_rand($colors, 1);
 
-
-
-
-        $color = array_rand($colors, 1);
-
-        Transaction::create([
-            'name' => ucfirst($request->name),
-            'instansi' => ucfirst($request->office),
-            'kegiatan' => ucfirst($request->event),
-            'start' => $request->start,
-            'end' => $request->end,
-            'total_harga' => $request->total_harga,
-            'color' => $colors[$color],
-            'property_id' => $request->venue,
+        // SIMPAN TRANSAKSI
+        $trx = Transaction::create([
+            'name'            => ucfirst($request->name),
+            'instansi'        => ucfirst($request->office),
+            'kegiatan'        => ucfirst($request->event),
+            'start'           => $request->start,
+            'end'             => $request->end,
+            'total_harga'     => $request->total_harga,
+            'color'           => $colors[$colorKey],
+            'property_id'     => $request->venue,
             'payment_receipt' => $namePaymentReceipt,
-            'request_letter' => $nameRequestLetter,
-            'description' => $request->description,
-            'user_id' => auth()->user()->id,
-            'email' => $request->email,
-            'phone_number' => $request->phone_number,
-            'status' => 'pending',
-            'affiliation' => $request->affiliation,
-            'ordered_unit' => $request->ordered_unit,
+            'request_letter'  => $nameRequestLetter,
+            'description'     => $request->description,
+            'user_id'         => auth()->user()->id,
+            'email'           => $request->email,
+            'phone_number'    => $request->phone_number,
+            'status'          => 'pending',
+            'affiliation'     => $request->affiliation,
+            'ordered_unit'    => $request->ordered_unit,
         ]);
 
-        return redirect()->route('ruangan.detail')->with('success', 'Jadwal berhasil dibuat');
+        // === KIRIM WHATSAPP "SEGERA BAYAR" ===
+        try {
+            // Normalisasi nomor: buang non-digit, 08xx -> 628xx
+            $phone = preg_replace('/\D/', '', (string) $trx->phone_number);
+            if ($phone) {
+                $phone = preg_replace('/^0/', '62', $phone);
+            }
+
+            // Format tanggal (WIB)
+            $startAt = Carbon::parse($trx->start)->timezone('Asia/Jakarta')->format('d M Y');
+            $endAt   = Carbon::parse($trx->end)->timezone('Asia/Jakarta')->format('d M Y ');
+
+            // Format rupiah
+            $rupiah  = 'Rp ' . number_format((int) $trx->total_harga, 0, ',', '.');
+
+            // (Opsional) Link pembayaran/detail — ganti sesuai route kamu
+            // Misal kamu punya halaman detail transaksi atau pembayaran:
+            $detailUrl = route('transactions.historyTransaction'); // ganti ke route yang menampilkan detail/instruksi bayar
+
+            // Susun pesan
+            $billingAt = Carbon::parse($trx->start)
+                ->subDay()->timezone('Asia/Jakarta')->format('d M Y ');
+
+            $message = implode("\n", array_filter([
+                "Yth. {$trx->name} ({$trx->instansi}),",
+                "\n",
+                "Permohonan peminjaman ruangan untuk kegiatan *{$trx->kegiatan}* telah kami terima.",
+                "",
+                "*Jadwal:* {$startAt} – {$endAt}",
+                $trx->affiliation === 'external_pu' ? "*Total:* {$rupiah}" : null,
+                "*Status:* Menunggu",
+                "———————————————",
+                "*Unggah dokumen* melalui menu *Riwayat Peminjaman* → *Detail* pada tautan berikut:",
+                $detailUrl,
+                "",
+                "———————————————",
+                "Mohon melakukan pembayaran sesuai *Kode Billing* yang akan dikirim pada {$billingAt}.",
+                "———————————————",
+                "\n",
+                "Terima kasih.",
+                "— Admin *TOPANG* · Bapekom PU Wilayah VI Surabaya",
+            ]));
+
+
+
+
+
+            if (!empty($phone) && env('WA_GATEWAY_URL') && env('WA_GATEWAY_TOKEN')) {
+                Http::withHeaders([
+                    'Authorization' => env('WA_GATEWAY_TOKEN'),
+                ])->asForm()->post(env('WA_GATEWAY_URL'), [
+                    'target'  => $phone,     // sesuaikan field sesuai penyedia kamu (mis: target/phone)
+                    'message' => $message,   // sesuaikan (message/text)
+                ])->throw();
+            }
+        } catch (\Throwable $e) {
+            // Log kalau perlu, tapi jangan gagalkan alur utama
+            Log::warning('Gagal kirim WA: ' . $e->getMessage());
+        }
+
+        return redirect()->route('ruangan.detail')->with('success', 'Jadwal berhasil dibuat. Notif WhatsApp dikirim.');
     }
 
 
