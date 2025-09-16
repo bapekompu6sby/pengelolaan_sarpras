@@ -73,7 +73,7 @@
                                         <td>{{ $u->email }}</td>
                                         <td><span class="badge bg-label-primary">{{ $u->role ?? '-' }}</span></td>
 
-                                        <td>{{ $u->created_at ? $u->created_at->format('d M Y ') : '-' }}</td>
+                                        <td>{{ $u->created_at ? $u->created_at->format('Y M d ') : '-' }}</td>
 
                                         @if (Auth::user()->role != 'supervisor')
                                             <td>
@@ -160,10 +160,10 @@
                                                             class="badge bg-primary">{{ $u->role ?? '-' }}</span></div>
 
                                                     <div class="col-6">
-                                                        <strong>Dibuat:</strong><br>{{ $u->created_at ? $u->created_at->format('d M Y H:i') : '-' }}
+                                                        <strong>Dibuat:</strong><br>{{ $u->created_at ? $u->created_at->format('d M Y ') : '-' }}
                                                     </div>
                                                     <div class="col-6">
-                                                        <strong>Diperbarui:</strong><br>{{ $u->updated_at ? $u->updated_at->format('d M Y H:i') : '-' }}
+                                                        <strong>Diperbarui:</strong><br>{{ $u->updated_at ? $u->updated_at->format('d M Y ') : '-' }}
                                                     </div>
                                                 </div>
                                             </div>
