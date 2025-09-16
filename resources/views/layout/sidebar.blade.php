@@ -81,6 +81,14 @@
 
                     <ul class="menu-sub">
                         @if ($role == 'admin' || $role == 'supervisor')
+                            {{-- user  --}}
+                            <li class="menu-item {{ $route == 'users' ? 'active' : '' }}" id="data-user">
+                                <a href="{{ route('users') }}" class="menu-link">
+                                    <div data-i18n="going">Data User</div>
+                                </a>
+                            </li>
+                        
+                            {{-- ruangan --}}
                             <li class="menu-item {{ $route == 'properties' ? 'active' : '' }}" id="data-ruangan">
                                 <a href="{{ route('properties') }}" class="menu-link">
                                     <div data-i18n="going">Data Ruangan</div>

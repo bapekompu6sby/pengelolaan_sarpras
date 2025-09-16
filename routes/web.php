@@ -1,16 +1,17 @@
 <?php
 
+use App\Models\Kamar;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KamarController;
+use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertiesController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CustomerServiceController;
 use App\Http\Controllers\PropertiesControllerAsUser;
-use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 use App\Http\Controllers\DetailTransactionController;
-use App\Models\Kamar;
+use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,82 +48,83 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/transaction/check', [PropertiesController::class, 'checkAvailability'])->name('properties.check');
         Route::get('/kamar/check/{transaction}/{kamar}', [KamarController::class, 'check_kamar'])->name('kamar.check');
 
-        Route::get('/kamarTerpakai', [KamarController::class, 'kamarTerpakai'])->name('kamarTerpakai');
-
-
+        
+        
         //baru
         Route::get('/PropertiesAsUser', [PropertiesControllerAsUser::class, 'index'])->name('PropertiesAsUser');
-
+        
         Route::prefix('transactions')->group(function () {
                 Route::get('/historyTransaction', [TransactionController::class, 'history_transaction'])->name('transactions.historyTransaction');
-
+                
                 Route::get('/pinjam/{id}', [TransactionController::class, 'pinjam'])->name('transactions.pinjam');
                 Route::post('/pinjam/store', [TransactionController::class, 'pinjam_store'])->name('transactions.pinjam.store');
-
+                
                 Route::patch('/transactions/{id}/status', [TransactionController::class, 'update_status'])->name('transactions.updateStatus');
-
+                
                 Route::post('/updatePaymentReceipt/{id}', [TransactionController::class, 'update_payment_receipt'])->name('transactions.payment');
                 Route::post('/updateRequestLetter/{id}', [TransactionController::class, 'update_request_letter'])->name('transactions.request_letter');
         });
-
+        
         Route::get('/api/properties/{id}', [PropertiesController::class, 'getPropertyById'])
-                ->middleware('auth');
-
-
+        ->middleware('auth');
+        
+        
         Route::get("/redirectAuthenticatedUsers", [RedirectAuthenticatedUsersController::class, "home"]);
-
+        
         // role khusus untuk pak heru :) saja saja ada
         Route::get('/transactions/ruangan/list', [TransactionController::class, 'ruangan_detail'])
-                ->name('ruangan.detail');
+        ->name('ruangan.detail');
         Route::get('/transactions/wisma/list', [TransactionController::class, 'wisma_show_admin'])
-                ->name('wisma.detail');
-
-
+        ->name('wisma.detail');
+        
+        
         // export route untuk ruangan
         Route::get('/transactions/ruangan/export', [TransactionController::class, 'ruangan_export'])
-                ->name('transactions.ruangan.export');
-
+        ->name('transactions.ruangan.export');
+        
         // export route untuk wisma
         Route::get('/transactions/wisma/export', [TransactionController::class, 'wisma_export'])
-                ->name('transactions.wisma.export');
-
+        ->name('transactions.wisma.export');
+        
         Route::prefix('wisma')->group(function () {
                 Route::get('/', [TransactionController::class, 'wisma_show'])->name('wisma_show_user');
         });
-
+        
         Route::get('/transactions/ruangan', [TransactionController::class, 'ruangan_show'])
-                ->name('transactions.ruangan.show');
-
-        Route::get('/properties', [PropertiesController::class, 'index'])->name('properties');
-
+        ->name('transactions.ruangan.show');
+        
+        
         // Data master semua penghuni wisma
-
+        
         // Menyiapkan data untuk transaksi ruangan dan wisma
-
+        
         Route::post('/transactions/ruangan', [TransactionController::class, 'ruangan_store'])
-                ->name('transactions.ruangan.store');
+        ->name('transactions.ruangan.store');
         Route::post('/transactions/ruangan/update/{id}', [TransactionController::class, 'ruangan_update'])
-                ->name('transactions.ruangan.update');
+        ->name('transactions.ruangan.update');
         Route::delete('/transactions/ruangan', [TransactionController::class, 'ruangan_destroy'])
-                ->name('transactions.ruangan.destroy');
-
+        ->name('transactions.ruangan.destroy');
+        
         Route::get('/transactions/wisma', [TransactionController::class, 'wisma_show'])
-                ->name('transactions.wisma.show');
+        ->name('transactions.wisma.show');
         Route::post('/transactions/wisma', [TransactionController::class, 'wisma_store'])
-                ->name('transactions.wisma.store');
+        ->name('transactions.wisma.store');
         Route::patch('/transactions/wisma/{id}', [TransactionController::class, 'wisma_update'])
-                ->name('transactions.wisma.update');
+        ->name('transactions.wisma.update');
         Route::delete('/transactions/wisma/destroy', [TransactionController::class, 'wisma_destroy'])
-                ->name('transactions.wisma.destroy');
-
+        ->name('transactions.wisma.destroy');
+        
         Route::group(['middleware' => 'checkRole:admin'], function () {
                 Route::put('/penghunis/update', [KamarController::class, 'updatePenghunis'])
-                        ->name('penghuni.update');
+                ->name('penghuni.update');
                 // routes/web.php
                 Route::delete('/detail-kamar/{id}', [KamarController::class, 'destroyPenghunis'])
-                        ->name('detail.destroy');
-
-
+                ->name('detail.destroy');
+                
+                
+                Route::get('/kamarTerpakai', [KamarController::class, 'kamarTerpakai'])->name('kamarTerpakai');
+                Route::get('/properties', [PropertiesController::class, 'index'])->name('properties');
+                
                 // prefik untuk admin
                 Route::prefix('admin')->group(function () {
                         Route::post('/properties/store', [PropertiesController::class, 'store'])->name('properties.store');
@@ -139,9 +141,16 @@ Route::group(['middleware' => 'auth'], function () {
                         Route::delete('/destroy/{id}', [KamarController::class, 'destroy'])->name('kamar.destroy');
                 }
         );
+        
+        Route::prefix('users')->group(function () {
+                Route::get('/', [UsersController::class, 'index'])->name('users');
+                Route::post('/store', [UsersController::class, 'store'])->name('users.store');
+                Route::post('/edit/{id}', [UsersController::class, 'update'])->name('users.update');
+                // Route::delete('/destroy/{id}', [UsersController::class, 'destroy'])->name('users.destroy');
+        });
         Route::group(['middleware' => 'checkRole:user'], function () {
                 // prefik untuk wisma
-
+                
         });
 });
 
