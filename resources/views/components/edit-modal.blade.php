@@ -504,7 +504,10 @@
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
-                            <p><strong>Instansi:</strong> {{ $t->instansi }}</p>
+                            <p style="word-wrap: break-word; white-space: normal;">
+                                <strong>Instansi:</strong> {{ $t->instansi }}
+                            </p>
+
                             <p><strong>Affiliation:</strong> {{ $t->affiliation }}</p>
                             <p><strong>Phone:</strong> {{ $t->phone_number }}</p>
                             <p><strong>Email:</strong> {{ $t->email }}</p>
@@ -692,7 +695,10 @@
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <p><strong>Instansi:</strong> {{ $t->instansi }}</p>
+                            <p style="word-wrap: break-word; white-space: normal;">
+                                <strong>Instansi:</strong> {{ $t->instansi }}
+                            </p>
+
                             <p><strong>Affiliation:</strong> {{ $t->affiliation }}</p>
                             <p><strong>Phone:</strong> {{ $t->phone_number }}</p>
                             <p><strong>Email:</strong> {{ $t->email }}</p>
