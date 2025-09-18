@@ -269,8 +269,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
         $request->validate([
             'name'           => 'required|string',
-            'office'         => 'required|string|max:32',
-            'event'          => 'required|string|max:32',
+            'office'         => 'required|string',
+            'event'          => 'required|string',
             'start'          => 'required|date',
             'end'            => 'required|date',
             'venue'          => 'required',
