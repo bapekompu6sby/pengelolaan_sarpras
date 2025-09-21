@@ -12,6 +12,22 @@ use Illuminate\Support\Facades\Storage;
 
 class PropertiesController extends Controller
 {
+    public function updateStatus(Properties $property, Request $request)
+    {
+        $data = $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+
+        $property->status = $data['is_active'] ? 'ative' : 'inactive'; // ejaan enum kamu
+        $property->save();
+
+        return response()->json([
+            'ok' => true,
+            'status' => $property->status,
+        ]);
+    }
+
+
 
 
     public function checkAvailability(Request $request)
@@ -55,7 +71,7 @@ class PropertiesController extends Controller
     public function index()
     {
         $properties = Properties::all();
-        return view('admin.index-properties', [
+        return view('admin.properties.index', [
             'properties' => $properties
         ]);
     }
@@ -184,19 +200,7 @@ class PropertiesController extends Controller
     }
 
 
-    public function showImage(Properties $properties)
-    {
-        $path = $properties->image_path;
 
-        if (!Storage::disk('ftp')->exists($path)) {
-            abort(404, 'Image not found on FTP');
-        }
-
-        $file = Storage::disk('ftp')->get($path);
-        $mime = Storage::disk('ftp')->mimeType($path);
-
-        return response($file, 200)->header('Content-Type', $mime);
-    }
 
     public function getPropertyById($id)
     {

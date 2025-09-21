@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Kamar;
-use App\Models\Wisma;
+
 use App\Models\Properties;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -52,7 +52,7 @@ class TransactionController extends Controller
 
         $ruangan = Properties::all();
 
-        return view('user.history_transaction', [
+        return view('user.transactions.index', [
             'transactions' => $transactions,
             'ruangan'      => $ruangan,
         ]);
@@ -170,92 +170,9 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         // return response()->json($transactions);
     }
 
-    // public function ruangan_store(Request $request)
-    // {
-    //     // echo "<pre>";
-    //     // print_r($request->toArray());
-    //     // echo "</pre>";
-    //     $colors = [
-    //         'primary'   => '#0d6efd',
-    //         'secondary' => '#6c757d',
-    //         'success'   => '#198754',
-    //         'info'      => '#0dcaf0',
-    //         'warning'   => '#ffc107',
-    //         'danger'    => '#dc3545',
-    //         'dark'      => '#212529',
-    //     ];
 
 
-
-    //     $request->validate([
-    //         'name' => 'required|string',
-    //         'office' => 'required|string|max:32',
-    //         'event' => 'required|string|max:32',
-    //         'start' => 'required|date',
-    //         'end' => 'required|date',
-    //         'venue' => 'required',
-    //         // 'payment_receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-    //         'request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
-    //         'description' => 'nullable|string',
-    //         'phone_number' => 'nullable|string',
-    //         'email' => 'nullable|string',
-    //         'affiliation' => 'required|string',
-    //         'ordered_unit' => 'required|integer',
-    //         'total_harga' => 'required|integer',
-    //     ]);
-
-    //     // $transactions = $this->check_available_ruangan($request->start, $request->end, $request->venue);
-
-    //     // if ($transactions->count() > 0) {
-    //     //     return redirect()->back()->with('failed', 'Ruangan tidak tersedia');
-    //     // }
-
-
-
-    //     $paymentReceiptPath = null;
-    //     if ($request->hasFile('payment_receipt')) {
-    //         $paymentReceiptPath = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
-    //     }
-
-
-    //     $requestLetterPath = null;
-    //     if ($request->hasFile('request_letter')) {
-    //         $requestLetterPath = $request->file('request_letter')->store('uploads/request_letter', 'public');
-    //     }
-
-    //     $namePaymentReceipt = $paymentReceiptPath ? basename($paymentReceiptPath) : null;
-    //     $nameRequestLetter = $requestLetterPath ? basename($requestLetterPath) : null;
-
-
-
-
-
-    //     $color = array_rand($colors, 1);
-
-    //     Transaction::create([
-    //         'name' => ucfirst($request->name),
-    //         'instansi' => ucfirst($request->office),
-    //         'kegiatan' => ucfirst($request->event),
-    //         'start' => $request->start,
-    //         'end' => $request->end,
-    //         'total_harga' => $request->total_harga,
-    //         'color' => $colors[$color],
-    //         'property_id' => $request->venue,
-    //         'payment_receipt' => $namePaymentReceipt,
-    //         'request_letter' => $nameRequestLetter,
-    //         'description' => $request->description,
-    //         'user_id' => auth()->user()->id,
-    //         'email' => $request->email,
-    //         'phone_number' => $request->phone_number,
-    //         'status' => 'pending',
-    //         'affiliation' => $request->affiliation,
-    //         'ordered_unit' => $request->ordered_unit,
-    //     ]);
-
-    //     return redirect()->route('ruangan.detail')->with('success', 'Jadwal berhasil dibuat');
-    // }
-
-    public function ruangan_store(Request $request)
+    public function bookingStore(Request $request)
     {
         $colors = [
             'primary'   => '#0d6efd',
@@ -283,14 +200,18 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'total_harga'    => 'required|integer',
         ]);
 
+        // Upload bukti bayar (opsional)
         $paymentReceiptPath = null;
         if ($request->hasFile('payment_receipt')) {
-            $paymentReceiptPath = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+            $paymentReceiptPath = $request->file('payment_receipt')
+                ->store('uploads/payment_receipt', 'public');
         }
 
+        // Upload surat permohonan (opsional)
         $requestLetterPath = null;
         if ($request->hasFile('request_letter')) {
-            $requestLetterPath = $request->file('request_letter')->store('uploads/request_letter', 'public');
+            $requestLetterPath = $request->file('request_letter')
+                ->store('uploads/request_letter', 'public');
         }
 
         $namePaymentReceipt = $paymentReceiptPath ? basename($paymentReceiptPath) : null;
@@ -299,7 +220,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         $colorKey = array_rand($colors, 1);
 
         // SIMPAN TRANSAKSI
-        $trx = Transaction::create([
+        Transaction::create([
             'name'            => ucfirst($request->name),
             'instansi'        => ucfirst($request->office),
             'kegiatan'        => ucfirst($request->event),
@@ -319,213 +240,17 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'ordered_unit'    => $request->ordered_unit,
         ]);
 
-        // === KIRIM WHATSAPP "SEGERA BAYAR" ===
-        try {
-            // Normalisasi nomor: buang non-digit, 08xx -> 628xx
-            $phone = preg_replace('/\D/', '', (string) $trx->phone_number);
-            if ($phone) {
-                $phone = preg_replace('/^0/', '62', $phone);
-            }
+        // Tidak ada pengiriman WhatsApp
 
-            // Format tanggal (WIB)
-            $startAt = Carbon::parse($trx->start)->timezone('Asia/Jakarta')->format('d M Y');
-            $endAt   = Carbon::parse($trx->end)->timezone('Asia/Jakarta')->format('d M Y ');
-
-            // Format rupiah
-            $rupiah  = 'Rp ' . number_format((int) $trx->total_harga, 0, ',', '.');
-
-            // (Opsional) Link pembayaran/detail — ganti sesuai route kamu
-            // Misal kamu punya halaman detail transaksi atau pembayaran:
-            $detailUrl = route('transactions.historyTransaction'); // ganti ke route yang menampilkan detail/instruksi bayar
-
-            // Susun pesan
-            $billingAt = Carbon::parse($trx->start)
-                ->subDay()->timezone('Asia/Jakarta')->format('d M Y ');
-
-            $message = implode("\n", array_filter([
-                "Yth. {$trx->name} ({$trx->instansi}),",
-                "\n",
-                "Permohonan peminjaman ruangan untuk kegiatan *{$trx->kegiatan}* telah kami terima.",
-                "",
-                "*Jadwal:* {$startAt} – {$endAt}",
-                $trx->affiliation === 'external_pu' ? "*Total:* {$rupiah}" : null,
-                "*Status:* Menunggu",
-                "———————————————",
-                "*Unggah dokumen* melalui menu *Riwayat Peminjaman* → *Detail* pada tautan berikut:",
-                $detailUrl,
-                "",
-                "———————————————",
-                "Mohon melakukan pembayaran sesuai *Kode Billing* yang akan dikirim pada {$billingAt}.",
-                "———————————————",
-                "\n",
-                "Terima kasih.",
-                "— Admin *TOPANG* · Bapekom PU Wilayah VI Surabaya",
-            ]));
-
-
-
-
-
-            if (!empty($phone) && env('WA_GATEWAY_URL') && env('WA_GATEWAY_TOKEN')) {
-                Http::withHeaders([
-                    'Authorization' => env('WA_GATEWAY_TOKEN'),
-                ])->asForm()->post(env('WA_GATEWAY_URL'), [
-                    'target'  => $phone,     // sesuaikan field sesuai penyedia kamu (mis: target/phone)
-                    'message' => $message,   // sesuaikan (message/text)
-                ])->throw();
-            }
-        } catch (\Throwable $e) {
-            // Log kalau perlu, tapi jangan gagalkan alur utama
-            Log::warning('Gagal kirim WA: ' . $e->getMessage());
-        }
-
-        return redirect()->route('ruangan.detail')->with('success', 'Jadwal berhasil dibuat. Notif WhatsApp dikirim.');
+        return redirect()
+            ->back()
+            ->with('success', 'Jadwal berhasil dibuat.');
     }
 
 
 
-    // public function ruangan_update(Request $request, $id)
-    // {
-    //     $validated = $request->validate([
-    //         'user_id'          => 'required|integer',
-    //         'office'           => 'required|string|max:32',
-    //         'affiliation'      => 'required|string|in:internal_pu,external_pu',
-    //         'phone_number'     => 'required|string|max:15',
-    //         'email'            => 'required|email',
-    //         'event'            => 'required|string|max:100',
-    //         'ordered_unit'     => 'required|integer|min:1',
-    //         'description'      => 'nullable|string',
-    //         'start'            => 'required|date',
-    //         'end'              => 'required|date|after_or_equal:start',
-    //         'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
-    //         'rejection_reason' => 'required_if:status,rejected',
-    //         'total_harga'      => 'required|numeric|min:0',
 
-    //         'billing_code'     => 'nullable|string',
-    //         'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf,webp|max:20480',
-
-    //         'response_letter'  => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:20480',
-    //         'payment_receipt'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
-    //         'request_letter'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
-
-    //         // flags hapus
-    //         'remove_payment_receipt' => 'nullable|boolean',
-    //         'remove_request_letter'  => 'nullable|boolean',
-    //         'remove_response_letter' => 'nullable|boolean',
-    //         'remove_billing_qr'      => 'nullable|boolean',
-
-    //         'ruangan_id'       => 'required|exists:properties,id',
-    //     ]);
-
-    //     DB::transaction(function () use ($request, $id) {
-    //         $transaction = Transaction::findOrFail($id);
-
-    //         // fallback lama
-    //         $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
-    //         $requestLetter  = $request->old_request_letter  ?? $transaction->request_letter;
-    //         $responseLetter = $request->old_response_letter ?? $transaction->response_letter;
-    //         $billingQr      = $request->old_billing_qr      ?? $transaction->billing_qr;
-    //         $billingCode    = $transaction->billing_code;
-    //         $rejectionReason = $transaction->rejection_reason;
-
-    //         // ====== HAPUS FILE (jika ditandai) ======
-    //         if ($request->boolean('remove_payment_receipt') && $paymentReceipt) {
-    //             Storage::disk('public')->delete('uploads/payment_receipt/' . $paymentReceipt);
-    //             $paymentReceipt = null;
-    //         }
-    //         if ($request->boolean('remove_request_letter') && $requestLetter) {
-    //             Storage::disk('public')->delete('uploads/request_letter/' . $requestLetter);
-    //             $requestLetter = null;
-    //         }
-    //         if ($request->boolean('remove_response_letter') && $responseLetter) {
-    //             Storage::disk('public')->delete('uploads/response_letter/' . $responseLetter);
-    //             $responseLetter = null;
-    //         }
-    //         if ($request->boolean('remove_billing_qr') && $billingQr) {
-    //             Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
-    //             $billingQr = null;
-    //         }
-
-    //         // ====== UPLOAD BARU (timpa yang lama) ======
-    //         if ($request->hasFile('payment_receipt')) {
-    //             if ($paymentReceipt) {
-    //                 Storage::disk('public')->delete('uploads/payment_receipt/' . $paymentReceipt);
-    //             }
-    //             $paymentReceipt = basename($request->file('payment_receipt')->store('uploads/payment_receipt', 'public'));
-    //         }
-
-    //         if ($request->hasFile('request_letter')) {
-    //             if ($requestLetter) {
-    //                 Storage::disk('public')->delete('uploads/request_letter/' . $requestLetter);
-    //             }
-    //             $requestLetter = basename($request->file('request_letter')->store('uploads/request_letter', 'public'));
-    //         }
-
-    //         if ($request->hasFile('response_letter')) {
-    //             if ($responseLetter) {
-    //                 Storage::disk('public')->delete('uploads/response_letter/' . $responseLetter);
-    //             }
-    //             $responseLetter = basename($request->file('response_letter')->store('uploads/response_letter', 'public'));
-    //         }
-
-    //         if ($request->hasFile('billing_qr')) {
-    //             if ($billingQr) {
-    //                 Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
-    //             }
-    //             $billingQr = basename($request->file('billing_qr')->store('uploads/billing_qr', 'public'));
-    //         }
-
-    //         // ====== Billing code (teks) ======
-    //         if ($request->filled('billing_code')) {
-    //             $billingCode = $request->billing_code;
-    //         }
-    //         // Opsional: kalau mau ada tombol hapus untuk billing_code, tambahkan flag 'remove_billing_code' boolean di form + validasi,
-    //         // lalu di sini:
-    //         // if ($request->boolean('remove_billing_code')) { $billingCode = null; }
-
-    //         // ====== Status-based overrides ======
-    //         if ($request->status === 'rejected') {
-    //             $rejectionReason = $request->rejection_reason; // valid by rule
-    //             $billingCode = null;
-    //             if ($billingQr) {
-    //                 Storage::disk('public')->delete('uploads/billing_qr/' . $billingQr);
-    //             }
-    //             $billingQr   = null;
-    //         } elseif ($request->filled('rejection_reason')) {
-    //             $rejectionReason = $request->rejection_reason;
-    //         }
-
-    //         $propertyId = $request->ruangan_id ?? $transaction->property_id;
-
-    //         $transaction->update([
-    //             'instansi'         => ucwords($request->office),
-    //             'kegiatan'         => ucwords($request->event),
-    //             'property_id'      => $propertyId,
-    //             'description'      => $request->description,
-    //             'status'           => $request->status,
-    //             'rejection_reason' => $rejectionReason,
-    //             'billing_code'     => $billingCode,
-    //             'billing_qr'       => $billingQr,
-    //             'start'            => $request->start,
-    //             'end'              => $request->end,
-    //             'total_harga'      => $request->total_harga,
-    //             'phone_number'     => $request->phone_number,
-    //             'email'            => $request->email,
-    //             'affiliation'      => $request->affiliation,
-    //             'ordered_unit'     => $request->ordered_unit ?? $transaction->ordered_unit,
-    //             'payment_receipt'  => $paymentReceipt,
-    //             'request_letter'   => $requestLetter,
-    //             'response_letter'  => $responseLetter,
-    //         ]);
-    //     });
-
-    //     return back()->with('success', 'Transaksi berhasil diperbarui.');
-    // }
-
-
-
-
-    public function ruangan_update(Request $request, $id)
+    public function transactionUpdate(Request $request, $id)
     {
         $validated = $request->validate([
             'user_id'          => 'required|integer',
@@ -630,31 +355,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
 
 
-    // $transaction->save();
 
-    // return redirect()->route('transactions.ruangan.show')
-    //     ->with('success', 'Jadwal berhasil diubah');
-
-
-    // $isValidate = $request->validate([
-    //     'office' => 'required|string|max:32',
-    //     'event' => 'required|string|max:32',
-    //     'venue' => 'required',
-    //     'description' => 'nullable|string',
-    // ]);
-
-    // if (!$isValidate) {
-    //     return redirect()->route('transactions.ruangan.show')->withInput($request->all());
-    // }
-
-    // $transaction = Transaction::find($id);
-    // $transaction->instansi = ucfirst($request->office);
-    // $transaction->kegiatan = ucfirst($request->event);
-    // $transaction->property_id = $request->venue;
-    // $transaction->description = $request->description;
-    // $transaction->save();
-
-    // return redirect()->route('transactions.ruangan.show')->with('success', 'Jadwal berhasil diubah');
 
     public function ruangan_detail()
     {
@@ -707,7 +408,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             return $r;
         });
 
-        return view('admin.transaction-ruangan-detail', compact('transactions', 'ruangan'));
+        return redirect()->back()->with('transactions', 'ruangan');
     }
 
 
@@ -731,159 +432,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         return Excel::download(new RuanganExports, "$now-rekap-ruangan.xlsx");
     }
 
-    /* ========================================================
-               /$$                                  
-              |__/                                  
- /$$  /$$  /$$ /$$  /$$$$$$$ /$$$$$$/$$$$   /$$$$$$ 
-| $$ | $$ | $$| $$ /$$_____/| $$_  $$_  $$ |____  $$
-| $$ | $$ | $$| $$|  $$$$$$ | $$ \ $$ \ $$  /$$$$$$$
-| $$ | $$ | $$| $$ \____  $$| $$ | $$ | $$ /$$__  $$
-|  $$$$$/$$$$/| $$ /$$$$$$$/| $$ | $$ | $$|  $$$$$$$
- \_____/\___/ |__/|_______/ |__/ |__/ |__/ \_______/
-// ======================================================== */
 
-    public function check_expired()
-    {
-        $transactions = Wisma::where('end', '<', now()->toDateString())->get();
-        $transactions->each(function ($item) {
-            $item->isOut = 1;
-            $item->save();
-        });
-    }
-
-    public function check_available_asrama($start, $end, $room)
-    {
-        $transactions = Wisma::where('room', $room)
-            ->where(function ($query) use ($start, $end) {
-                $query->whereBetween('start', [$start, $end])
-                    ->orWhereBetween('end', [$start, $end]);
-            })
-            ->get();
-
-        return $transactions;
-    }
-
-    public function wisma_store(Request $request)
-    {
-        $isValidate = $request->validate([
-            'name' => 'required|string|max:32',
-            'asal' => 'required|string|max:32',
-            'kegiatan' => 'max:32',
-            'rooms' => 'required|string',
-            'start' => 'required|date',
-            'end' => 'required|date',
-        ]);
-
-        if (!$isValidate) {
-            return redirect()->route('transactions.wisma.show');
-        }
-
-        $rooms = explode(',', $request->rooms);
-
-        // error untuk orang yang belum dapet ruangan
-        $errorRoom = [];
-        foreach ($rooms as $room) {
-
-            $transactions = $this->check_available_asrama($request->start, $request->end, $room);
-            if ($transactions->count() > 0) {
-                // return redirect()->route('transactions.wisma.show')
-                //     ->with('failed', 'Kamar sudah terpakai');
-                array_push($errorRoom, $room);
-                continue;
-            }
-
-            Wisma::create([
-                'name' => ucfirst($request->name),
-                'from' => ucfirst($request->asal),
-                'kegiatan' => ucfirst($request->kegiatan),
-                'room' => $room,
-                'start' => $request->start,
-                'end' => $request->end,
-            ]);
-        }
-
-        if (count($errorRoom) > 0) {
-            $listRooms =  implode(',', $errorRoom);
-
-            return redirect()->route('transactions.wisma.show')
-                ->with('failed', "$request->name kamar $listRooms, gagal ditambahkan karena ruangan sudah digunakan")
-                ->withInput($request->all());
-        }
-
-        return redirect()->route('transactions.wisma.show')
-            ->with('success', 'Data berhasil ditambahkan');
-    }
-
-    public function wisma_update(Request $request, $id)
-    {
-        $isValidate = $request->validate([
-            'name' => 'required|string|max:32',
-            'asal' => 'required|string|max:32',
-            'kegiatan' => 'string|max:32',
-        ]);
-
-        if (!$isValidate) {
-            return redirect()->route('transactions.wisma.show')->with('failed', 'Data tidak valid');
-        }
-
-        Wisma::where('id', $id)->update([
-            'name' => ucfirst($request->name),
-            'from' => ucfirst($request->asal),
-            'kegiatan' => ucfirst($request->kegiatan),
-        ]);
-
-        return redirect()->route('wisma-admin')
-            ->with('success', 'Data berhasil diubah');
-    }
-
-    public function wisma_show_admin()
-    {
-        $this->check_expired();
-
-        $wisma = Wisma::all();
-        return view('admin.index-wisma', [
-            'transactions' => $wisma
-        ]);
-    }
-
-    public function wisma_show()
-    {
-        $this->check_expired();
-        $today = now()->toDateString();
-
-        $wismas = Wisma::where('isOut', 0)
-            ->whereRaw('? BETWEEN start AND end', [$today])
-            ->get();
-
-        if (auth()->check()) {
-            if (auth()->user()->role == 'admin') {
-                return view('admin.transaction-wisma', [
-                    'wisma' => $wismas->pluck('room'),
-                    'nama' => $wismas->pluck('name'),
-                    'kegiatan' => $wismas->pluck('kegiatan'),
-                ]);
-            }
-        }
-
-        return view('admin.transaction-wisma', [
-            'wisma' => $wismas->pluck('room'),
-            'nama' => $wismas->pluck('name'),
-            'kegiatan' => $wismas->pluck('kegiatan'),
-        ]);
-    }
-
-    public function wisma_destroy(Request $request)
-    {
-        $ids = explode(',', $request->selected);
-        Wisma::destroy($ids);
-        return redirect()->route('wisma-admin');
-    }
-
-    public function wisma_export()
-    {
-        $now = now()->toDateString();
-        return Excel::download(new WismaExports, "$now-rekap-wisma.xlsx");
-    }
 
     /* ========================================================
                    $$\                           $$\                     
@@ -948,5 +497,46 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
 
 
         return response()->json($events);
+    }
+
+
+
+    // new admin
+    public function transactionsAsAdmin()
+    {
+        $transactions = Transaction::query()
+            ->with([
+                'properties:id,name,type,capacity,price,unit,image_path',
+                'properties.kamar' => function ($q) {
+                    $q->select('id', 'properties_id', 'nama_kamar', 'kapasitas', 'lantai')
+                        ->orderBy('lantai')->orderBy('nama_kamar');
+                },
+                'detailKamars.kamar:id,nama_kamar,kapasitas,lantai,properties_id',
+                'detailKamars.penghunis:id,detail_kamar_transaction_id,nama_penghuni',
+            ])
+            ->latest()
+            ->get();
+
+        // inject floors per transaksi
+        $transactions->each(function ($t) {
+            $floors = collect($t->properties?->kamar ?? [])
+                ->filter(fn($k) => isset($k->lantai) && $k->lantai !== '' && (int)$k->lantai !== 0)
+                ->groupBy(fn($k) => (string) $k->lantai);
+            $t->setAttribute('floors', $floors);
+        });
+
+        // semua properti (filter kamar utk asrama/paviliun saja)
+        $ruangan = Properties::with(['kamar' => function ($q) {
+            $q->select('id', 'properties_id', 'nama_kamar', 'kapasitas', 'lantai')
+                ->orderBy('lantai')->orderBy('nama_kamar');
+        }])->get()
+            ->transform(function ($r) {
+                if (!in_array($r->type, ['asrama', 'paviliun'])) {
+                    $r->setRelation('kamar', collect());
+                }
+                return $r;
+            });
+
+        return view('admin.transactions.index', compact('transactions', 'ruangan'));
     }
 }

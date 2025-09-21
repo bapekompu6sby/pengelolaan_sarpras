@@ -46,13 +46,6 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('tamu'),
             ]
         );
-        DB::table('users')->insert(
-            [
-                'name' => 'herukun',
-                'email' => 'heru.kurniawan@pu.go.id',
-                'role' => 'pakheru',
-                'password' => '$2y$12$OYd193paGyVQ0mX53S7bIuyBU5oO4ZYTfuyBz3.dFIrMpUkujRG9q',
-            ]
-        );
+        
     }
 }

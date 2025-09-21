@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Wisma;
+
 use App\Models\Properties;
 
 use App\Models\Transaction;
@@ -111,58 +111,16 @@ class DashboardController extends Controller
             'paviliunStock' => $paviliunStock,
             'events' => $events,
         ]);
-
-
-
-
-
-
-
-        // $paviliunTotal = 14;
-        // $paviliun = Wisma::where('room', 'like', '%pav%')
-        //     ->where('isOut', 0)
-        //     ->whereRaw('? BETWEEN start AND end', [$today])
-        //     ->count();
-
-        // $pavAntrianQuery = Wisma::where('room', 'like', '%pav%')
-        //     ->where('isOut', 0)
-        //     ->count();
-        // // dd($pavAntrianQuery->toSql());
-
-        // $paviliunAvailable = $paviliunTotal - $paviliun;
-        // $paviliunQueue = $pavAntrianQuery - $paviliun;
-
-        // $wismaTotal = 206;
-        // $wisma = Wisma::where('room', 'not like', '%pav%')
-        //     ->Where('isOut', 0)
-        //     ->whereRaw('? BETWEEN start AND end', [$today])
-        //     ->count();
-        // $wisAntrianQuery = Wisma::where('room', 'not like', '%pav%')
-        //     ->where('isOut', 0)
-        //     ->count();
-
-        // $wismaAvailable = $wismaTotal - $wisma;
-        // $wismaQueue = $wisAntrianQuery - $wisma;
-
-        // return view('welcome', [
-        //     'events' => $events,
-        //     'paviliun' => $paviliun,
-        //     'paviliunAvailable' => $paviliunAvailable,
-        //     'paviliunQueue' => $paviliunQueue,
-        //     'wisma' => $wisma,
-        //     'wismaAvailable' => $wismaAvailable,
-        //     'wismaQueue' => $wismaQueue,
-        // ]);
     }
 
     // tabel kegiatan
     public function tabelKegiatan()
     {
-        
+
         $today = now('Asia/Jakarta')->toDateString();
 
         $events = Transaction::where('status', 'approved')
-             ->where(function ($q) use ($today) {
+            ->where(function ($q) use ($today) {
                 $q->where(function ($q2) use ($today) {
 
                     $q2->where('start', '<=', $today)
@@ -173,9 +131,7 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        // echo "<pre>";
-        // print_r($events->toArray());
-        // echo "</pre>";
+
 
         return view('tabel_Kegiatan', [
             'events' => $events,

@@ -1,9 +1,9 @@
-@extends('layout.index')
+@extends('layout.auth_layout')
 @section('sidebar')
     @include('layout.sidebar')
 @endsection
 @section('nav')
-    @include('layout.nav')
+    @include('layout.navbar')
 @endsection
 
 @section('head')
@@ -24,9 +24,9 @@
         </x-toast>
     @endif
 
-    <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="container-fluid flex-grow-1 p-3">
         {{-- Pesan tambahan --}}
-        <div class="alert alert-info d-flex align-items-center mb-4" role="alert"
+        <div class="alert alert-info d-flex align-items-center mb-3" role="alert"
             style="border-left: 5px solid #0dcaf0; background: #e8f9fd;">
             <i class="bx bx-info-circle me-2 fs-4"></i>
             <div>
@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        @auth
+        {{-- @auth
             <h4 class="fw-bold py-3 mb-4">
                 <span class="text-muted fw-light">Buku Panduan /</span>
                 {{ auth()->user()->role == 'admin' ? 'Admin' : 'Pengguna' }}
@@ -45,7 +45,7 @@
             <h4 class="fw-bold py-3 mb-4">
                 <span class="text-muted fw-light">Buku Panduan /</span> Pengunjung
             </h4>
-        @endguest
+        @endguest --}}
 
         @auth
             @if (auth()->user()->role == 'admin')

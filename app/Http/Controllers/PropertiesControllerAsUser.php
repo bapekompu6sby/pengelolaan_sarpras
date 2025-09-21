@@ -10,12 +10,12 @@ class PropertiesControllerAsUser extends Controller
     public function index()
     {
         $properties = Properties::query()
-            ->orderByRaw("FIELD(type, 'aula','kelas','asrama','paviliun')")
-            ->orderBy('name', 'asc')
+        ->where('status', 'ative') // hanya properti yang aktif yang ditampilkan
+            ->orderByRaw("FIELD(type, 'aula','kelas','asrama','paviliun', 'fasilitas')")
             ->get();
 
 
-        return view('user.properties_as_user', [
+        return view('user.bookings.index', [
             'properties' => $properties
         ]);
     }

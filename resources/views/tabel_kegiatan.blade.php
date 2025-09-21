@@ -1,11 +1,11 @@
-@extends('layout.index')
+@extends('layout.auth_layout')
 
 @section('sidebar')
     @include('layout.sidebar')
 @endsection
 
 @section('nav')
-    @include('layout.nav')
+    @include('layout.navbar')
 @endsection
 
 @section('head')
@@ -39,17 +39,23 @@
         }
     @endphp
 
-    <div class="container-xxl flex-grow-1 container-p-y">
-        <h4 class="fw-bold py-3 mb-3"><span class="text-muted fw-light">Dashboard /</span> Kegiatan</h4>
+    <div class="p-3">
 
         {{-- ===================== SLIDER DI ATAS TABEL ===================== --}}
-        <div class="card mb-4" aria-labelledby="sliderTitle">
+        <div class="card mb-4"  aria-labelledby="sliderTitle">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <h5 id="sliderTitle" class="mb-0">
-                        <span class="badge bg-label-primary me-2"><i class='bx bx-slideshow'></i></span>
-                        Kegiatan Hari Ini
-                    </h5>
+                <div class="row align-items-center mb-3">
+                    <div class="col-12 col-md-6">
+                        <h1 class="h3 fw-bold text-dark mb-4">Kegiatan Hari Ini</h1>
+                    </div>
+                    <div class="col-12 col-md-6 text-md-end">
+                        <h5 id="sliderTitle" class="mb-0 d-inline-flex align-items-center">
+                            <span class="badge bg-label-primary me-2">
+                                <i class="bx bx-slideshow"></i>
+                            </span>
+                            Slide
+                        </h5>
+                    </div>
                 </div>
 
                 @php $count = $events->count(); @endphp
@@ -113,7 +119,7 @@
                 <div class="card-title">
                     <h4 class="text-nowrap mb-3">
                         <span class="badge bg-label-success me-2"><i class="bx bx-task"></i></span>
-                        Daftar Kegiatan
+                        Tabel
                     </h4>
                 </div>
 
@@ -124,7 +130,7 @@
                                 <th>Instansi</th>
                                 <th>Kegiatan</th>
                                 <th>Tanggal</th>
-                                <th>Pemesan/Penanggung Jawab</th>
+                                <th>Pemesan</th>
                                 <th>Kontak</th>
                                 <th>Ruangan</th>
                             </tr>

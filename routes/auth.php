@@ -20,7 +20,7 @@ Route::middleware('guest')->group(function () {
     Route::post('register', [RegisteredUserController::class, 'store']);
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
+        ->name('login');//sudah
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->name('login-store');
@@ -30,7 +30,6 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/password-reset', [ForgotPasswordController::class, 'reset'])->name('reset.password');
-    
 });
 
 Route::middleware('auth')->group(function () {

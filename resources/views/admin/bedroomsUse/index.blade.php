@@ -1,10 +1,10 @@
-@extends('layout.index')
+@extends('layout.admin_layout')
 
 @section('sidebar')
     @include('layout.sidebar')
 @endsection
 @section('nav')
-    @include('layout.nav')
+    @include('layout.navbar')
 @endsection
 
 @section('head')
@@ -108,7 +108,7 @@
 @endsection
 
 @section('content')
-    <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="p-3">
         {{-- header + legenda --}}
         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
             <h4 class="mb-0">Kamar Terpakai & Jadwal</h4>
@@ -154,9 +154,7 @@
                                                 <span class="status-chip"><span
                                                         class="dot dot-amber"></span>Terjadwal</span>
                                             @endif
-                                            {{-- @else
-                                                <span class="status-chip"><span class="dot dot-green"></span>Free</span>
-                                            @endif --}}
+
                                         </div>
                                     </div>
 
@@ -208,15 +206,16 @@
                                                         data-bs-target="#editPenghuniModal">
                                                         Edit Penghuni
                                                     </button>
-                                                    <form action="{{ route('detail.destroy', $u['detail_id']) }}"
-                                                        method="POST" class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger mt-2"
-                                                            onclick="return confirm('Yakin ingin menghapus jadwal kamar ini? Semua data penghuni yang terkait juga akan dihapus.');">
-                                                            Hapus
-                                                        </button>
-                                                    </form>
+                                                    {{-- Tombol Hapus (per-baris) --}}
+                                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2"
+                                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteDetail"
+                                                        data-action="{{ route('penghuni.destroy', $u['detail_id']) }}"
+                                                        data-kamar="{{ $room['kamar']->nama_kamar ?? '-' }}"
+                                                        data-properti="{{ $propName ?? '-' }}"
+                                                        data-range="{{ $u['range'] ?? '-' }}"
+                                                        data-penghuni="{{ $names->count() }}">
+                                                        Hapus
+                                                    </button>
 
                                                 </li>
                                             </ul>
@@ -236,138 +235,10 @@
                     </div>
                 @endif
             @endforeach
-        @else
-            {{-- fallback: render semua tanpa group --}}
-            @if ($rooms->isEmpty())
-                <div class="alert alert-info">Belum ada data pemakaian kamar dari hari ini ke depan.</div>
-            @else
-                <div class="row g-3">
-                    @foreach ($rooms as $room)
-                        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-                            <div class="room-card">
-                                <div class="d-flex align-items-start justify-content-between">
-                                    <div>
-                                        <div class="room-title">{{ $room['kamar']->nama_kamar }}</div>
-                                        <div class="room-meta">
-                                            Kapasitas: {{ $room['kapasitas'] }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        @if ($room['occupied'])
-                                            <span class="status-chip"><span class="dot dot-red"></span>Terpakai</span>
-                                        @elseif (!empty($room['upcoming']))
-                                            <span class="status-chip"><span class="dot dot-amber"></span>Terjadwal</span>
-                                        @endif
-                                        {{-- @else
-                                            <span class="status-chip"><span class="dot dot-green"></span>Free</span>
-                                        @endif --}}
-                                    </div>
-                                </div>
-
-                                <div class="mt-2">
-                                    @php $upcomings = collect($room['upcoming']); @endphp
-                                    @forelse ($upcomings as $u)
-                                        <ul class="list-compact">
-                                            <li class="small py-1">
-                                                @php
-                                                    $pemesan = $u['pemesan'] ?? ($u['guest'] ?? '—');
-                                                    $kegiatan = $u['kegiatan'] ?? null;
-                                                    $names = collect($u['penghunis'] ?? []);
-                                                    $limit = 5;
-                                                    $extra = max(0, $names->count() - $limit);
-                                                @endphp
-
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <strong>{{ $u['range'] }}</strong>
-                                                    <span class="badge bg-light text-dark text-truncate-max"
-                                                        title="{{ $pemesan }}">
-                                                        {{ $pemesan }}
-                                                    </span>
-                                                </div>
-
-                                                @if (!empty($kegiatan))
-                                                    <div class="mt-1 text-truncate-max" title="{{ $kegiatan }}">
-                                                        Kegiatan: {{ $kegiatan }}
-                                                    </div>
-                                                @endif
-
-                                                @if ($names->isNotEmpty())
-                                                    <div class="mt-1 d-flex flex-wrap gap-1">
-                                                        @foreach ($names->take($limit) as $nm)
-                                                            <span
-                                                                class="badge rounded-pill bg-secondary-subtle text-dark border">{{ $nm }}</span>
-                                                        @endforeach
-                                                        @if ($extra > 0)
-                                                            <span
-                                                                class="badge rounded-pill bg-secondary-subtle text-dark border">+{{ $extra }}</span>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-primary mt-2 btn-edit-penghuni"
-                                                    data-detail="{{ $u['detail_id'] }}"
-                                                    data-kapasitas="{{ $room['kapasitas'] }}"
-                                                    data-names='@json($u['penghunis'] ?? [])' data-bs-toggle="modal"
-                                                    data-bs-target="#editPenghuniModal">
-                                                    Edit Penghuni
-                                                </button>
-                                                <form action="{{ route('detail.destroy', $u['detail_id']) }}"
-                                                    method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger mt-2"
-                                                        onclick="return confirm('Yakin ingin menghapus jadwal kamar ini? Semua data penghuni yang terkait juga akan dihapus.');">
-                                                        Hapus
-                                                    </button>
-                                                </form>
-
-                                            </li>
-                                        </ul>
-                                    @empty
-                                        <div class="text-muted small">Belum ada jadwal.</div>
-                                    @endforelse
-                                </div>
-
-                                @if (!empty($room['total_penghuni']))
-                                    <div class="mt-2 text-muted small">
-                                        Total penghuni tercatat: {{ $room['total_penghuni'] }}
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
         @endif
-        <!-- Modal Edit Penghuni (reusable) -->
-        <div class="modal fade" id="editPenghuniModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <form method="POST" action="{{ route('penghuni.update') }}" class="modal-content">
-                    @csrf
-                    @method('PUT')
-                    <input type="hidden" name="detail_id" id="ep-detail-id">
+        @include('admin.bedroomsUse.modal')
 
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit Nama Penghuni</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <p class="text-muted small mb-3">
-                            Isi sesuai kapasitas. Boleh dikosongkan jika belum terisi.
-                        </p>
-                        <div id="ep-fields" class="vstack gap-2">
-                            <!-- input nama akan di-inject via JS -->
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        {{-- script --}}
         <script>
             document.addEventListener('click', function(e) {
                 const btn = e.target.closest('.btn-edit-penghuni');
@@ -408,6 +279,34 @@
                 }
             });
         </script>
+
+        <script>
+            document.getElementById('confirmDeleteDetail')
+                .addEventListener('show.bs.modal', function(event) {
+                    const btn = event.relatedTarget; // tombol yang memicu modal
+                    const modal = this; // modal yang akan tampil
+                    const form = modal.querySelector('#confirmDeleteForm');
+
+                    // Ambil data-* dari tombol
+                    const action = btn.getAttribute('data-action') || '#';
+                    const kamar = btn.getAttribute('data-kamar') || '-';
+                    const properti = btn.getAttribute('data-properti') || '-';
+                    const range = btn.getAttribute('data-range') || '-';
+                    const penghuni = btn.getAttribute('data-penghuni') || '0';
+
+                    // Set form action
+                    form.setAttribute('action', action);
+
+                    // Isi ringkasan
+                    modal.querySelector('.js-del-kamar').textContent = kamar;
+                    modal.querySelector('.js-del-properti').textContent = properti;
+                    modal.querySelector('.js-del-tanggal').textContent =  range;
+                    modal.querySelector('.js-del-penghuni').textContent = penghuni;
+                });
+        </script>
+
+
+
 
     </div>
 @endsection

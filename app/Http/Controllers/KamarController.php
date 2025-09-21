@@ -36,7 +36,7 @@ class KamarController extends Controller
             return $p;
         });
 
-        return view('admin.kamar', compact('properties'));
+        return view('admin.bedrooms.index', compact('properties'));
     }
 
 
@@ -217,109 +217,14 @@ class KamarController extends Controller
             'free'      => $rooms->filter(fn($r) => !$r['occupied'] && collect($r['upcoming'])->isEmpty())->count(),
         ];
 
-        return view('admin.kamar_terpakai', compact('rooms', 'groups', 'stats'));
+        return view('admin.bedroomsUse.index', compact('rooms', 'groups', 'stats'));
     }
 
 
 
 
 
-    // public function kamarTerpakai()
-    // {
-    //     $today = Carbon::today();
-
-    //     // Format rentang tanggal (end eksklusif = checkout)
-    //     $formatRange = function ($start, $end) {
-    //         $s = Carbon::parse($start);
-    //         $e = Carbon::parse($end);
-    //         $diff = $s->diffInDays($e);
-
-    //         if ($diff === 1) {
-    //             return $s->format('d M Y') . ' – ' . $e->format('d M Y'); // 1 malam (tetap tampil keduanya)
-    //         }
-    //         $last = $e->copy()->subDay(); // tampil s/d end-1
-    //         if ($s->isSameMonth($last) && $s->isSameYear($last)) {
-    //             return $s->format('d') . '–' . $last->format('d M Y');
-    //         } elseif ($s->isSameYear($last)) {
-    //             return $s->format('d M') . '–' . $last->format('d M Y');
-    //         }
-    //         return $s->format('d M Y') . ' – ' . $last->format('d M Y');
-    //     };
-
-    //     // Occupied jika start <= today < end
-    //     $isOccupiedToday = function ($start, $end) use ($today) {
-    //         $s = Carbon::parse($start)->startOfDay();
-    //         $e = Carbon::parse($end)->startOfDay();
-    //         return $today->betweenIncluded($s, $e->copy()->subDay());
-    //     };
-
-    //     $rooms = DetailKamarTransaction::with([
-    //         'kamar:id,properties_id,nama_kamar,kapasitas',
-    //         // load relasi transaction sekalian kolom kegiatan & name
-    //         'transaction:id,name,kegiatan', // NEW
-    //         // kalau butuh data user-nya juga, boleh tetap load:
-    //         'transaction.user:id,name',
-    //         // optional: batasi kolom penghuni biar ringan
-    //         'penghunis:id,detail_kamar_transaction_id,nama_penghuni',
-    //     ])
-    //         ->whereDate('end', '>=', $today)
-    //         ->orderBy('start', 'asc')
-    //         ->get()
-    //         ->groupBy('kamar_id')
-    //         ->map(function ($items) use ($formatRange, $isOccupiedToday) {
-    //             $first = $items->first();
-    //             $kamar = $first->kamar;
-
-    //             $occupiedNow = $items->contains(fn($d) => $isOccupiedToday($d->start, $d->end));
-
-    //             // ringkasan 3 jadwal terdekat + penghuni
-    //             $upcoming = $items->sortBy('start')->take(3)->map(function ($d) use ($formatRange) {
-    //                 return [
-    //                     'range'          => $formatRange($d->start, $d->end),
-    //                     'tx'             => $d->transaction_id,
-    //                     'kegiatan'       => data_get($d, 'transaction.kegiatan', '—'), // NEW
-    //                     'pemesan'        => data_get($d, 'transaction.name', '—'),     // (rename biar konsisten)
-    //                     'penghunis'      => $d->penghunis->pluck('nama_penghuni')->values()->all(), // kecil perbaikan: jadikan array
-    //                     'count_penghuni' => $d->penghunis->count(),
-    //                 ];
-    //             })->values();
-
-    //             // daftar lengkap booking kamar ini
-    //             $bookings = $items->sortBy('start')->map(function ($d) use ($formatRange) {
-    //                 return [
-    //                     'detail_id'   => $d->id,
-    //                     'transaction' => $d->transaction_id,
-    //                     'range'       => $formatRange($d->start, $d->end),
-    //                     'start'       => $d->start,
-    //                     'end'         => $d->end,
-    //                     'pemesan'     => data_get($d, 'transaction.name', '—'),
-    //                     'kegiatan'    => data_get($d, 'transaction.kegiatan', '—'), // NEW
-    //                     'penghunis'   => $d->penghunis->pluck('nama_penghuni')->values()->all(),
-    //                 ];
-    //             })->values();
-
-    //             return [
-    //                 'kamar'           => $kamar,
-    //                 'kapasitas'       => $kamar->kapasitas ?? 1,
-    //                 'occupied'        => $occupiedNow,
-    //                 'upcoming'        => $upcoming,
-    //                 'bookings'        => $bookings,
-    //                 'total'           => $items->count(),
-    //                 'total_penghuni'  => $items->sum(fn($d) => $d->penghunis->count()),
-    //             ];
-    //         })
-    //         ->values();
-
-
-
-    //     // Debug rapi (pilih salah satu):
-    //     // return response()->json($rooms);
-    //     // logger()->info('kamarTerpakai', ['rooms' => $rooms->toArray()]);
-    //     // echo '<pre>' . print_r($rooms->toArray(), true) . '</pre>';
-    //     // exit;
-
-    //     return view('admin.kamar_terpakai', compact('rooms'));
-    // }
+   
 
 
 

@@ -41,7 +41,146 @@
 
 
     <!-- Page CSS -->
+    <!-- Theme override PUPR -->
+    <style>
+        :root {
+            /* Brand PUPR */
+            --pupr-blue: #003A70;
+            --pupr-blue-2: #145EA8;
+            --pupr-yellow: #F5C518;
+            --pupr-ink: #1F2937;
+            /* Override Bootstrap */
+            --bs-body-color: var(--pupr-ink);
+            --bs-primary: var(--pupr-blue);
+            --bs-warning: var(--pupr-yellow);
+            --bs-link-color: var(--pupr-blue);
+            --bs-link-hover-color: #0b62b3;
+        }
 
+        .page-section {
+            margin-block: 1.25rem;
+        }
+
+        /* Card bersih */
+        .card-modern {
+            border: 1px solid rgba(0, 0, 0, .06);
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .04);
+        }
+
+        /* Header putih, aksen garis bawah */
+        .card-modern .card-header {
+            background: #fff;
+            color: #1f2937;
+            border: 0;
+            padding: 14px 18px;
+            border-bottom: 3px solid var(--pupr-blue);
+            /* aksen warna di border saja */
+        }
+
+        .card-modern .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .card-header .gap-2 {
+            gap: .5rem !important;
+        }
+
+        .bx.fs-4 {
+            line-height: 1;
+        }
+
+
+
+        .btn-modern {
+            border-radius: 12px;
+        }
+
+
+        .btn-primary {
+            background-color: var(--pupr-blue);
+            border-color: var(--pupr-blue);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.05);
+        }
+
+        .btn-outline-primary {
+            color: var(--pupr-blue);
+            border-color: var(--pupr-blue);
+            background: #fff;
+        }
+
+        .btn-outline-primary:hover,
+        .btn-outline-primary:focus {
+            background: var(--pupr-blue);
+            /* ← solid PUPR blue */
+            color: #fff;
+            border-color: var(--pupr-blue);
+            box-shadow: 0 6px 14px rgba(0, 58, 112, .18);
+        }
+
+
+
+        .badge-soft {
+            background: #F2F6FC;
+            color: #334155;
+            border: 1px solid #E6ECF5;
+            border-radius: 999px;
+            padding: .35rem .7rem;
+            font-weight: 600;
+            font-size: .75rem;
+        }
+
+        .table-modern thead th {
+            background: #F8FAFC;
+            color: #4B5563;
+            font-weight: 600;
+            border-bottom: 1px solid #EEF2F7;
+        }
+
+        .table-modern tbody tr:hover {
+            background: #FAFCFF;
+        }
+
+        .form-floating>.form-control,
+        .form-floating>.form-select {
+            border-radius: 12px;
+        }
+
+        .modal-modern .modal-content {
+            border: 0;
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .12);
+        }
+
+        .modal-modern .modal-header {
+            border: 0;
+            padding-bottom: 0;
+        }
+
+        .modal-modern .modal-footer {
+            border: 0;
+            padding-top: 0;
+        }
+
+        .text-brand {
+            color: var(--pupr-blue) !important;
+        }
+
+        .bg-brand {
+            background: var(--pupr-blue) !important;
+            color: #fff !important;
+        }
+
+        .ring-1 {
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, .06) inset;
+            border-radius: 12px;
+        }
+    </style>
     <!-- Helpers -->
     @section('head')
     @show
@@ -109,7 +248,7 @@
             </div>
         </div>
     </div>
-
+    @stack('modals')
 </body>
 
 

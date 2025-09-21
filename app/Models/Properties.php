@@ -21,6 +21,7 @@ class Properties extends Model
         'facilities',
         'price',
         'unit',
+        'status',
     ];
 
     public function transactions()

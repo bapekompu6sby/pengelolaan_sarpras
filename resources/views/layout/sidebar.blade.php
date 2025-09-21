@@ -1,126 +1,161 @@
-<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-    <div class="app-brand demo">
-        <a href="{{ route('dashboard') }}" class="app-brand-link">
-            <span class="app-brand-logo demo">
-                <img src="{{ asset('/assets/img/favicon/logo.png') }}" width="50px" alt="">
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme border-end border-1 border-secondary-subtle">
+
+    {{-- Brand --}}
+    <div class="app-brand demo px-3 py-2 mb-3">
+        <a href="{{ route('dashboard') }}" class="app-brand-link d-flex align-items-center text-decoration-none ps-3">
+            <span class="app-brand-logo demo d-inline-flex align-items-center justify-content-center">
+                <img src="{{ asset('/assets/img/favicon/logo.png') }}" width="44" height="44" alt="Logo PUPR"
+                    class="img-fluid">
             </span>
-            <span class="app-brand-text demo menu-text fw-bolder ms-2">Topang</span>
+            <span class="app-brand-text demo menu-text fw-bold ms-2 text-truncate"
+                style="max-width:120px;">Topang</span>
         </a>
 
-        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+
+        {{-- Collapse toggle (mobile) --}}
+        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none"
+            aria-label="Toggle menu">
             <i class="bx bx-chevron-left bx-sm align-middle"></i>
         </a>
     </div>
 
     <div class="menu-inner-shadow"></div>
+
     @php
-        $menus = ['properties', 'wisma-admin', 'ruangan.detail', 'wisma.detail'];
         $route = Route::currentRouteName();
-        if (Auth::check()) {
-            $role = Auth::user()->role;
+        $role = Auth::check() ? Auth::user()->role : null;
+        // Helper: function active untuk 1/lebih pola
+        function isActive($patterns)
+        {
+            foreach ((array) $patterns as $p) {
+                if (request()->routeIs($p)) {
+                    return true;
+                }
+            }
+            return false;
         }
     @endphp
+
     <ul class="menu-inner py-1">
-        <!-- Dashboard -->
-        <li class="menu-item {{ $route == 'dashboard' ? 'active' : '' }}" id="dashboard">
-            <a href="/" class="menu-link">
+
+        {{-- Dashboard --}}
+        @php $isDash = isActive('dashboard'); @endphp
+        <li class="menu-item {{ $isDash ? 'active' : '' }}">
+            <a href="{{ route('dashboard') }}" class="menu-link" {{ $isDash ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div data-i18n="Analytics">Dashboard</div>
+                <div>Dashboard</div>
             </a>
         </li>
-        {{-- <li class="menu-item {{ $route == 'transactions.ruangan.show' ? 'active open' : '' }}">
-            <a href="{{ route('transactions.ruangan.show') }}" class="menu-link">
+
+        {{-- Kegiatan Hari Ini --}}
+        @php $isTbl = isActive('tabelKegiatan'); @endphp
+        <li class="menu-item {{ $isTbl ? 'active' : '' }}">
+            <a href="{{ route('tabelKegiatan') }}" class="menu-link" {{ $isTbl ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                <div data-i18n="room">Peminjaman</div>
-            </a>
-        </li> --}}
-        {{-- tabel kegiatan --}}
-        <li class="menu-item {{ $route == 'tabelKegiatan' ? 'active' : '' }}">
-            <a href="{{ route('tabelKegiatan') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                <div data-i18n="room">Kegiatan Hari Ini</div>
+                <div>Kegiatan Hari Ini</div>
             </a>
         </li>
-        <li class="menu-item {{ $route == 'calendar' ? 'active' : '' }}">
-            <a href="{{ route('calendar') }}" class="menu-link">
+
+        {{-- Kalender Kegiatan --}}
+        @php $isCal = isActive('calendar'); @endphp
+        <li class="menu-item {{ $isCal ? 'active' : '' }}">
+            <a href="{{ route('calendar') }}" class="menu-link" {{ $isCal ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="room">Kalender Kegiatan</div>
+                <div>Kalender Kegiatan</div>
             </a>
         </li>
-        <li class="menu-item {{ strpos($route, 'PropertiesAsUser') !== false ? 'active open' : '' }}">
-            <a href="{{ route('PropertiesAsUser') }}" class="menu-link">
+
+        {{-- Peminjaman Ruangan (User view) --}}
+        @php $isBookings = isActive('bookings*'); @endphp
+        <li class="menu-item {{ $isBookings ? 'active' : '' }}">
+            <a href="{{ route('bookings') }}" class="menu-link" {{ $isBookings ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-building-house"></i>
-                <div data-i18n="room">Peminjaman Ruangan</div>
+                <div>Peminjaman Ruangan</div>
             </a>
         </li>
+
         @auth
-            @if ($role == 'user')
-                <li class="menu-item {{ $route == 'transactions.historyTransaction' ? 'active open' : '' }}">
-                    <a href="{{ route('transactions.historyTransaction') }}" class="menu-link">
+            {{-- Riwayat (khusus user) --}}
+            @if ($role === 'user')
+                @php $isHistory = isActive('transactions.historyTransaction'); @endphp
+                <li class="menu-item {{ $isHistory ? 'active' : '' }}">
+                    <a href="{{ route('transactions.historyTransaction') }}" class="menu-link"
+                        {{ $isHistory ? 'aria-current=page' : '' }}>
                         <i class="menu-icon tf-icons bx bx-history"></i>
-                        <div data-i18n="room">Riwayat Peminjaman</div>
+                        <div>Riwayat Peminjaman</div>
                     </a>
                 </li>
             @endif
 
-
-
-            @if ($role == 'admin' || $role == 'pakheru' || $role == 'supervisor')
-                {{-- kamar terpakai --}}
-                <li class="menu-item {{ $route == 'kamarTerpakai' ? 'active' : '' }}">
-                    <a href="{{ route('kamarTerpakai') }}" class="menu-link">
+            {{-- Admin & Supervisor --}}
+            @if (in_array($role, ['admin', 'supervisor']))
+                {{-- Kamar Terpakai --}}
+                @php $isPenghunis = isActive('penghunis'); @endphp
+                <li class="menu-item {{ $isPenghunis ? 'active' : '' }}">
+                    <a href="{{ route('penghunis') }}" class="menu-link" {{ $isPenghunis ? 'aria-current=page' : '' }}>
                         <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                        <div data-i18n="room">Kamar Terpakai</div>
+                        <div>Kamar Terpakai</div>
                     </a>
                 </li>
-                <li class="menu-item {{ in_array($route, $menus) ? 'active open' : '' }}">
-                    <a href="#" class="menu-link menu-toggle" id="data-master">
+
+                {{-- Data Master (submenu) --}}
+                @php
+                    $isMasterOpen = isActive(['users', 'properties', 'kamar', 'transactions']);
+                @endphp
+                <li class="menu-item {{ $isMasterOpen ? 'active open' : '' }}">
+                    <a href="#" class="menu-link menu-toggle" id="data-master"
+                        aria-expanded="{{ $isMasterOpen ? 'true' : 'false' }}">
                         <i class="menu-icon tf-icons bx bx-coin-stack"></i>
-                        <div data-i18n="Apps">Data Master</div>
+                        <div>Data Master</div>
                     </a>
 
                     <ul class="menu-sub">
-                        @if ($role == 'admin' || $role == 'supervisor')
-                            {{-- user  --}}
-                            <li class="menu-item {{ $route == 'users' ? 'active' : '' }}" id="data-user">
-                                <a href="{{ route('users') }}" class="menu-link">
-                                    <div data-i18n="going">Data User</div>
-                                </a>
-                            </li>
-                        
-                            {{-- ruangan --}}
-                            <li class="menu-item {{ $route == 'properties' ? 'active' : '' }}" id="data-ruangan">
-                                <a href="{{ route('properties') }}" class="menu-link">
-                                    <div data-i18n="going">Data Ruangan</div>
-                                </a>
-                            </li>
-                            {{-- kamar --}}
-                            <li class="menu-item {{ $route == 'kamar' ? 'active' : '' }}" id="data-kamar">
-                                <a href="{{ route('kamar') }}" class="menu-link">
-                                    <div data-i18n="going">Data Kamar</div>
-                                </a>
-                            </li>
+                        {{-- Data User --}}
+                        @php $isUsers = isActive('users'); @endphp
+                        <li class="menu-item {{ $isUsers ? 'active' : '' }}">
+                            <a href="{{ route('users') }}" class="menu-link" {{ $isUsers ? 'aria-current=page' : '' }}>
+                                <div>Data User</div>
+                            </a>
+                        </li>
 
-                            <li class="menu-item {{ $route == 'ruangan.detail' ? 'active' : '' }}" id="data-peminjaman">
-                                <a href="{{ route('ruangan.detail') }}" class="menu-link">
-                                    <div data-i18n="going">Peminjaman Ruangan</div>
-                                </a>
-                            </li>
-                        @endif
+                        {{-- Data Ruangan --}}
+                        @php $isProps = isActive('properties'); @endphp
+                        <li class="menu-item {{ $isProps ? 'active' : '' }}">
+                            <a href="{{ route('properties') }}" class="menu-link"
+                                {{ $isProps ? 'aria-current=page' : '' }}>
+                                <div>Data Ruangan</div>
+                            </a>
+                        </li>
+
+                        {{-- Data Kamar --}}
+                        @php $isKamar = isActive('kamar'); @endphp
+                        <li class="menu-item {{ $isKamar ? 'active' : '' }}">
+                            <a href="{{ route('kamar') }}" class="menu-link" {{ $isKamar ? 'aria-current=page' : '' }}>
+                                <div>Data Kamar</div>
+                            </a>
+                        </li>
+
+                        {{-- Peminjaman Ruangan (Admin table) --}}
+                        @php $isTx = isActive('transactions'); @endphp
+                        <li class="menu-item {{ $isTx ? 'active' : '' }}">
+                            <a href="{{ route('transactions') }}" class="menu-link"
+                                {{ $isTx ? 'aria-current=page' : '' }}>
+                                <div>Peminjaman Ruangan</div>
+                            </a>
+                        </li>
                     </ul>
-
-
                 </li>
             @endif
-
-
         @endauth
-        {{-- buku panduan --}}
-        <li class="menu-item {{ strpos($route, 'bukuPanduan') !== false ? 'active open' : '' }}">
-            <a href="{{ route('bukuPanduan') }}" class="menu-link">
+
+        {{-- Buku Panduan --}}
+        @php $isGuide = isActive('bukuPanduan'); @endphp
+        <li class="menu-item {{ $isGuide ? 'active' : '' }}">
+            <a href="{{ route('bukuPanduan') }}" class="menu-link" {{ $isGuide ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-book"></i>
-                <div data-i18n="room">Buku Panduan</div>
+                <div>Buku Panduan</div>
             </a>
         </li>
+
     </ul>
 </aside>
