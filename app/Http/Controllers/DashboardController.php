@@ -133,7 +133,7 @@ class DashboardController extends Controller
 
 
 
-        return view('tabel_Kegiatan', [
+        return view('tabel_kegiatan', [
             'events' => $events,
         ]);
     }
