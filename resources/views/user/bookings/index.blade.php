@@ -87,7 +87,7 @@
                                     <div class="col-md-8">
                                         <div class="card-body d-flex flex-column justify-content-between"
                                             style="height: 100%;">
-                                            <h2 class="card-title text-wrap text-break mb-4">
+                                            <h2 class="card-title text-wrap text-dark text-break mb-4">
                                                 {{ $property->name }}
                                             </h2>
 
@@ -96,42 +96,42 @@
                                                 {{-- Tipe --}}
                                                 <div class="d-flex info-row text-secondary">
                                                     <i class="bx bx-category fs-4 me-2 icon-brand info-icon"></i>
-                                                    <span><strong>Tipe:</strong>
+                                                    <span><strong class="text-dark">Tipe:</strong>
                                                         {{ strtoupper($property->room_type) }}</span>
                                                 </div>
 
                                                 {{-- Kapasitas --}}
                                                 <div class="d-flex info-row text-secondary">
                                                     <i class="bx bxs-group fs-4 me-2 icon-brand info-icon"></i>
-                                                    <span><strong>Kapasitas:</strong> ±{{ $property->capacity }}
+                                                    <span><strong class="text-dark">Kapasitas:</strong> ±{{ $property->capacity }}
                                                         orang</span>
                                                 </div>
 
                                                 {{-- Luas --}}
                                                 <div class="d-flex info-row text-secondary">
                                                     <i class="bx bx-ruler fs-4 me-2 icon-brand info-icon"></i>
-                                                    <span><strong>Luas:</strong> {{ $property->area }} m<sup>2</sup></span>
+                                                    <span><strong class="text-dark">Luas:</strong> {{ $property->area }} m<sup>2</sup></span>
                                                 </div>
 
                                                 {{-- Fasilitas (top-align karena bisa panjang) --}}
                                                 <div class="d-flex info-row top text-secondary">
                                                     <i class="bx bx-list-check fs-4 me-2 icon-brand info-icon mt-1"></i>
                                                     <span class="text-wrap text-break">
-                                                        <strong>Fasilitas:</strong> {{ $property->facilities }}
+                                                        <strong class="text-dark">Fasilitas:</strong> {{ $property->facilities }}
                                                     </span>
                                                 </div>
 
                                                 {{-- Harga --}}
                                                 <div class="d-flex info-row text-secondary">
                                                     <i class="bx bx-money fs-4 me-2 icon-brand info-icon"></i>
-                                                    <span><strong>Harga:</strong> Rp
+                                                    <span><strong class="text-dark">Harga:</strong> Rp
                                                         {{ number_format($property->price, 0, ',', '.') }} / hari</span>
                                                 </div>
 
                                                 {{-- Unit / Gedung --}}
                                                 <div class="d-flex info-row text-secondary ">
                                                     <i class="bx bxs-building fs-4  me-2 icon-brand info-icon"></i>
-                                                    <span><strong>Unit:</strong> {{ $property->unit }}</span>
+                                                    <span><strong class="text-dark">Unit:</strong> {{ $property->unit }}</span>
                                                 </div>
 
                                             </div>
