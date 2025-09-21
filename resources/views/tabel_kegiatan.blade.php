@@ -24,25 +24,29 @@
     @endif
 
     @php
-        // ===== Helper: Format rentang tanggal konsisten lokal =====
-        function tanggalRangeID($start, $end)
-        {
-            $s = \Carbon\Carbon::parse($start);
-            $e = \Carbon\Carbon::parse($end);
-            if ($s->isSameDay($e)) {
-                return $s->translatedFormat('d M Y');
+        if (!function_exists('tanggalRangeID')) {
+            function tanggalRangeID($start, $end)
+            {
+                $s = \Carbon\Carbon::parse($start);
+                $e = \Carbon\Carbon::parse($end);
+
+                if ($s->isSameDay($e)) {
+                    return $s->translatedFormat('d M Y');
+                }
+                if ($s->isSameMonth($e) && $s->isSameYear($e)) {
+                    return $s->translatedFormat('d') . '–' . $e->translatedFormat('d M Y');
+                }
+
+                return $s->translatedFormat('d M Y') . ' — ' . $e->translatedFormat('d M Y');
             }
-            if ($s->isSameMonth($e) && $s->isSameYear($e)) {
-                return $s->translatedFormat('d') . '–' . $e->translatedFormat('d M Y');
-            }
-            return $s->translatedFormat('d M Y') . ' — ' . $e->translatedFormat('d M Y');
         }
     @endphp
+
 
     <div class="p-3">
 
         {{-- ===================== SLIDER DI ATAS TABEL ===================== --}}
-        <div class="card mb-4"  aria-labelledby="sliderTitle">
+        <div class="card mb-4" aria-labelledby="sliderTitle">
             <div class="card-body">
                 <div class="row align-items-center mb-3">
                     <div class="col-12 col-md-6">
