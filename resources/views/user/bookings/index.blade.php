@@ -8,6 +8,28 @@
 
 @section('head')
     <link href="{{ asset('/assets/vendor/libs/datatables/datatables.min.css') }}" rel="stylesheet">
+    <style>
+        .icon-brand {
+            color: #003A70 !important;
+        }
+
+        /* warna ikon brand */
+        .info-row {
+            align-items: center;
+        }
+
+        /* default center */
+        .info-row.top {
+            align-items: flex-start;
+        }
+
+        /* untuk teks multi-line */
+        .info-icon {
+            flex-shrink: 0;
+        }
+
+        /* ikon gak ikut gepeng */
+    </style>
 @endsection
 
 
@@ -65,36 +87,58 @@
                                     <div class="col-md-8">
                                         <div class="card-body d-flex flex-column justify-content-between"
                                             style="height: 100%;">
-                                            <h2 class="card-title text-wrap text-break">
+                                            <h2 class="card-title text-wrap text-break mb-4">
                                                 {{ $property->name }}
                                             </h2>
 
-                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
-                                                <strong>Tipe:</strong> {{ strtoupper($property->room_type) }}
-                                            </p>
-                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
-                                                <strong>Kapasitas:</strong> ±{{ $property->capacity }} orang
-                                            </p>
+                                            <div class="d-flex flex-column gap-2">
 
-                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
-                                                <strong>Luas:</strong> {{ $property->area }} m<sup>2</sup>
-                                            </p>
-                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
-                                                <strong>Fasilitas:</strong> {{ $property->facilities }}
-                                            </p>
-                                            <p class="mb-1 fs-6 fs-md-5 text-wrap text-break">
-                                                <strong>Harga:</strong> Rp
-                                                {{ number_format($property->price, 0, ',', '.') }} / hari
-                                            </p>
-                                            <p class="mb-3 fs-6 fs-md-5 text-wrap text-break">
-                                                <strong>Unit:</strong> {{ $property->unit }}
-                                            </p>
+                                                {{-- Tipe --}}
+                                                <div class="d-flex info-row text-secondary">
+                                                    <i class="bx bx-category fs-4 me-2 icon-brand info-icon"></i>
+                                                    <span><strong>Tipe:</strong>
+                                                        {{ strtoupper($property->room_type) }}</span>
+                                                </div>
 
+                                                {{-- Kapasitas --}}
+                                                <div class="d-flex info-row text-secondary">
+                                                    <i class="bx bxs-group fs-4 me-2 icon-brand info-icon"></i>
+                                                    <span><strong>Kapasitas:</strong> ±{{ $property->capacity }}
+                                                        orang</span>
+                                                </div>
 
+                                                {{-- Luas --}}
+                                                <div class="d-flex info-row text-secondary">
+                                                    <i class="bx bx-ruler fs-4 me-2 icon-brand info-icon"></i>
+                                                    <span><strong>Luas:</strong> {{ $property->area }} m<sup>2</sup></span>
+                                                </div>
+
+                                                {{-- Fasilitas (top-align karena bisa panjang) --}}
+                                                <div class="d-flex info-row top text-secondary">
+                                                    <i class="bx bx-list-check fs-4 me-2 icon-brand info-icon mt-1"></i>
+                                                    <span class="text-wrap text-break">
+                                                        <strong>Fasilitas:</strong> {{ $property->facilities }}
+                                                    </span>
+                                                </div>
+
+                                                {{-- Harga --}}
+                                                <div class="d-flex info-row text-secondary">
+                                                    <i class="bx bx-money fs-4 me-2 icon-brand info-icon"></i>
+                                                    <span><strong>Harga:</strong> Rp
+                                                        {{ number_format($property->price, 0, ',', '.') }} / hari</span>
+                                                </div>
+
+                                                {{-- Unit / Gedung --}}
+                                                <div class="d-flex info-row text-secondary ">
+                                                    <i class="bx bxs-building fs-4  me-2 icon-brand info-icon"></i>
+                                                    <span><strong>Unit:</strong> {{ $property->unit }}</span>
+                                                </div>
+
+                                            </div>
 
                                             @auth
                                                 @if (auth()->user()->role != 'supervisor')
-                                                    <button class="btn btn-primary btn-pesan"
+                                                    <button class="btn btn-primary btn-pesan mt-3"
                                                         data-property-id="{{ $property->id }}" data-bs-toggle="modal"
                                                         data-bs-target="#addEvent">
                                                         Pesan Sekarang
@@ -114,8 +158,8 @@
         </div>
     </div>
 
-    
-@include('user.bookings.modal')
+
+    @include('user.bookings.modal')
 
 
 @endsection

@@ -141,9 +141,23 @@
                                 <div class="card-body p-3">
                                     {{-- Header: Nama & Ruangan --}}
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <h6 class="fw-semibold mb-0">{{ $t->name }}</h6>
-                                        <span class="small text-muted">{{ $t->properties->name }}</span>
+                                        {{-- Kiri: ikon user + nama --}}
+                                        <div class="d-flex align-items-center">
+                                            <i class='bx bxs-user-circle fs-4 me-2 ' style="color: #003A70"></i>
+                                            <h6 class="fw-semibold mb-0 text-break">{{ $t->name }}</h6>
+                                        </div>
+
+                                        {{-- Kanan: ikon gedung + nama properti --}}
+                                        <div class="d-flex align-items-center text-muted ms-2">
+
+                                            <span class="small text-truncate" style="max-width: 180px"
+                                                title="{{ $t->properties->name }}">
+                                                {{ $t->properties->name }}
+                                            </span>
+                                            <i class='bx bxs-building-house fs-4 me-1 ' ></i>
+                                        </div>
                                     </div>
+
 
                                     {{-- Gambar (rasio 16:9, cover) --}}
                                     <div class="ratio ratio-16x9 mt-2 rounded-3 overflow-hidden">
@@ -153,39 +167,80 @@
 
                                     {{-- Detail singkat --}}
                                     <div class="mt-3 small">
-                                        <div><strong>Instansi:</strong> {{ ucfirst($t->instansi) }}</div>
-                                        <div><strong>Kegiatan:</strong> {{ $t->kegiatan }}</div>
-                                        <div><strong>Tanggal:</strong> {{ date('d-m-Y', strtotime($t->start)) }} –
-                                            {{ date('d-m-Y', strtotime($t->end)) }}</div>
+                                        <div class="d-flex flex-column gap-2">
 
-                                        <div class="mt-2">
-                                            <strong>Status:</strong>
-                                            @if ($t->status === 'rejected')
-                                                <span class="badge bg-danger">Ditolak</span>
-                                            @elseif ($t->status === 'waiting_payment')
-                                                <span class="badge bg-info">Menunggu Pembayaran</span>
-                                            @elseif ($t->status === 'pending')
-                                                <span class="badge bg-warning">Menunggu</span>
-                                            @elseif ($t->status === 'approved')
-                                                @php
-                                                    $isInternal = ($t->affiliation ?? '') === 'internal_pu';
-                                                    $hasBilling = !empty($t->billing_qr);
-                                                @endphp
-                                                @if (!$isInternal && !$hasBilling)
-                                                    <span class="badge bg-warning">Disetujui tapi belum bayar</span>
-                                                @else
-                                                    <span class="badge bg-success">Disetujui</span>
-                                                @endif
-                                            @else
-                                                <span class="badge bg-secondary">-</span>
-                                            @endif
+                                            {{-- Instansi --}}
+                                            <div class="d-flex align-items-start">
+                                                <i class="bx bxs-buildings fs-4 me-2  flex-shrink-0 " style="color: #003A70"></i>
+                                                <div class="fs-7 text-break">
+                                                    <strong>Instansi:</strong> {{ ucfirst($t->instansi) }}
+                                                </div>
+                                            </div>
+
+                                            {{-- Kegiatan --}}
+                                            <div class="d-flex align-items-start">
+                                                <i class="bx bx-task fs-4 me-2 flex-shrink-0 " style="color: #003A70"></i>
+                                                <div class="fs-7 text-break text-break">
+                                                    <strong>Kegiatan:</strong> {{ $t->kegiatan }}
+                                                </div>
+                                            </div>
+
+                                            {{-- Tanggal --}}
+                                            <div class="d-flex align-items-start">
+                                                <i class="bx bx-calendar fs-4 me-2 flex-shrink-0 " style="color: #003A70"></i>
+                                                <div class="fs-7 text-break">
+                                                    <strong>Tanggal:</strong>
+                                                    {{ \Carbon\Carbon::parse($t->start)->format('d-m-Y') }} –
+                                                    {{ \Carbon\Carbon::parse($t->end)->format('d-m-Y') }}
+                                                </div>
+                                            </div>
+
+                                            {{-- Status --}}
+                                            <div class="d-flex align-items-start mt-1">
+                                                <i class="bx bx-badge-check fs-4 me-2 flex-shrink-0 " style="color: #003A70"></i>
+                                                <div class="fs-7 text-break">
+                                                    <strong>Status:</strong>
+                                                    @php
+                                                        $isInternal = ($t->affiliation ?? '') === 'internal_pu';
+                                                        $hasBilling = !empty($t->billing_qr);
+                                                    @endphp
+
+                                                    @switch($t->status)
+                                                        @case('rejected')
+                                                            <span class="badge badge-lg bg-danger">Ditolak</span>
+                                                        @break
+
+                                                        @case('waiting_payment')
+                                                            <span class="badge badge-lg bg-info">Menunggu Pembayaran</span>
+                                                        @break
+
+                                                        @case('pending')
+                                                            <span class="badge badge-lg bg-warning text-dark">Menunggu</span>
+                                                        @break
+
+                                                        @case('approved')
+                                                            @if (!$isInternal && !$hasBilling)
+                                                                <span class="badge badge-lg bg-warning text-dark">Disetujui tapi
+                                                                    belum bayar</span>
+                                                            @else
+                                                                <span class="badge badge-lg bg-success">Disetujui</span>
+                                                            @endif
+                                                        @break
+
+                                                        @default
+                                                            <span class="badge badge-lg bg-secondary">-</span>
+                                                    @endswitch
+                                                </div>
+                                            </div>
+
                                         </div>
+
                                     </div>
 
                                     {{-- Tombol full-width --}}
                                     <div class="d-grid mt-3">
-                                        <button class="btn btn-primary btn-sm btn-modern w-100"
-                                            data-bs-toggle="modal" data-bs-target="#modalDetailAsUser{{ $t->id }}">
+                                        <button class="btn btn-primary btn-sm btn-modern w-100" data-bs-toggle="modal"
+                                            data-bs-target="#modalDetailAsUser{{ $t->id }}">
                                             <i class="bx bx-detail me-1"></i> Detail
                                         </button>
                                     </div>
@@ -193,19 +248,19 @@
                             </div>
 
 
-                        @empty
-                            <div class="text-center text-muted">Belum ada peminjaman.</div>
-                        @endforelse
+                            @empty
+                                <div class="text-center text-muted">Belum ada peminjaman.</div>
+                            @endforelse
+                        </div>
+
+                        {{-- Taruh semua modal detail di sini, sekali per transaksi --}}
+                        @foreach ($transactions as $t)
+                            @include('user.transactions.modal', ['t' => $t])
+                        @endforeach
+
                     </div>
 
-                    {{-- Taruh semua modal detail di sini, sekali per transaksi --}}
-                    @foreach ($transactions as $t)
-                        @include('user.transactions.modal', ['t' => $t])
-                    @endforeach
-
                 </div>
-
             </div>
         </div>
-    </div>
-@endsection
+    @endsection
