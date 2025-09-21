@@ -74,7 +74,7 @@
                                         </td>
                                         <td>{{ $u->email }}</td>
                                         <td><span class="badge badge-soft">{{ $u->role ?? '-' }}</span></td>
-                                        <td>{{ optional($u->created_at)->format('d M Y') ?? '-' }}</td>
+                                        <td>{{ optional($u->created_at)->format('Y M d') ?? '-' }}</td>
                                         @if (Auth::user()->role != 'supervisor')
                                             <td class="text-end">
                                                 <div class="btn-group">
