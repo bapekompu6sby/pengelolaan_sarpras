@@ -235,11 +235,19 @@
                                                 </div>
 
                                                 {{-- Unit / Gedung --}}
-                                                <div class="d-flex info-row text-secondary ">
-                                                    <i class="bx bxs-building fs-4  me-2 icon-brand info-icon"></i>
-                                                    <span><strong class="text-dark">Unit:</strong>
-                                                        {{ $property->unit }}</span>
-                                                </div>
+                                                @if ($property->type == 'paviliun')
+                                                    <div class="d-flex info-row text-secondary">
+                                                        <i class="bx bxs-building fs-4 me-2 icon-brand info-icon"></i>
+                                                        <span><strong class="text-dark">Jumlah Kamar:</strong>
+                                                            {{ $property->unit }}</span>
+                                                    </div>
+                                                @else
+                                                    <div class="d-flex info-row text-secondary ">
+                                                        <i class="bx bxs-building fs-4  me-2 icon-brand info-icon"></i>
+                                                        <span><strong class="text-dark">Unit:</strong>
+                                                            {{ $property->unit }}</span>
+                                                    </div>
+                                                @endif
 
                                             </div>
 
