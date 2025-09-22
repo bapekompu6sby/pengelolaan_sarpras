@@ -71,6 +71,10 @@ Route::middleware('auth')->group(function () {
                 Route::get('/ruangan/export', [TransactionController::class, 'ruangan_export'])->name('transactions.ruangan.export');
                 Route::get('/ruangan', [TransactionController::class, 'ruangan_show'])->name('transactions.ruangan.show');
                 Route::delete('/ruangan', [TransactionController::class, 'ruangan_destroy'])->name('transactions.ruangan.destroy');
+
+
+                Route::post('/{transaction}/email', [TransactionController::class, 'emailTransaction'])
+                        ->name('transactions.email');
         });
 
         /* --------------------------------------------------------------

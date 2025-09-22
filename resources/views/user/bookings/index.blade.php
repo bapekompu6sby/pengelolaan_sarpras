@@ -13,24 +13,127 @@
             color: #003A70 !important;
         }
 
-        /* warna ikon brand */
         .info-row {
             align-items: center;
         }
 
-        /* default center */
         .info-row.top {
             align-items: flex-start;
         }
 
-        /* untuk teks multi-line */
         .info-icon {
             flex-shrink: 0;
         }
 
-        /* ikon gak ikut gepeng */
+        /* Kartu properti */
+        .property-card {
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform .22s ease, box-shadow .22s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .06);
+            will-change: transform;
+            border: 1px solid rgba(0, 0, 0, .06);
+        }
+
+        .property-card:hover {
+            transform: scale(1.015);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, .12);
+        }
+
+        /* 📱 MOBILE (default) - gambar 4:3, rounded atas, tanpa shadow */
+        .img-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+            background: #f6f8fc;
+            box-shadow: none;
+            border-bottom: none;
+        }
+
+        .img-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .22s ease;
+        }
+
+        /* Bar biru: MOBILE di ATAS */
+        .img-frame::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 6px;
+            background: var(--pupr-blue, #003A70);
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .06);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            transition: height .22s ease, width .22s ease, opacity .22s ease;
+        }
+
+        /* 💻 DESKTOP/TABLET (≥768px) - 1:1, rounded kiri saja, bar di kiri */
+        @media (min-width: 768px) {
+            .img-frame {
+                aspect-ratio: 1 / 1;
+                border-radius: 16px 0 0 16px;
+                /* ⬅️ kiri atas & kiri bawah bulat, kanan rata */
+                box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
+            }
+
+            .img-frame::before {
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: auto;
+                height: auto;
+                width: 6px;
+                /* bar di kiri */
+                box-shadow: inset -1px 0 0 rgba(0, 0, 0, .06);
+                border-top-left-radius: 16px;
+                border-bottom-left-radius: 16px;
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+        }
+
+
+        /* Hover: bar menghilang + foto zoom */
+        .property-card:hover .img-frame::before {
+            height: 0;
+            opacity: 0;
+        }
+
+        /* mobile */
+        @media (min-width:768px) {
+            .property-card:hover .img-frame::before {
+                width: 0;
+                opacity: 0;
+            }
+
+            /* desktop */
+        }
+
+        .property-card:hover .img-frame img {
+            transform: scale(1.05);
+        }
+
+        /* Reduce motion */
+        @media (prefers-reduced-motion:reduce) {
+
+            .property-card,
+            .img-frame::before,
+            .img-frame img {
+                transition: none;
+            }
+        }
     </style>
 @endsection
+
+
 
 
 @section('content')
@@ -68,17 +171,17 @@
                     <div class="table-responsive text-nowrap p-4">
                         <h1 class="h3 fw-bold text-dark mb-4">Peminjaman Ruangan</h1>
                         @foreach ($properties as $property)
-                            <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+                            <div class="card mb-4 shadow-sm property-card">
+
                                 <div class="row g-0">
 
                                     <div class="col-md-4 d-flex justify-content-center align-items-center">
-                                        <div
-                                            style="width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px;">
+                                        <div class="img-frame">
                                             <img src="{{ $property->image_path ? asset('uploads/' . $property->image_path) : 'https://placehold.co/400?text=No+Image' }}"
-                                                style="width: 100%; height: 100%; object-fit: cover;"
                                                 alt="{{ $property->name ?? 'No image' }}">
                                         </div>
                                     </div>
+
 
 
 
@@ -103,21 +206,24 @@
                                                 {{-- Kapasitas --}}
                                                 <div class="d-flex info-row text-secondary">
                                                     <i class="bx bxs-group fs-4 me-2 icon-brand info-icon"></i>
-                                                    <span><strong class="text-dark">Kapasitas:</strong> ±{{ $property->capacity }}
+                                                    <span><strong class="text-dark">Kapasitas:</strong>
+                                                        ±{{ $property->capacity }}
                                                         orang</span>
                                                 </div>
 
                                                 {{-- Luas --}}
                                                 <div class="d-flex info-row text-secondary">
                                                     <i class="bx bx-ruler fs-4 me-2 icon-brand info-icon"></i>
-                                                    <span><strong class="text-dark">Luas:</strong> {{ $property->area }} m<sup>2</sup></span>
+                                                    <span><strong class="text-dark">Luas:</strong> {{ $property->area }}
+                                                        m<sup>2</sup></span>
                                                 </div>
 
                                                 {{-- Fasilitas (top-align karena bisa panjang) --}}
                                                 <div class="d-flex info-row top text-secondary">
                                                     <i class="bx bx-list-check fs-4 me-2 icon-brand info-icon mt-1"></i>
                                                     <span class="text-wrap text-break">
-                                                        <strong class="text-dark">Fasilitas:</strong> {{ $property->facilities }}
+                                                        <strong class="text-dark">Fasilitas:</strong>
+                                                        {{ $property->facilities }}
                                                     </span>
                                                 </div>
 
@@ -131,7 +237,8 @@
                                                 {{-- Unit / Gedung --}}
                                                 <div class="d-flex info-row text-secondary ">
                                                     <i class="bx bxs-building fs-4  me-2 icon-brand info-icon"></i>
-                                                    <span><strong class="text-dark">Unit:</strong> {{ $property->unit }}</span>
+                                                    <span><strong class="text-dark">Unit:</strong>
+                                                        {{ $property->unit }}</span>
                                                 </div>
 
                                             </div>

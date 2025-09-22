@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Kamar;
 
+
+use App\Models\User;
+
+use App\Models\Kamar;
 use App\Models\Properties;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -12,18 +14,38 @@ use App\Exports\WismaExports;
 use Illuminate\Support\Carbon;
 use App\Exports\RuanganExports;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\DetailKamarTransaction;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
-
-
 {
+
+
+
+    // public function emailTransaction(Transaction $transaction)
+    // {
+    //     $to = $transaction->user->email ?? 'someone@example.com';
+
+    //     $data = [
+    //         'user' => $transaction->user,
+    //         'trx'  => $transaction, // kirim objek biar enak dipakai di blade
+    //         // tambahkan field lain kalau perlu
+    //     ];
+
+    //     Mail::send('emails.transactions_success', $data, function ($message) use ($to, $transaction) {
+    //         $message->to($to)
+    //             ->subject('Transaksi Berhasil #' . ($transaction->code ?? $transaction->id));
+    //     });
+
+    //     return back()->with('success', 'Email transaksi terkirim ke ' . $to);
+    // }
+
     public function history_transaction()
     {
         $user = auth()->user();
@@ -194,25 +216,21 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
             'description'    => 'nullable|string',
             'phone_number'   => 'nullable|string',
-            'email'          => 'nullable|string',
+            'email'          => 'nullable|email', // ← penting
             'affiliation'    => 'required|string',
             'ordered_unit'   => 'required|integer',
             'total_harga'    => 'required|integer',
         ]);
 
         // Upload bukti bayar (opsional)
-        $paymentReceiptPath = null;
-        if ($request->hasFile('payment_receipt')) {
-            $paymentReceiptPath = $request->file('payment_receipt')
-                ->store('uploads/payment_receipt', 'public');
-        }
+        $paymentReceiptPath = $request->hasFile('payment_receipt')
+            ? $request->file('payment_receipt')->store('uploads/payment_receipt', 'public')
+            : null;
 
         // Upload surat permohonan (opsional)
-        $requestLetterPath = null;
-        if ($request->hasFile('request_letter')) {
-            $requestLetterPath = $request->file('request_letter')
-                ->store('uploads/request_letter', 'public');
-        }
+        $requestLetterPath = $request->hasFile('request_letter')
+            ? $request->file('request_letter')->store('uploads/request_letter', 'public')
+            : null;
 
         $namePaymentReceipt = $paymentReceiptPath ? basename($paymentReceiptPath) : null;
         $nameRequestLetter  = $requestLetterPath ? basename($requestLetterPath) : null;
@@ -220,7 +238,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         $colorKey = array_rand($colors, 1);
 
         // SIMPAN TRANSAKSI
-        Transaction::create([
+        $transaction = Transaction::create([
             'name'            => ucfirst($request->name),
             'instansi'        => ucfirst($request->office),
             'kegiatan'        => ucfirst($request->event),
@@ -232,7 +250,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'payment_receipt' => $namePaymentReceipt,
             'request_letter'  => $nameRequestLetter,
             'description'     => $request->description,
-            'user_id'         => auth()->user()->id,
+            'user_id'         => auth()->id(),
             'email'           => $request->email,
             'phone_number'    => $request->phone_number,
             'status'          => 'pending',
@@ -240,12 +258,40 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'ordered_unit'    => $request->ordered_unit,
         ]);
 
-        // Tidak ada pengiriman WhatsApp
+        // === KIRIM EMAIL (kalau pemesan mengisi email) ===
+        if ($request->filled('email')) {
+            $payload = [
+                'user' => auth()->user(),      // atau $transaction->user kalau ada relasi
+                'trx'  => $transaction,        // dipakai di emails.transactions_success
+            ];
 
-        return redirect()
-            ->back()
-            ->with('success', 'Jadwal berhasil dibuat.');
+            try {
+                Mail::send('emails.transactions_success', ['payload' => $payload], function ($message) use ($request, $transaction) {
+                    $message->to($request->email)
+                        ->subject('Transaksi Berhasil #' . ($transaction->code ?? $transaction->id));
+
+                    if ($transaction->request_letter) {
+                        $path = storage_path('app/public/uploads/request_letter/' . $transaction->request_letter);
+                        if (is_file($path)) {
+                            $message->attach($path, ['as' => 'surat_permohonan.pdf']);
+                        }
+                    }
+                    if ($transaction->payment_receipt) {
+                        $path = storage_path('app/public/uploads/payment_receipt/' . $transaction->payment_receipt);
+                        if (is_file($path)) {
+                            $message->attach($path, ['as' => 'bukti_bayar.' . pathinfo($path, PATHINFO_EXTENSION)]);
+                        }
+                    }
+                });
+            } catch (\Throwable $e) {
+                Log::error('Gagal kirim email transaksi: ' . $e->getMessage());
+                // lanjut saja, jangan gagalkan booking
+            }
+        }
+
+        return redirect()->back()->with('success', 'Jadwal berhasil dibuat.');
     }
+
 
 
 
