@@ -24,7 +24,7 @@
     <div class="p-3">
 
         {{-- Row 1: Kegiatan + Ringkasan Stok --}}
-        <div class="row">
+        <div class="row g-3">
             {{-- Kegiatan --}}
             <div class="col-lg-6 mb-4">
                 <div class="card" id="kegiatan">
@@ -68,7 +68,7 @@
 
             {{-- Ringkasan stok per jenis --}}
             <div class="col-lg-6">
-                <div class="col-12 mb-4">
+                <div class="col-12 mb-3">
                     <div class="card border-0 rounded-3">
                         <div class="card-body text-center py-2">
                             <span class="fw-bold text-primary fs-5">Ruangan Per Hari Ini</span>
@@ -76,7 +76,8 @@
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row gx-3 gy-3 mb-3">
+
                     {{-- Helper: bikin array biar DRY --}}
                     @php
                         $summary = [
@@ -116,9 +117,9 @@
                     @endphp
 
                     @foreach ($summary as $i => $s)
-                        <div class="col-12 col-md-6 mb-4">
-                            <div class="card" id="summary-{{ Str::slug($s['label']) }}">
-                                <div class="card-body">
+                        <div class="col-12 col-md-6">
+                            <div class="card compact-card" id="summary-{{ Str::slug($s['label']) }}">
+                                <div class="card-body compact-body">
                                     <h4 class="text-dark mb-2">
                                         <span class="badge {{ $s['badgeClass'] }} me-2">
                                             <i class="bx bx-buildings"></i>
@@ -154,7 +155,7 @@
         </div>
 
         {{-- Row 2: Carousel + Kalender --}}
-        <div class="row">
+        <div class="row g-3">
             <div class="col-lg-6 mb-4 order-0"> <!-- check if carousel is not empty -->
                 @if (count($events) != 0)
                     <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
@@ -162,7 +163,7 @@
                             @foreach ($events as $key => $e)
                                 <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
                                     <div class="card">
-                                        <div class="d-flex align-items-end row">
+                                        <div class="d-flex align-items-end row g-3">
                                             <div class="col p-5" style="margin-left: 10px; margin-right: 10px;">
                                                 <div class="card-body text-center mx-2">
                                                     <h1 class="text-dark">{{ ucfirst($e->kegiatan) }}</h1>

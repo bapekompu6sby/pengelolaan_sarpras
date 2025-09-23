@@ -90,7 +90,7 @@ Route::middleware('auth')->group(function () {
         /* --------------------------------------------------------------
     | ADMIN-ONLY
     |-------------------------------------------------------------- */
-        Route::middleware('checkRole:admin')->group(function () {
+        Route::middleware('checkRole:admin | supervisor')->group(function () {
 
                 /** Penghuni Kamar */
                 Route::prefix('penghunis')->group(function () {

@@ -13,6 +13,30 @@
     <link rel="stylesheet" href="{{ asset('/assets/vendor/css/driver.css') }}">
     <link href="{{ asset('/assets/vendor/libs/datatables/datatables.min.css') }}" rel="stylesheet">
     <link href="{{ asset('/assets/css/kegiatan.css') }}" rel="stylesheet">
+    <style>
+        /* Matikan margin di cardnya */
+        #kegiatan {
+            margin: 0 !important;
+        }
+
+        /* Cegah margin anak “naik” ke atas (collapse) */
+        #kegiatan .card-body {
+            overflow: hidden;
+        }
+
+        /* atau padding-top: .01px; */
+
+        /* Pastikan elemen pertama tidak punya margin-top */
+        #kegiatan .card-body>*:first-child {
+            margin-top: 0 !important;
+        }
+
+        /* Rapikan jarak internal biar tetap rapi */
+        #kegiatan .card-body {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -46,7 +70,7 @@
     <div class="p-3">
 
         {{-- ===================== SLIDER DI ATAS TABEL ===================== --}}
-        <div class="card mb-4" aria-labelledby="sliderTitle">
+        <div class="card mb-3" aria-labelledby="sliderTitle">
             <div class="card-body">
                 <div class="row align-items-center mb-3">
                     <div class="col-12 col-md-6">
