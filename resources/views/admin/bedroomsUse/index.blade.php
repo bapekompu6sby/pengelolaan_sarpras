@@ -198,25 +198,26 @@
                                                             @endif
                                                         </div>
                                                     @endif
-                                                    <button type="button"
-                                                        class="btn btn-sm btn-outline-primary mt-2 btn-edit-penghuni"
-                                                        data-detail="{{ $u['detail_id'] }}"
-                                                        data-kapasitas="{{ $room['kapasitas'] }}"
-                                                        data-names='@json($u['penghunis'] ?? [])' data-bs-toggle="modal"
-                                                        data-bs-target="#editPenghuniModal">
-                                                        Edit Penghuni
-                                                    </button>
-                                                    {{-- Tombol Hapus (per-baris) --}}
-                                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2"
-                                                        data-bs-toggle="modal" data-bs-target="#confirmDeleteDetail"
-                                                        data-action="{{ route('penghuni.destroy', $u['detail_id']) }}"
-                                                        data-kamar="{{ $room['kamar']->nama_kamar ?? '-' }}"
-                                                        data-properti="{{ $propName ?? '-' }}"
-                                                        data-range="{{ $u['range'] ?? '-' }}"
-                                                        data-penghuni="{{ $names->count() }}">
-                                                        Hapus
-                                                    </button>
-
+                                                    @if (auth()->user()->role != 'supervisor')
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-primary mt-2 btn-edit-penghuni"
+                                                            data-detail="{{ $u['detail_id'] }}"
+                                                            data-kapasitas="{{ $room['kapasitas'] }}"
+                                                            data-names='@json($u['penghunis'] ?? [])' data-bs-toggle="modal"
+                                                            data-bs-target="#editPenghuniModal">
+                                                            Edit Penghuni
+                                                        </button>
+                                                        {{-- Tombol Hapus (per-baris) --}}
+                                                        <button type="button" class="btn btn-sm btn-outline-danger mt-2"
+                                                            data-bs-toggle="modal" data-bs-target="#confirmDeleteDetail"
+                                                            data-action="{{ route('penghuni.destroy', $u['detail_id']) }}"
+                                                            data-kamar="{{ $room['kamar']->nama_kamar ?? '-' }}"
+                                                            data-properti="{{ $propName ?? '-' }}"
+                                                            data-range="{{ $u['range'] ?? '-' }}"
+                                                            data-penghuni="{{ $names->count() }}">
+                                                            Hapus
+                                                        </button>
+                                                    @endif
                                                 </li>
                                             </ul>
                                         @empty
@@ -300,7 +301,7 @@
                     // Isi ringkasan
                     modal.querySelector('.js-del-kamar').textContent = kamar;
                     modal.querySelector('.js-del-properti').textContent = properti;
-                    modal.querySelector('.js-del-tanggal').textContent =  range;
+                    modal.querySelector('.js-del-tanggal').textContent = range;
                     modal.querySelector('.js-del-penghuni').textContent = penghuni;
                 });
         </script>

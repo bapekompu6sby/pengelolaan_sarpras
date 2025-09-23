@@ -122,11 +122,12 @@
                             <h5 class="m-0">Sarana &amp; Prasarana</h5>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-
-                            <button type="button" class="btn btn-outline-primary btn-modern" data-bs-toggle="modal"
-                                data-bs-target="#modalCreate">
-                                <i class="bx bx-plus-medical me-1"></i> Tambah
-                            </button>
+                            @if (auth()->user()->role != 'supervisor')
+                                <button type="button" class="btn btn-outline-primary btn-modern" data-bs-toggle="modal"
+                                    data-bs-target="#modalCreate">
+                                    <i class="bx bx-plus-medical me-1"></i> Tambah
+                                </button>
+                            @endif
                         </div>
                     </div>
 

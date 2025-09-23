@@ -43,14 +43,16 @@
                             <i class="bx bx-group fs-4"></i>
                             <h5>Users</h5>
                         </div>
-                        <div class="d-flex align-items-center gap-2">
+                        @if (auth()->user()->role != 'supervisor')
+                            <div class="d-flex align-items-center gap-2">
 
-                            <button type="button" class="btn btn-outline-primary btn-modern" data-bs-toggle="modal"
-                                data-bs-target="#modalCreateUser">
-                                <i class="bx bx-plus-medical me-1"></i> Tambah User
-                            </button>
+                                <button type="button" class="btn btn-outline-primary btn-modern" data-bs-toggle="modal"
+                                    data-bs-target="#modalCreateUser">
+                                    <i class="bx bx-plus-medical me-1"></i> Tambah User
+                                </button>
 
-                        </div>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="table-responsive p-3">
