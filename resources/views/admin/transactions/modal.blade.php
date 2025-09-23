@@ -533,11 +533,13 @@
                 </div>
 
                 {{-- Footer --}}
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-modern"
-                        data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary btn-modern">Simpan</button>
-                </div>
+                @if (auth()->user()->role != 'supervisor')
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-modern"
+                            data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary btn-modern">Simpan</button>
+                    </div>
+                @endif
             </form>
         </div>
     </div>
