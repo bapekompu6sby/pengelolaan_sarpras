@@ -8,9 +8,11 @@ use App\Models\Transaction;
 use Illuminate\Support\Collection;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\BeforeExport;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
 class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle

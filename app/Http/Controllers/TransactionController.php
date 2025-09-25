@@ -294,13 +294,10 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         return redirect()->back()->with('success', 'Jadwal berhasil dibuat.');
     }
 
-
-
-
+ 
     public function transactionUpdate(Request $request, $id)
     {
         try {
-            // 1) Validasi
             $validated = $request->validate([
                 'user_id'          => 'required|integer',
                 'office'           => 'required|string|max:150',
@@ -318,7 +315,6 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'billing_code'     => 'nullable|string',
                 'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
                 'ruangan_id'       => 'required|exists:properties,id',
-
                 'payment_receipt'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
                 'request_letter'   => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
                 'response_letter'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
@@ -326,11 +322,9 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'office.max' => 'Nama instansi terlalu panjang (maks 150 karakter).',
             ]);
 
-            // 2) Transaksi DB
             DB::transaction(function () use ($request, $validated, $id) {
                 $transaction = Transaction::findOrFail($id);
 
-                // fallback file lama
                 $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
                 $requestLetter  = $request->old_request_letter  ?? $transaction->request_letter;
                 $responseLetter = $request->old_response_letter ?? $transaction->response_letter;
@@ -338,44 +332,32 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 $billingCode    = $transaction->billing_code;
                 $rejectionReason = $transaction->rejection_reason;
 
-                // upload file baru (kalau ada)
                 if ($request->hasFile('payment_receipt')) {
-                    $paymentReceipt = basename(
-                        $request->file('payment_receipt')->store('uploads/payment_receipt', 'public')
-                    );
+                    $paymentReceipt = basename($request->file('payment_receipt')->store('uploads/payment_receipt', 'public'));
                 }
                 if ($request->hasFile('request_letter')) {
-                    $requestLetter = basename(
-                        $request->file('request_letter')->store('uploads/request_letter', 'public')
-                    );
+                    $requestLetter = basename($request->file('request_letter')->store('uploads/request_letter', 'public'));
                 }
                 if ($request->hasFile('response_letter')) {
-                    $responseLetter = basename(
-                        $request->file('response_letter')->store('uploads/response_letter', 'public')
-                    );
+                    $responseLetter = basename($request->file('response_letter')->store('uploads/response_letter', 'public'));
                 }
                 if ($request->hasFile('billing_qr')) {
-                    $billingQr = basename(
-                        $request->file('billing_qr')->store('uploads/billing_qr', 'public')
-                    );
+                    $billingQr = basename($request->file('billing_qr')->store('uploads/billing_qr', 'public'));
                 }
                 if (!empty($validated['billing_code'])) {
                     $billingCode = $validated['billing_code'];
                 }
 
-                // status logic
                 if ($validated['status'] === 'rejected') {
                     $rejectionReason = $validated['rejection_reason'] ?? null;
-                    $billingCode = null;
-                    $billingQr   = null;
+
                 } elseif (!empty($validated['rejection_reason'])) {
                     $rejectionReason = $validated['rejection_reason'];
                 }
 
-                // update
                 $updated = $transaction->update([
                     'user_id'         => $validated['user_id'],
-                    'instansi'        => ucwords($validated['office']), // atau Str::title()
+                    'instansi'        => ucwords($validated['office']),
                     'kegiatan'        => ucwords($validated['event']),
                     'property_id'     => $validated['ruangan_id'],
                     'description'     => $validated['description'] ?? null,
@@ -400,28 +382,22 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 }
             });
 
-            // 3) sukses
             return back()->with('success', 'Transaksi berhasil diperbarui.');
-        }
-        // tangkap validasi: kirim error + flash failed + keep input
-        catch (ValidationException $e) {
+        } catch (ValidationException $e) {
+            // VALIDASI GAGAL
             return back()
-                ->withErrors($e->validator)
+                ->withErrors($e->errors()) // <-- aman di semua kasus
                 ->with('failed', 'Gagal memperbarui transaksi. Periksa form yang disorot.')
                 ->withInput();
-        }
-        // tangkap error lain: log & flash failed
-        catch (\Throwable $e) {
-            Log::error('Transaction update failed', [
-                'id' => $id,
-                'error' => $e->getMessage(),
-            ]);
-
+        } catch (\Throwable $e) {
+            // ERROR LAIN
+            Log::error('Transaction update failed', ['id' => $id, 'error' => $e->getMessage()]);
             return back()
                 ->with('failed', 'Gagal memperbarui transaksi. Silakan coba lagi.')
                 ->withInput();
         }
     }
+
 
 
 
