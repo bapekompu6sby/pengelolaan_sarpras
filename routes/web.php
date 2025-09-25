@@ -69,6 +69,11 @@ Route::middleware('auth')->group(function () {
 
                 // Ruangan – list/export/hapus
                 Route::get('/ruangan/export', [TransactionController::class, 'ruangan_export'])->name('transactions.ruangan.export');
+
+                Route::get('/export/ruangan-matrix', [TransactionController::class, 'ruangan_export_matrix'])
+                        ->name('transactions.ruangan.export.matrix');
+
+
                 Route::get('/ruangan', [TransactionController::class, 'ruangan_show'])->name('transactions.ruangan.show');
                 Route::delete('/ruangan', [TransactionController::class, 'ruangan_destroy'])->name('transactions.ruangan.destroy');
 

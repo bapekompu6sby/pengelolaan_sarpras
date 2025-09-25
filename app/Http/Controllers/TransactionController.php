@@ -13,14 +13,16 @@ use Illuminate\Http\Request;
 use App\Exports\WismaExports;
 use Illuminate\Support\Carbon;
 use App\Exports\RuanganExports;
+use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\DetailKamarTransaction;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\RuanganMultiMonthExport;
 use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
@@ -295,111 +297,131 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
 
 
-
     public function transactionUpdate(Request $request, $id)
     {
-        $validated = $request->validate([
-            'user_id'          => 'required|integer',
-            'office'           => 'required|string|max:32',
-            'affiliation'      => 'required|string|in:internal_pu,external_pu',
-            'phone_number'     => 'required|string|max:15',
-            'email'            => 'required|email',
-            'event'            => 'required|string|max:100',
-            'ordered_unit'     => 'required|integer|min:1',
-            'description'      => 'nullable|string',
-            'start'            => 'required|date',
-            'end'              => 'required|date|after_or_equal:start',
-            'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
-            'rejection_reason' => 'required_if:status,rejected',
-            'total_harga'      => 'required|numeric|min:0',
-            'billing_code'     => 'nullable|string',
-            'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
-            'ruangan_id'       => 'required|exists:properties,id',
-            'rejection_reason' => 'nullable|string|max:255',
+        try {
+            // 1) Validasi
+            $validated = $request->validate([
+                'user_id'          => 'required|integer',
+                'office'           => 'required|string|max:150',
+                'affiliation'      => 'required|string|in:internal_pu,external_pu',
+                'phone_number'     => 'required|string|max:20',
+                'email'            => 'required|email',
+                'event'            => 'required|string|max:255',
+                'ordered_unit'     => 'required|integer|min:1',
+                'description'      => 'nullable|string',
+                'start'            => 'required|date',
+                'end'              => 'required|date|after_or_equal:start',
+                'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
+                'rejection_reason' => 'nullable|string|max:255|required_if:status,rejected',
+                'total_harga'      => 'required|numeric|min:0',
+                'billing_code'     => 'nullable|string',
+                'billing_qr'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
+                'ruangan_id'       => 'required|exists:properties,id',
 
-        ]);
-
-        DB::transaction(function () use ($request, $id) {
-            $transaction = Transaction::findOrFail($id);
-
-            // fallback lama
-            $paymentReceipt  = $request->old_payment_receipt ?? $transaction->payment_receipt;
-            $requestLetter   = $request->old_request_letter  ?? $transaction->request_letter;
-            $responseLetter  = $request->old_response_letter ?? $transaction->response_letter;
-            $billingQr       = $request->old_billing_qr      ?? $transaction->billing_qr;
-            $billingCode     = $transaction->billing_code;
-            $rejectionReason = $transaction->rejection_reason;
-
-            // file umum
-            if ($request->hasFile('payment_receipt')) {
-                $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
-                $paymentReceipt = basename($path);
-            }
-            if ($request->hasFile('request_letter')) {
-                $path = $request->file('request_letter')->store('uploads/request_letter', 'public');
-                $requestLetter = basename($path);
-            }
-            // response_letter
-            if ($request->hasFile('response_letter')) {
-                $path = $request->file('response_letter')->store('uploads/response_letter', 'public');
-                $responseLetter = basename($path);
-            }
-
-            // billing: terima dari mana pun (dokumen/status)
-            if ($request->filled('billing_code')) {
-                $billingCode = $request->billing_code;
-            }
-            if ($request->hasFile('billing_qr')) {
-                $path = $request->file('billing_qr')->store('uploads/billing_qr', 'public');
-                $billingQr = basename($path);
-            }
-
-            // status-based overrides
-            if ($request->status === 'rejected') {
-                $rejectionReason = $request->rejection_reason; // valid by rule
-                $billingCode = null;
-                $billingQr   = null;
-            } elseif ($request->filled('rejection_reason')) {
-                // optional: update alasan walau bukan rejected
-                $rejectionReason = $request->rejection_reason;
-            }
-
-            $propertyId = $request->ruangan_id ?? $transaction->property_id;
-
-            $transaction->update([
-                'instansi'         => ucwords($request->office),
-                'kegiatan'         => ucwords($request->event),
-                'property_id'      => $propertyId,
-                'description'      => $request->description,
-                'status'           => $request->status,
-                'rejection_reason' => $rejectionReason,
-                'billing_code'     => $billingCode,
-                'billing_qr'       => $billingQr,
-                'start'            => $request->start,
-                'end'              => $request->end,
-                'total_harga'      => $request->total_harga,
-                'phone_number'     => $request->phone_number,
-                'email'            => $request->email,
-                'affiliation'      => $request->affiliation,
-                'ordered_unit'     => $request->ordered_unit ?? $transaction->ordered_unit,
-                'payment_receipt'  => $paymentReceipt,
-                'request_letter'   => $requestLetter,
-                'response_letter'  => $responseLetter,
+                'payment_receipt'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
+                'request_letter'   => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
+                'response_letter'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
+            ], [
+                'office.max' => 'Nama instansi terlalu panjang (maks 150 karakter).',
             ]);
-        });
 
+            // 2) Transaksi DB
+            DB::transaction(function () use ($request, $validated, $id) {
+                $transaction = Transaction::findOrFail($id);
 
-        return back()->with('success', 'Transaksi berhasil diperbarui (detail kamar tidak diubah).');
+                // fallback file lama
+                $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
+                $requestLetter  = $request->old_request_letter  ?? $transaction->request_letter;
+                $responseLetter = $request->old_response_letter ?? $transaction->response_letter;
+                $billingQr      = $request->old_billing_qr      ?? $transaction->billing_qr;
+                $billingCode    = $transaction->billing_code;
+                $rejectionReason = $transaction->rejection_reason;
+
+                // upload file baru (kalau ada)
+                if ($request->hasFile('payment_receipt')) {
+                    $paymentReceipt = basename(
+                        $request->file('payment_receipt')->store('uploads/payment_receipt', 'public')
+                    );
+                }
+                if ($request->hasFile('request_letter')) {
+                    $requestLetter = basename(
+                        $request->file('request_letter')->store('uploads/request_letter', 'public')
+                    );
+                }
+                if ($request->hasFile('response_letter')) {
+                    $responseLetter = basename(
+                        $request->file('response_letter')->store('uploads/response_letter', 'public')
+                    );
+                }
+                if ($request->hasFile('billing_qr')) {
+                    $billingQr = basename(
+                        $request->file('billing_qr')->store('uploads/billing_qr', 'public')
+                    );
+                }
+                if (!empty($validated['billing_code'])) {
+                    $billingCode = $validated['billing_code'];
+                }
+
+                // status logic
+                if ($validated['status'] === 'rejected') {
+                    $rejectionReason = $validated['rejection_reason'] ?? null;
+                    $billingCode = null;
+                    $billingQr   = null;
+                } elseif (!empty($validated['rejection_reason'])) {
+                    $rejectionReason = $validated['rejection_reason'];
+                }
+
+                // update
+                $updated = $transaction->update([
+                    'user_id'         => $validated['user_id'],
+                    'instansi'        => ucwords($validated['office']), // atau Str::title()
+                    'kegiatan'        => ucwords($validated['event']),
+                    'property_id'     => $validated['ruangan_id'],
+                    'description'     => $validated['description'] ?? null,
+                    'status'          => $validated['status'],
+                    'rejection_reason' => $rejectionReason,
+                    'billing_code'    => $billingCode,
+                    'billing_qr'      => $billingQr,
+                    'start'           => $validated['start'],
+                    'end'             => $validated['end'],
+                    'total_harga'     => $validated['total_harga'],
+                    'phone_number'    => $validated['phone_number'],
+                    'email'           => $validated['email'],
+                    'affiliation'     => $validated['affiliation'],
+                    'ordered_unit'    => $validated['ordered_unit'],
+                    'payment_receipt' => $paymentReceipt,
+                    'request_letter'  => $requestLetter,
+                    'response_letter' => $responseLetter,
+                ]);
+
+                if (!$updated) {
+                    throw new \RuntimeException('Tidak ada perubahan data.');
+                }
+            });
+
+            // 3) sukses
+            return back()->with('success', 'Transaksi berhasil diperbarui.');
+        }
+        // tangkap validasi: kirim error + flash failed + keep input
+        catch (ValidationException $e) {
+            return back()
+                ->withErrors($e->validator)
+                ->with('failed', 'Gagal memperbarui transaksi. Periksa form yang disorot.')
+                ->withInput();
+        }
+        // tangkap error lain: log & flash failed
+        catch (\Throwable $e) {
+            Log::error('Transaction update failed', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()
+                ->with('failed', 'Gagal memperbarui transaksi. Silakan coba lagi.')
+                ->withInput();
+        }
     }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -477,7 +499,19 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         $now = now()->toDateString();
         return Excel::download(new RuanganExports, "$now-rekap-ruangan.xlsx");
     }
+    public function ruangan_export_matrix(Request $request)
+    {
+        // startMonth opsional. Default: bulan ini (format YYYY-MM)
+        $startMonth = $request->input('start_month', now()->format('Y-m'));
 
+        $start = Carbon::parse($startMonth . '-01')->startOfMonth();
+
+        // jumlah bulan yang ingin dibuat sheet-nya
+        $months = 3; // bulan ini + 2 bulan ke depan
+
+        $fname = 'rekap-ruangan-matrix_' . $start->format('Ym') . '_+' . ($months - 1) . 'bulan.xlsx';
+        return Excel::download(new RuanganMultiMonthExport($start, $months), $fname);
+    }
 
 
     /* ========================================================

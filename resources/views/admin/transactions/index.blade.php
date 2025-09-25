@@ -32,7 +32,7 @@
                     {{-- Header card pakai aksen border-bottom biru dari .card-modern --}}
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h5 class="mb-0 text-brand">Peminjaman Ruangan</h5>
-                        <a href="{{ route('transactions.ruangan.export') }}" class="btn btn-success btn-modern"
+                        <a href="{{ route('transactions.ruangan.export.matrix') }}" class="btn btn-success btn-modern"
                             data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true"
                             title=""
                             data-bs-original-title="<i class='bx bx-spreadsheet bx-xs'></i> <span>Export to excel</span>">
