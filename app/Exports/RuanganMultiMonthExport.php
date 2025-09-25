@@ -9,8 +9,8 @@ class RuanganMultiMonthExport implements WithMultipleSheets
 {
     public function __construct(
         private Carbon $startMonth,
-        private int $months = 3,
-        private ?string $templatePath = null // storage_path ke template kalau ada
+        private int $months = 1,
+        private ?string $templatePath = null
     ) {}
 
     public function sheets(): array

@@ -24,8 +24,11 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
 
     public function title(): string
     {
+        // Pastikan locale ID kalau mau “Sep 2025” versi Indonesia
+        //0 \Carbon\Carbon::setLocale('id'); bisa kamu taruh di AppServiceProvider boot()
         return $this->month->translatedFormat('M Y');
     }
+
 
     public function collection(): Collection
     {

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\DetailKamarTransaction;
 use Illuminate\Support\Facades\Storage;
@@ -294,7 +295,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         return redirect()->back()->with('success', 'Jadwal berhasil dibuat.');
     }
 
- 
+
     public function transactionUpdate(Request $request, $id)
     {
         try {
@@ -350,7 +351,6 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
                 if ($validated['status'] === 'rejected') {
                     $rejectionReason = $validated['rejection_reason'] ?? null;
-
                 } elseif (!empty($validated['rejection_reason'])) {
                     $rejectionReason = $validated['rejection_reason'];
                 }
@@ -475,18 +475,59 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         $now = now()->toDateString();
         return Excel::download(new RuanganExports, "$now-rekap-ruangan.xlsx");
     }
+    // public function ruangan_export_matrix(Request $request)
+    // {
+    //     // startMonth opsional. Default: bulan ini (format YYYY-MM)
+    //     $startMonth = $request->input('start_month', now()->format('Y-m'));
+
+    //     $start = Carbon::parse($startMonth . '-01')->startOfMonth();
+
+    //     // jumlah bulan yang ingin dibuat sheet-nya
+    //     $months = 3; // bulan ini + 2 bulan ke depan
+
+    //     $fname = 'rekap-ruangan-matrix_' . $start->format('Ym') . '_+' . ($months - 1) . 'bulan.xlsx';
+    //     return Excel::download(new RuanganMultiMonthExport($start, $months), $fname);
+    // }
     public function ruangan_export_matrix(Request $request)
     {
-        // startMonth opsional. Default: bulan ini (format YYYY-MM)
-        $startMonth = $request->input('start_month', now()->format('Y-m'));
+        // Format input: YYYY-MM (contoh: 2025-09)
+        $validator = Validator::make($request->all(), [
+            'start_month' => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+            'end_month'   => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+        ]);
 
-        $start = Carbon::parse($startMonth . '-01')->startOfMonth();
+        if ($validator->fails()) {
+            return back()->with('error', 'Format bulan harus YYYY-MM');
+        }
 
-        // jumlah bulan yang ingin dibuat sheet-nya
-        $months = 3; // bulan ini + 2 bulan ke depan
+        // Default jika kosong: bulan ini
+        $startMonthStr = $request->input('start_month', now()->format('Y-m'));
+        $endMonthStr   = $request->input('end_month',   now()->format('Y-m'));
 
-        $fname = 'rekap-ruangan-matrix_' . $start->format('Ym') . '_+' . ($months - 1) . 'bulan.xlsx';
-        return Excel::download(new RuanganMultiMonthExport($start, $months), $fname);
+        $start = Carbon::createFromFormat('Y-m-d', $startMonthStr . '-01')->startOfMonth();
+        $end   = Carbon::createFromFormat('Y-m-d', $endMonthStr . '-01')->endOfMonth();
+
+        // Jika user kebalik (end < start) → tukar
+        if ($end->lt($start)) {
+            [$start, $end] = [$end->copy()->startOfMonth(), $start->copy()->endOfMonth()];
+        }
+
+        // Hitung jumlah bulan inklusif
+        $months = ($start->year * 12 + $start->month);
+        $monthe = ($end->year   * 12 + $end->month);
+        $count  = ($monthe - $months) + 1; // inklusif
+
+        // (Opsional) path template kalau mau
+        $templatePath = null; // storage_path('app/templates/ruangan-matrix-template.xlsx');
+
+        // Nama file: rekap-ruangan-matrix_2025-09_s.d._2025-12.xlsx
+        $fname = sprintf(
+            'rekap-ruangan-matrix_%s_s.d._%s.xlsx',
+            $start->format('Y-m'),
+            $end->format('Y-m')
+        );
+
+        return Excel::download(new RuanganMultiMonthExport($start, $count, $templatePath), $fname);
     }
 
 

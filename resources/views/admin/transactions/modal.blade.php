@@ -269,9 +269,57 @@
 </div>
 
 
+
+
+{{-- Modal --}}
+<div class="modal fade" id="exportRuanganModal" tabindex="-1" aria-labelledby="exportRuanganLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-3">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportRuanganLabel">Export Rekap Peminjaman Ruangan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+
+            <form id="exportRuanganForm" action="{{ route('transactions.ruangan.export.matrix') }}" method="GET"
+                class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="startMonth" class="form-label mb-1">Bulan awal</label>
+                            <input type="month" id="startMonth" name="start_month"
+                                class="form-control form-control-sm" required
+                                value="{{ request('start_month', now()->format('Y-m')) }}">
+                            <div class="invalid-feedback">Pilih bulan awal (format YYYY-MM).</div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="endMonth" class="form-label mb-1">Bulan akhir</label>
+                            <input type="month" id="endMonth" name="end_month"
+                                class="form-control form-control-sm" required
+                                value="{{ request('end_month', now()->format('Y-m')) }}">
+                            <div class="invalid-feedback">Pilih bulan akhir (format YYYY-MM).</div>
+                        </div>
+                    </div>
+
+                    <small class="text-muted d-block mt-3">
+                        * Sistem akan otomatis menukar rentang jika bulan akhir &lt; bulan awal.
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" id="btnExportSubmit" class="btn btn-success">
+                        <i class="bx bx-cloud-download"></i> Export
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- form edit for peminjaman ruangan --}}
-<div class="modal fade" id="modalDetailEdit{{ $t->id }}" tabindex="-1" data-bs-backdrop="static" role="dialog"
-    aria-labelledby="editEventLabel-{{ $t->id }}" aria-hidden="true">
+<div class="modal fade" id="modalDetailEdit{{ $t->id }}" tabindex="-1" data-bs-backdrop="static"
+    role="dialog" aria-labelledby="editEventLabel-{{ $t->id }}" aria-hidden="true">
 
     <div class="modal-dialog modal-dialog-centered modal-lg modal-modern" role="document">
         <div class="modal-content">

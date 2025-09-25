@@ -42,12 +42,12 @@
                     {{-- Header card pakai aksen border-bottom biru dari .card-modern --}}
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h5 class="mb-0 text-brand">Peminjaman Ruangan</h5>
-                        <a href="{{ route('transactions.ruangan.export.matrix') }}" class="btn btn-success btn-modern"
-                            data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-html="true"
-                            title=""
-                            data-bs-original-title="<i class='bx bx-spreadsheet bx-xs'></i> <span>Export to excel</span>">
+                        <button class="btn btn-success btn-modern" data-bs-toggle="modal"
+                            data-bs-target="#exportRuanganModal" data-bs-placement="top" data-bs-html="true" title=""
+                            data-bs-original-title="<i class='bx bx-spreadsheet bx-xs'></i> <span>Export to Excel</span>">
                             <span class="tf-icons bx bx-cloud-download bx-sm"></span>
-                        </a>
+                        </button>
+
                     </div>
 
                     <div class="card-body mt-3">
@@ -208,6 +208,44 @@
                     document.addEventListener('draw.dt', function() {
                         deleteBtn.classList.toggle('d-none', selected.length === 0);
                     });
+                })();
+            </script>
+            <script>
+                (function() {
+                    const form = document.getElementById('exportRuanganForm');
+                    const startEl = document.getElementById('startMonth');
+                    const endEl = document.getElementById('endMonth');
+                    const submitBtn = document.getElementById('btnExportSubmit');
+
+                    // set default saat modal ditampilkan (optional)
+                    const modalEl = document.getElementById('exportRuanganModal');
+                    modalEl.addEventListener('shown.bs.modal', function() {
+                        // fokus ke bulan awal
+                        startEl.focus();
+                    });
+
+                    form.addEventListener('submit', function(e) {
+                        // Bootstrap validation
+                        if (!form.checkValidity()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        } else {
+                            // Normalisasi: tukar jika end < start
+                            const s = startEl.value; // 'YYYY-MM'
+                            const eMonth = endEl.value;
+                            if (s && eMonth && eMonth < s) {
+                                // swap
+                                endEl.value = s;
+                                startEl.value = eMonth;
+                            }
+
+                            // UX: disable tombol + spinner
+                            submitBtn.disabled = true;
+                            submitBtn.innerHTML =
+                                '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Mempersiapkan...';
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
                 })();
             </script>
         @endpush
