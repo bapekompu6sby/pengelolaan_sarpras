@@ -2,16 +2,16 @@
 // app/Exports/RuanganMonthMatrixSheet.php
 namespace App\Exports;
 
-use App\Models\Transaction;
-use App\Models\Property; // <-- tambahkan
 use Carbon\Carbon;
+use App\Models\Properties;
+use App\Models\Transaction;
 use Illuminate\Support\Collection;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\BeforeExport;
-use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use Maatwebsite\Excel\Concerns\FromCollection;
 
 class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
 {
@@ -49,7 +49,7 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
 
                 // 1) AMBIL SEMUA PROPERTIES (header selalu lengkap)
                 //    pakai id + name agar mappingnya stabil
-                $allProps = Property::orderBy('name')->get(['id', 'name']); // <-- PENTING
+                $allProps = Properties::orderBy('name')->get(['id', 'name']); // <-- PENTING
                 if ($allProps->isEmpty()) {
                     // kalau benar-benar tidak ada property, tulis pesan singkat & keluar
                     $sheet->setCellValue('A1', 'Tidak ada data property.');
