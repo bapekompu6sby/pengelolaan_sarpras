@@ -47,17 +47,16 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
                 $start = (clone $this->month)->startOfMonth();
                 $end   = (clone $this->month)->endOfMonth();
 
-                // 1) AMBIL SEMUA PROPERTIES (header selalu lengkap)
-                //    pakai id + name agar mappingnya stabil
-                $allProps = Properties::orderBy('name')->get(['id', 'name']); // <-- PENTING
+                // 1) SEMUA PROPERTIES
+                $allProps = Properties::orderBy('name')->get(['id', 'name']);
                 if ($allProps->isEmpty()) {
-                    // kalau benar-benar tidak ada property, tulis pesan singkat & keluar
                     $sheet->setCellValue('A1', 'Tidak ada data property.');
                     return;
                 }
 
-                // 2) Ambil transaksi di bulan ini (cukup fields yang dipakai)
+                // 2) TRANSAKSI APPROVED DI BULAN ITU
                 $txs = Transaction::select('instansi', 'kegiatan', 'start', 'end', 'property_id')
+                    ->where('status', 'approved')
                     ->whereDate('start', '<=', $end->toDateString())
                     ->whereDate('end',   '>=', $start->toDateString())
                     ->orderBy('start')
@@ -70,19 +69,20 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
                 $startRow = 4;
                 $startCol = 1; // A
 
-                // Header kiri (tanggal)
-                $sheet->setCellValueByColumnAndRow($startCol, $startRow, 'Tanggal'); // A4
+                // Header kiri (Tanggal)
+                $sheet->setCellValueByColumnAndRow($startCol, $startRow, 'Tanggal');
 
-                // HEADER PROPERTIES: tulis SEMUA property (kolom B, C, dst)
-                // colsMap berdasarkan property_id -> colIndex
-                $colsMap = [];
+                // Header properties + peta kolom
+                $colsMap = [];              // property_id => colIndex
+                $propOrder = [];            // index => ['id'=>..,'name'=>..] (untuk iterasi berurutan)
                 foreach ($allProps->values() as $i => $p) {
                     $colIndex = $startCol + 1 + $i; // mulai dari kolom B
                     $sheet->setCellValueByColumnAndRow($colIndex, $startRow, $p->name);
                     $colsMap[$p->id] = $colIndex;
+                    $propOrder[$i] = ['id' => $p->id, 'name' => $p->name, 'col' => $colIndex];
                 }
 
-                // Tulis tanggal ke kolom A (baris 5..)
+                // Baris tanggal
                 $rowsMap = []; // 'Y-m-d' => rowIndex
                 $r = $startRow + 1;
                 $cursor = (clone $start);
@@ -94,9 +94,17 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
                     $cursor->addDay();
                 }
 
-                // --- Isi data ke matrix ---
+                // --- Isi matrix + hitung total hari dipinjam per property ---
+                // gunakan set untuk menghindari double count pada (property, hari) yang sama
+                $usedDaySet = [];  // [$propId][$ymd] = true
+                $totals     = [];  // $totals[$propId] = jumlah hari
+
+                foreach ($propOrder as $info) {
+                    $totals[$info['id']] = 0;
+                    $usedDaySet[$info['id']] = [];
+                }
+
                 foreach ($txs as $t) {
-                    // dapatkan kolom dari property_id (bukan dari nama relasi)
                     $col = $colsMap[$t->property_id] ?? null;
                     if (!$col) continue;
 
@@ -114,37 +122,80 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
                         if (isset($rowsMap[$ymd])) {
                             $row = $rowsMap[$ymd];
 
-                            $existing = (string) $sheet
-                                ->getCellByColumnAndRow($col, $row)
-                                ->getValue();
-
+                            // tulis/append ke sel
+                            $existing = (string) $sheet->getCellByColumnAndRow($col, $row)->getValue();
                             $value = $existing ? ($existing . "\n" . $text) : $text;
-
                             $sheet->setCellValueByColumnAndRow($col, $row, $value);
                             $sheet->getStyleByColumnAndRow($col, $row)->getAlignment()->setWrapText(true);
+
+                            // tandai 1 hari terpakai untuk property ini (hindari double count)
+                            if (!isset($usedDaySet[$t->property_id][$ymd])) {
+                                $usedDaySet[$t->property_id][$ymd] = true;
+                                $totals[$t->property_id] += 1;
+                            }
                         }
                         $day->addDay();
                     }
                 }
 
-                // Styling dasar (kalau tidak ada styling dari template)
+                // Styling dasar tabel utama
                 $lastCol = $startCol + $allProps->count();
                 $lastRow = $r - 1;
 
-                // Bold header (row 4)
+                // Tebalkan header (row 4)
                 $sheet->getStyleByColumnAndRow($startCol, $startRow, $lastCol, $startRow)
                     ->getFont()->setBold(true);
 
-                // Border tipis seluruh tabel (header + data)
+                // Border tipis seluruh blok data
                 $sheet->getStyleByColumnAndRow($startCol, $startRow, $lastCol, $lastRow)
-                    ->getBorders()->getAllBorders()
-                    ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                    ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
                 // Lebar kolom
                 $sheet->getColumnDimensionByColumn($startCol)->setWidth(12); // Tanggal
                 for ($c = $startCol + 1; $c <= $lastCol; $c++) {
                     $sheet->getColumnDimensionByColumn($c)->setWidth(28);
                 }
+
+                // --- BARIS RINGKASAN DI BAWAH TABEL ---
+                $sumRowLabel = $lastRow + 2; // satu baris kosong pemisah
+                $sheet->setCellValueByColumnAndRow($startCol, $sumRowLabel, 'Total dipinjam (hari)');
+                $sheet->getStyleByColumnAndRow($startCol, $sumRowLabel)->getFont()->setBold(true);
+
+                // tulis total per property di baris ini
+                $maxVal = 0;
+                foreach ($propOrder as $info) {
+                    $propId = $info['id'];
+                    $col    = $info['col'];
+                    $val    = $totals[$propId] ?? 0;
+
+                    $sheet->setCellValueByColumnAndRow($col, $sumRowLabel, $val);
+                    $maxVal = max($maxVal, $val);
+                }
+
+                // Border & format baris ringkasan
+                $sheet->getStyleByColumnAndRow($startCol, $sumRowLabel, $lastCol, $sumRowLabel)
+                    ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+                // --- HIGHLIGHT yang PALING BANYAK (warna hijau) ---
+                if ($maxVal > 0) {
+                    foreach ($propOrder as $info) {
+                        $propId = $info['id'];
+                        $col    = $info['col'];
+                        if (($totals[$propId] ?? 0) === $maxVal) {
+                            // hijau lembut di sel total
+                            $sheet->getStyleByColumnAndRow($col, $sumRowLabel)
+                                ->getFill()->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()->setARGB('FFC6EFCE'); // light green
+                            $sheet->getStyleByColumnAndRow($col, $sumRowLabel)
+                                ->getFont()->getColor()->setARGB('FF006100'); // dark green
+                            $sheet->getStyleByColumnAndRow($col, $sumRowLabel)
+                                ->getFont()->setBold(true);
+                        }
+                    }
+                }
+
+                // (opsional) Freeze pane biar header & kolom tanggal tetap terlihat
+                $sheet->freezePaneByColumnAndRow($startCol + 1, $startRow + 1); // freeze di B5
             },
         ];
     }
