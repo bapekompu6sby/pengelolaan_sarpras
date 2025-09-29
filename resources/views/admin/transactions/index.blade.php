@@ -42,10 +42,12 @@
                     {{-- Header card pakai aksen border-bottom biru dari .card-modern --}}
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h5 class="mb-0 text-brand">Peminjaman Ruangan</h5>
-                        <button class="btn btn-success btn-modern" data-bs-toggle="modal"
-                            data-bs-target="#exportRuanganModal" data-bs-placement="top" data-bs-html="true" title=""
+
+                        <button class="btn btn-success btn-modern d-flex align-items-center" data-bs-toggle="modal"
+                            data-bs-target="#exportRuanganModal" data-bs-html="true"
                             data-bs-original-title="<i class='bx bx-spreadsheet bx-xs'></i> <span>Export to Excel</span>">
-                            <span class="tf-icons bx bx-cloud-download bx-sm"></span>
+                            <i class="bx bx-cloud-download bx-sm me-1"></i>
+                            Export
                         </button>
 
                     </div>

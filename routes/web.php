@@ -50,6 +50,8 @@ Route::middleware('auth')->group(function () {
                 Route::post('/store', [TransactionController::class, 'bookingStore'])->name('bookings.store');
         });
 
+        
+
         /* --------------------------------------------------------------
     | Transactions (umum – user login)
     |-------------------------------------------------------------- */
@@ -96,6 +98,8 @@ Route::middleware('auth')->group(function () {
     | ADMIN-ONLY
     |-------------------------------------------------------------- */
         Route::middleware('checkRole:admin | supervisor')->group(function () {
+
+                Route::get('bedroomsUse/export', [KamarController::class, 'bedroomsUse_export_matrix'])->name('bedroomsUse.export.matrix'); // /export/bedroomsUse-matrix
 
                 /** Penghuni Kamar */
                 Route::prefix('penghunis')->group(function () {

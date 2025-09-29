@@ -6,9 +6,13 @@ use App\Models\Kamar;
 use App\Models\Penghuni;
 use App\Models\Properties;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+
 use Illuminate\Support\Carbon;
+use App\Exports\BedroomsUseMultiMonthExport;
 use Illuminate\Support\Facades\DB;
 use App\Models\DetailKamarTransaction;
+use Illuminate\Support\Facades\Validator;
 
 class KamarController extends Controller
 {
@@ -351,5 +355,47 @@ class KamarController extends Controller
             'available' => $conflicts->isEmpty(),
             'conflicts' => $conflicts,
         ]);
+    }
+
+    public function bedroomsUse_export_matrix(Request $request)
+    {
+        // Format input: YYYY-MM (contoh: 2025-09)
+        $validator = Validator::make($request->all(), [
+            'start_month' => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+            'end_month'   => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+        ]);
+
+        if ($validator->fails()) {
+            return back()->with('error', 'Format bulan harus YYYY-MM');
+        }
+
+        // Default jika kosong: bulan ini
+        $startMonthStr = $request->input('start_month', now()->format('Y-m'));
+        $endMonthStr   = $request->input('end_month',   now()->format('Y-m'));
+
+        $start = Carbon::createFromFormat('Y-m-d', $startMonthStr . '-01')->startOfMonth();
+        $end   = Carbon::createFromFormat('Y-m-d', $endMonthStr . '-01')->endOfMonth();
+
+        // Jika user kebalik (end < start) → tukar
+        if ($end->lt($start)) {
+            [$start, $end] = [$end->copy()->startOfMonth(), $start->copy()->endOfMonth()];
+        }
+
+        // Hitung jumlah bulan inklusif
+        $months = ($start->year * 12 + $start->month);
+        $monthe = ($end->year   * 12 + $end->month);
+        $count  = ($monthe - $months) + 1; // inklusif
+
+        // (Opsional) path template kalau mau
+        $templatePath = null; // storage_path('app/templates/ruangan-matrix-template.xlsx');
+
+        // Nama file: rekap-ruangan-matrix_2025-09_s.d._2025-12.xlsx
+        $fname = sprintf(
+            'rekap-kamar-terpakai_%s_s.d._%s.xlsx',
+            $start->format('Y-m'),
+            $end->format('Y-m')
+        );
+
+        return Excel::download(new BedroomsUseMultiMonthExport($start, $count, $templatePath), $fname);
     }
 }

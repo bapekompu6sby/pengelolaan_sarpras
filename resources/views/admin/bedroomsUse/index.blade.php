@@ -111,13 +111,36 @@
     <div class="p-3">
         {{-- header + legenda --}}
         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+            <!-- Judul -->
             <h4 class="mb-0">Kamar Terpakai & Jadwal</h4>
+
+            <!-- Status Chips + Action -->
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                <span class="status-chip" title="Sedang dipakai hari ini"><span class="dot dot-red"></span>Terpakai</span>
-                <span class="status-chip" title="Ada jadwal mendatang"><span class="dot dot-amber"></span>Terjadwal</span>
-                {{-- <span class="status-chip"><span class="dot dot-green"></span>Free</span> --}}
+                <div class="d-flex gap-2">
+                    <span class="status-chip" title="Sedang dipakai hari ini">
+                        <span class="dot dot-red"></span> Terpakai
+                    </span>
+                    <span class="status-chip" title="Ada jadwal mendatang">
+                        <span class="dot dot-amber"></span> Terjadwal
+                    </span>
+                    <!-- Uncomment kalau butuh status Free -->
+                    <!--
+          <span class="status-chip" title="Tidak ada pemakaian">
+            <span class="dot dot-green"></span> Free
+          </span>
+          -->
+                </div>
+
+                <!-- Tombol Export -->
+                <button class="btn btn-success btn-modern d-flex align-items-center" data-bs-toggle="modal"
+                    data-bs-target="#exportBedroomsUseModal" data-bs-html="true"
+                    data-bs-original-title="<i class='bx bx-spreadsheet bx-xs'></i> <span>Export to Excel</span>">
+                    <i class="bx bx-cloud-download bx-sm me-1"></i>
+                    Export
+                </button>
             </div>
         </div>
+
 
         @php
             $hasGroups = isset($groups) && $groups instanceof \Illuminate\Support\Collection && $groups->isNotEmpty();

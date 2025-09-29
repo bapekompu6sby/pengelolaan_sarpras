@@ -24,17 +24,20 @@
     @php
         $route = Route::currentRouteName();
         $role = Auth::check() ? Auth::user()->role : null;
-        // Helper: function active untuk 1/lebih pola
-        function isActive($patterns)
-        {
-            foreach ((array) $patterns as $p) {
-                if (request()->routeIs($p)) {
-                    return true;
+
+        if (!function_exists('isActive')) {
+            function isActive($patterns)
+            {
+                foreach ((array) $patterns as $p) {
+                    if (request()->routeIs($p)) {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
     @endphp
+
 
     <ul class="menu-inner py-1">
 
