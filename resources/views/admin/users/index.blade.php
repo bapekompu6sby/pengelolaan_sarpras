@@ -41,7 +41,17 @@
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bx bx-group fs-4"></i>
-                            <h5>Users</h5>
+                            <h5 class="mb-0">Users</h5>
+
+                            {{-- dorong tombol ke kanan --}}
+                            <button type="button" class="btn p-0 me-1" data-bs-toggle="modal"
+                                data-bs-target="#rolesInfoModal" aria-label="Informasi peran pengguna" title="Info peran"
+                                style="line-height:1">
+                                <i class="bx bx-info-circle" style="font-size:23px; color:#003A70;"></i>
+                            </button>
+
+
+
                         </div>
                         @if (auth()->user()->role != 'supervisor')
                             <div class="d-flex align-items-center gap-2">

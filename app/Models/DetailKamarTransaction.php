@@ -27,13 +27,18 @@ class DetailKamarTransaction extends Model
     }
 
     // Relasi ke Kamar
-    
+
     public function kamar()
     {
         return $this->belongsTo(Kamar::class, 'kamar_id');
     }
-    public function penghunis() 
-{
-    return $this->hasMany(Penghuni::class, 'detail_kamar_transaction_id');
-}
+    public function penghunis()
+    {
+        return $this->hasMany(Penghuni::class, 'detail_kamar_transaction_id');
+    }
+
+    public function penghuni()
+    {
+        return $this->hasMany(Penghuni::class, 'detail_kamar_transaction_id');
+    }
 }

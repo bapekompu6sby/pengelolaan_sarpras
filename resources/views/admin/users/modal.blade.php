@@ -209,3 +209,72 @@
         </div>
     </div>
 @endforeach
+{{-- Modal: Informasi Peran --}}
+<div class="modal fade" id="rolesInfoModal" tabindex="-1" aria-labelledby="rolesInfoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-3">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rolesInfoLabel">
+                    Informasi Peran Pengguna
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-4">
+
+                    {{-- Admin --}}
+                    <div class="col-12">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-dark rounded-pill">Admin</span>
+                            <span class="text-muted small">Hak akses penuh</span>
+                        </div>
+                        <ul class="mb-0">
+                            <li>Kelola master data (user, ruangan, kamar, peminjama).</li>
+                            <li>Kelola akun & peran pengguna.</li>
+                            <li>Lihat & ubah semua transaksi peminjaman.</li>
+                            <li>Ekspor laporan Peminjaman.</li>
+                        </ul>
+                    </div>
+                    <hr class="my-2">
+
+                    {{-- Supervisor --}}
+                    <div class="col-12">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary rounded-pill">Supervisor</span>
+                            <span class="text-muted small">Persetujuan & laporan</span>
+                        </div>
+                        <ul class="mb-0">
+                            <li>Review jadwal peminjaman.</li>
+                            <li>Review pengajuan peminjaman, pengguna, properties & kamar.</li>
+                            <li>Cetak/ekspor laporan peminjaman.</li>
+                        </ul>
+                    </div>
+
+
+                    <hr class="my-2">
+
+                    {{-- User --}}
+                    <div class="col-12">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success rounded-pill">User</span>
+                            <span class="text-muted small">Pengajuan & pelaporan</span>
+                        </div>
+                        <ul class="mb-0">
+                            <li>Mengajukan peminjaman: pilih ruangan, isi <em>instansi/kegiatan</em>, tanggal
+                                mulai–akhir.</li>
+                            <li>Mengunggah berkas pendukung (surat permohonan), melihat status pengajuan.</li>
+                            <li>Melengkapi pembayaran (jika berlaku) & unggah bukti bayar.</li>
+                            <li>Menerima surat balasan.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>

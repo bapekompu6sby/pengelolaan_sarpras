@@ -60,7 +60,7 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
                 }
 
                 // 2) TRANSAKSI APPROVED DI BULAN ITU
-                $txs = Transaction::select('name', 'instansi', 'kegiatan', 'start', 'end', 'property_id')
+                $txs = Transaction::select('name', 'instansi', 'kegiatan', 'start', 'end', 'phone_number', 'property_id')
                     ->where('status', 'approved')
                     ->whereDate('start', '<=', $end->toDateString())
                     ->whereDate('end',   '>=', $start->toDateString())
@@ -116,12 +116,17 @@ class RuanganMonthMatrixSheet implements FromCollection, WithEvents, WithTitle
                     $txStart = Carbon::parse($t->start)->max($start);
                     $txEnd   = Carbon::parse($t->end)->min($end);
 
+                    $tanggal = "Tanggal pakai: {$txStart->format('d M Y')} - {$txEnd->format('d M Y')}";
+
                     $clean = fn($v) => preg_replace('/\s+/', ' ', trim((string)$v));
 
                     $text = trim(implode("\n", array_filter([
                         'Kegiatan: ' . $clean($t->kegiatan),
                         $t->instansi ? 'Instansi: ' . $clean($t->instansi) : null,
-                        'Nama Pemesan: ' . $clean($t->name),                      
+                        'Nama Pemesan: ' . $clean($t->name),
+                        'No Telepon: ' . $clean($t->phone_number),
+                        $tanggal
+
                     ])));
 
 

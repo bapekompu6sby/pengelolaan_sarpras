@@ -90,4 +90,8 @@ class Transaction extends Model
     {
         return $this->hasMany(DetailKamarTransaction::class, 'transaction_id');
     }
+    public function detailKamarTransactions()
+    {
+        return $this->hasMany(DetailKamarTransaction::class);
+    }
 }
