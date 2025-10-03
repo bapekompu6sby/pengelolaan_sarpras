@@ -128,7 +128,7 @@
                                 <div class="prop-card rounded-0"> {{-- dibikin rata atas --}}
                                     <div class="prop-header d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center gap-3">
-                                            <img src="{{ asset('uploads/' . ($p->image_path ?? '')) }}"
+                                            <img src="{{ asset('storage/uploads/properties/covers/' . ($p->image_path ?? '')) }}"
                                                 alt="{{ $p->name }}"
                                                 style="width:77px;height:77px;object-fit:cover;object-position:center;border-radius:12px"
                                                 loading="lazy" decoding="async">
