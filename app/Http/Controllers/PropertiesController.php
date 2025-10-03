@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Models\Properties;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Models\PropertiesImage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -85,6 +87,100 @@ class PropertiesController extends Controller
         ]);
     }
 
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'name'       => 'required|string|max:32',
+    //         'type'       => 'required|string|max:10',
+    //         'capacity'   => 'required|integer|min:1|max:1000',
+    //         'room_type'  => 'nullable|string|max:50',
+    //         'area'       => 'nullable|string|max:50',
+    //         'facilities' => 'nullable|string',
+    //         'price'      => 'nullable|numeric|min:0',
+    //         'unit'       => 'nullable|integer|min:0',
+    //         'img'        => 'nullable|image|mimes:jpg,jpeg,png',
+    //     ]);
+
+    //     $data = [
+    //         'name'       => ucfirst($request->name),
+    //         'type'       => $request->type,
+    //         'capacity'   => $request->capacity,
+    //         'room_type'  => $request->room_type,
+    //         'area'       => $request->area,
+    //         'facilities' => $request->facilities,
+    //         'price'      => $request->price,
+    //         'unit'       => $request->unit ?? 0,
+    //     ];
+
+    //     if ($request->hasFile('img')) {
+    //         $file = $request->file('img');
+    //         $filename = $file->hashName(); // nama unik otomatis
+    //         $file->move(public_path('uploads'), $filename);
+    //         $data['image_path'] = $filename;
+    //     }
+
+    //     Properties::create($data);
+
+    //     return redirect()->route('properties')->with('success', 'Data berhasil ditambahkan');
+    // }
+
+
+
+    // public function update(Request $request, $id)
+    // {
+    //     $property = Properties::find($id);
+
+    //     if ($property === null) {
+    //         return redirect()->route('properties')->with('failed', 'Data tidak ditemukan');
+    //     }
+
+    //     // Validasi input
+    //     $request->validate([
+    //         'name'       => 'required|string|max:32',
+    //         'type'       => 'required|string|max:10',
+    //         'capacity'   => 'required|integer|min:1|max:1000',
+    //         'room_type'  => 'nullable|string|max:50',
+    //         'area'       => 'nullable|string|max:50',
+    //         'facilities' => 'nullable|string',
+    //         'price'      => 'nullable|numeric|min:0',
+    //         'unit'       => 'nullable|integer|min:0',
+    //         'img'        => 'nullable|image|mimes:jpg,jpeg,png',
+    //     ]);
+
+    //     // Data yang akan di-update
+    //     $updateData = [
+    //         'name'       => $request->name,
+    //         'type'       => $request->type,
+    //         'capacity'   => $request->capacity,
+    //         'room_type'  => $request->room_type,
+    //         'area'       => $request->area,
+    //         'facilities' => $request->facilities,
+    //         'price'      => $request->price,
+    //         'unit'       => $request->unit ?? 0, // default 0 kalau null
+    //     ];
+
+    //     // Kalau ada upload gambar baru
+    //     if ($request->hasFile('img')) {
+    //         // Hapus gambar lama kalau ada
+    //         if ($property->image_path && file_exists(public_path('uploads/' . $property->image_path))) {
+    //             unlink(public_path('uploads/' . $property->image_path));
+    //         }
+
+    //         // Simpan gambar baru
+    //         $file = $request->file('img');
+    //         $filename = $file->hashName(); // nama unik otomatis
+    //         $file->move(public_path('uploads'), $filename);
+    //         $updateData['image_path'] = $filename;
+    //     }
+
+
+    //     $property->update($updateData);
+
+    //     return redirect()->route('properties')->with('success', 'Data berhasil diubah');
+    // }
+
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -96,7 +192,13 @@ class PropertiesController extends Controller
             'facilities' => 'nullable|string',
             'price'      => 'nullable|numeric|min:0',
             'unit'       => 'nullable|integer|min:0',
-            'img'        => 'nullable|image|mimes:jpg,jpeg,png',
+
+            // cover (opsional)
+            'img'        => 'nullable|image|mimes:jpg,jpeg,png|max:20480',
+
+            // galeri (opsional, multiple) → untuk tombol +
+            'gallery'    => 'nullable|array|max:20',
+            'gallery.*'  => 'image|mimes:jpg,jpeg,png|max:20480',
         ]);
 
         $data = [
@@ -110,29 +212,44 @@ class PropertiesController extends Controller
             'unit'       => $request->unit ?? 0,
         ];
 
-        if ($request->hasFile('img')) {
-            $file = $request->file('img');
-            $filename = $file->hashName(); // nama unik otomatis
-            $file->move(public_path('uploads'), $filename);
-            $data['image_path'] = $filename;
-        }
+        DB::transaction(function () use ($request, &$data) {
+            // Simpan cover (nama file saja)
+            if ($request->hasFile('img')) {
+                $file = $request->file('img');
+                $name = $file->hashName();
+                $file->storeAs('uploads/properties/covers', $name, 'public');
+                $data['image_path'] = $name;
+            }
 
-        Properties::create($data);
+            /** @var Properties $property */
+            $property = Properties::create($data);
+
+            // Simpan galeri (opsional)
+            $galleryFiles = $request->file('gallery', []);
+            if (!is_array($galleryFiles)) $galleryFiles = [];
+
+            foreach ($galleryFiles as $file) {
+                $name = $file->hashName();
+                $file->storeAs('uploads/properties/gallery', $name, 'public');
+
+                PropertiesImage::create([
+                    'property_id' => $property->id,
+                    'image_path'  => $name,  // simpan NAMA file saja
+                ]);
+            }
+        });
 
         return redirect()->route('properties')->with('success', 'Data berhasil ditambahkan');
     }
 
-
-
     public function update(Request $request, $id)
     {
+        /** @var Properties|null $property */
         $property = Properties::find($id);
-
-        if ($property === null) {
+        if (!$property) {
             return redirect()->route('properties')->with('failed', 'Data tidak ditemukan');
         }
 
-        // Validasi input
         $request->validate([
             'name'       => 'required|string|max:32',
             'type'       => 'required|string|max:10',
@@ -142,41 +259,93 @@ class PropertiesController extends Controller
             'facilities' => 'nullable|string',
             'price'      => 'nullable|numeric|min:0',
             'unit'       => 'nullable|integer|min:0',
-            'img'        => 'nullable|image|mimes:jpg,jpeg,png',
+
+            // cover
+            'img'           => 'nullable|image|mimes:jpg,jpeg,png|max:20480',
+            'remove_cover'  => 'nullable|boolean', // <-- TAMBAH INI
+
+            // galeri (+ / -)
+            'gallery'       => 'nullable|array|max:20',
+            'gallery.*'     => 'image|mimes:jpg,jpeg,png|max:20480',
+            'remove_gallery' => 'nullable|array',
+            'remove_gallery.*' => 'integer',
         ]);
 
-        // Data yang akan di-update
         $updateData = [
-            'name'       => $request->name,
+            'name'       => ucfirst($request->name),
             'type'       => $request->type,
             'capacity'   => $request->capacity,
             'room_type'  => $request->room_type,
             'area'       => $request->area,
             'facilities' => $request->facilities,
             'price'      => $request->price,
-            'unit'       => $request->unit ?? 0, // default 0 kalau null
+            'unit'       => $request->unit ?? 0,
         ];
 
-        // Kalau ada upload gambar baru
-        if ($request->hasFile('img')) {
-            // Hapus gambar lama kalau ada
-            if ($property->image_path && file_exists(public_path('uploads/' . $property->image_path))) {
-                unlink(public_path('uploads/' . $property->image_path));
+        DB::transaction(function () use ($request, $property, &$updateData) {
+            /* =========================
+         * 1) COVER: ganti / hapus
+         * =======================*/
+            if ($request->hasFile('img')) {
+                // ganti cover dengan file baru
+                $newFile = $request->file('img');
+                $newName = $newFile->hashName();
+                $newFile->storeAs('uploads/properties/covers', $newName, 'public');
+
+                // hapus file lama bila ada
+                if (!empty($property->image_path)) {
+                    Storage::disk('public')->delete('uploads/properties/covers/' . $property->image_path);
+                }
+
+                $updateData['image_path'] = $newName;
+            } elseif ($request->boolean('remove_cover')) {
+                // hapus cover TANPA upload baru
+                if (!empty($property->image_path)) {
+                    Storage::disk('public')->delete('uploads/properties/covers/' . $property->image_path);
+                }
+                $updateData['image_path'] = null; // kosongkan di DB
             }
 
-            // Simpan gambar baru
-            $file = $request->file('img');
-            $filename = $file->hashName(); // nama unik otomatis
-            $file->move(public_path('uploads'), $filename);
-            $updateData['image_path'] = $filename;
-        }
+            // simpan perubahan properti
+            $property->update($updateData);
 
+            /* =========================
+         * 2) HAPUS FOTO GALERI (−)
+         * =======================*/
+            $removeIds = $request->input('remove_gallery', []);
+            if (!empty($removeIds)) {
+                // pakai nama model yang benar di project kamu: PropertiesImage atau PropertyImage
+                $imagesToDelete = \App\Models\PropertiesImage::whereIn('id', $removeIds)
+                    ->where('property_id', $property->id)
+                    ->get(['id', 'image_path']);
 
-        $property->update($updateData);
+                if ($imagesToDelete->isNotEmpty()) {
+                    Storage::disk('public')->delete(
+                        $imagesToDelete->map(fn($img) => 'uploads/properties/gallery/' . $img->image_path)->all()
+                    );
+                    \App\Models\PropertiesImage::whereIn('id', $imagesToDelete->pluck('id'))->delete();
+                }
+            }
+
+            /* =========================
+         * 3) TAMBAH FOTO GALERI (+)
+         * =======================*/
+            $galleryFiles = $request->file('gallery', []);
+            if (!is_array($galleryFiles)) $galleryFiles = [];
+
+            foreach ($galleryFiles as $file) {
+                $name = $file->hashName();
+                $file->storeAs('uploads/properties/gallery', $name, 'public');
+
+                \App\Models\PropertiesImage::create([
+                    'property_id' => $property->id,
+                    'image_path'  => $name,
+                ]);
+            }
+        });
 
         return redirect()->route('properties')->with('success', 'Data berhasil diubah');
     }
-
 
 
 
@@ -204,17 +373,16 @@ class PropertiesController extends Controller
 
     public function getPropertyById($id)
     {
-        $property = Properties::find($id);
+        // load relasi images biar ikut diserialisasi ke JSON
+        $property = Properties::with('images')->find($id);
 
         if (!$property) {
             return response()->json(['error' => 'Property not found'], 404);
         }
 
-        $user = auth()->user();
-
         return response()->json([
             'property' => $property,
-            'user' => $user,
+            'user'     => auth()->user(),
         ]);
     }
 }

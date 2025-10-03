@@ -154,7 +154,7 @@
 
                                         <td>
                                             @if (!empty($property->image_path))
-                                                <img src="{{ asset('uploads/' . $property->image_path) }}"
+                                                <img src="{{ asset('storage/uploads/properties/covers/' . $property->image_path) }}"
                                                     alt="{{ $property->name }}" width="48" height="48"
                                                     style="object-fit:cover;border-radius:8px;">
                                             @else

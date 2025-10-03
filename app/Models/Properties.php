@@ -31,7 +31,16 @@ class Properties extends Model
 
     public function kamar()
     {
+        // biarkan sesuai skema kamu yang sekarang
         return $this->hasMany(Kamar::class, 'properties_id', 'id');
     }
+
+    // ✅ Tambahkan ini: relasi 1..N ke tabel properties_image
+    public function images()
+    {
+        return $this->hasMany(PropertiesImage::class, 'property_id', 'id')
+            ->orderBy('id', 'asc');
+    }
+
     
 }

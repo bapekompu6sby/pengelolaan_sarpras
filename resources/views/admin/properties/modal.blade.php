@@ -39,7 +39,7 @@
                                     <option value="aula" @selected(old('type') === 'aula')>Aula</option>
                                     <option value="asrama" @selected(old('type') === 'asrama')>Asrama</option>
                                     <option value="paviliun" @selected(old('type') === 'paviliun')>Paviliun</option>
-                                    <option value="fasilitas" @selected(old('type') === 'fasilitas')>Fasilitas</option> 
+                                    <option value="fasilitas" @selected(old('type') === 'fasilitas')>Fasilitas</option>
                                 </select>
                                 <label for="create_type">Jenis Sarana</label>
                             </div>
@@ -98,12 +98,23 @@
                             </div>
                         </div>
 
-                        {{-- Upload Gambar --}}
+                        {{-- Upload Gambar (cover) --}}
                         <div class="col-12">
-                            <label for="create_img" class="form-label">Gambar Ruangan (opsional)</label>
+                            <label for="create_img" class="form-label">Gambar Cover (opsional)</label>
                             <input type="file" id="create_img" name="img" class="form-control"
                                 accept="image/*">
+                            <small class="text-muted">Disimpan sebagai cover utama.</small>
                         </div>
+
+                        {{-- Galeri (+ bisa banyak) --}}
+                        <div class="col-12">
+                            <label for="create_gallery" class="form-label">Galeri Foto (opsional, bisa pilih
+                                banyak)</label>
+                            <input type="file" id="create_gallery" name="gallery[]" class="form-control"
+                                accept="image/*" multiple>
+                            <small class="text-muted">JPG/PNG, max 20 MB per file.</small>
+                        </div>
+
 
                     </div>
                 </div>
@@ -228,19 +239,104 @@
                         </div>
 
                         {{-- Upload Gambar --}}
+                        {{-- ===================== Gambar & Galeri (Cover + Gallery) ===================== --}}
                         <div class="col-12">
-                            <label for="edit_img_{{ $property->id }}" class="form-label">Gambar Ruangan</label>
-                            <input type="file" id="edit_img_{{ $property->id }}" name="img"
-                                class="form-control" accept="image/*">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="mb-3">Gambar & Galeri (Usahakan 1:1)</h6>
 
-                            @if ($property->image_path)
-                                <div class="mt-3">
-                                    <img src="{{ asset('uploads/' . $property->image_path) }}" alt="Gambar Ruangan"
-                                        class="img-thumbnail rounded shadow-sm"
-                                        style="max-height: 300px; object-fit: cover;">
+                                    <div class="row g-4 align-items-start">
+                                        {{-- ================== KOLOM COVER ================== --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Cover</label>
+
+                                            {{-- Preview cover lama --}}
+                                            @if ($property->image_path)
+                                                <div class="mb-2">
+                                                    <img id="coverPreview_{{ $property->id }}"
+                                                        src="{{ asset('storage/uploads/properties/covers/' . $property->image_path) }}"
+                                                        class="img-fluid rounded border"
+                                                        style="max-height:220px;object-fit:cover;width:100%"
+                                                        alt="Cover">
+                                                </div>
+                                                {{-- Hapus cover (opsional) --}}
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        id="remove_cover_{{ $property->id }}" name="remove_cover"
+                                                        value="1">
+                                                    <label class="form-check-label"
+                                                        for="remove_cover_{{ $property->id }}">
+                                                        Hapus cover (tanpa ganti)
+                                                    </label>
+                                                </div>
+                                            @else
+                                                <div class="mb-2">
+                                                    <img id="coverPreview_{{ $property->id }}"
+                                                        src="https://via.placeholder.com/600x360?text=No+Cover"
+                                                        class="img-fluid rounded border"
+                                                        style="max-height:220px;object-fit:cover;width:100%"
+                                                        alt="Cover">
+                                                </div>
+                                            @endif
+
+                                            {{-- Upload cover baru --}}
+                                            <input type="file" id="edit_img_{{ $property->id }}" name="img"
+                                                class="form-control" accept="image/*"
+                                                onchange="previewCover_{{ $property->id }}(event)">
+                                            <small class="text-muted d-block mt-1">JPG/PNG, maks 20MB.</small>
+                                        </div>
+
+                                        {{-- ================== KOLOM GALERI ================== --}}
+                                        <div class="col-md-8">
+                                            <label class="form-label fw-semibold">Galeri</label>
+
+                                            {{-- Upload banyak (+) --}}
+                                            <input type="file" id="edit_gallery_{{ $property->id }}"
+                                                name="gallery[]" class="form-control mb-2" accept="image/*" multiple>
+                                            <small class="text-muted d-block mb-3">Pilih beberapa file sekaligus.
+                                                JPG/PNG, maks 20MB/berkas.</small>
+
+                                            {{-- Daftar galeri yang sudah ada + checkbox hapus (−) --}}
+                                            @if ($property->images->count())
+                                                <div class="d-flex flex-wrap gap-3">
+                                                    @foreach ($property->images as $img)
+                                                        <div class="border rounded p-2" style="width:150px">
+                                                            <img src="{{ asset('storage/uploads/properties/gallery/' . $img->image_path) }}"
+                                                                class="img-fluid rounded mb-2"
+                                                                style="height:90px;object-fit:cover;width:100%"
+                                                                alt="Gallery">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                    id="remove_gallery_{{ $img->id }}"
+                                                                    name="remove_gallery[]"
+                                                                    value="{{ $img->id }}">
+                                                                <label class="form-check-label small"
+                                                                    for="remove_gallery_{{ $img->id }}">
+                                                                    Hapus (−)
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <div class="text-muted">Belum ada foto galeri.</div>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
-                            @endif
+                            </div>
                         </div>
+
+                        {{-- ======= JS mini: preview cover baru ======= --}}
+                        <script>
+                            function previewCover_{{ $property->id }}(e) {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const img = document.getElementById('coverPreview_{{ $property->id }}');
+                                img.src = URL.createObjectURL(file);
+                            }
+                        </script>
+
 
                     </div>
                 </div>
@@ -335,77 +431,294 @@
 </div>
 
 
-{{-- =========================================================
-  MODAL: DETAIL PROPERTY (per property)
-  - Teks terpotong rapi, gambar responsif
-  ========================================================== --}}
+{{-- ===========================
+     modalDetail (ala Tokopedia)
+   =========================== --}}
+<style>
+    /* Header/footer ringan */
+    .tpd .modal-header {
+        border-bottom: 1px solid rgba(0, 0, 0, .06)
+    }
+
+    .tpd .modal-footer {
+        border-top: 1px solid rgba(0, 0, 0, .06)
+    }
+
+    /* Kolom kiri: galeri 1:1 always */
+    .tpd-gallery {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1/1;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f6f8fc;
+    }
+
+    .tpd-gallery .carousel,
+    .tpd-gallery .carousel-inner,
+    .tpd-gallery .carousel-item {
+        position: absolute;
+        inset: 0;
+        height: 100%
+    }
+
+    .tpd-gallery .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-radius: 0;
+        background: #f6f8fc;
+    }
+
+    .tpd-gallery .carousel-indicators,
+    .tpd-gallery .carousel-control-prev,
+    .tpd-gallery .carousel-control-next {
+        z-index: 2
+    }
+
+    /* Thumbnails */
+    .tpd-thumbs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px
+    }
+
+    .tpd-thumbs img {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background: #eef1f6;
+        cursor: pointer;
+    }
+
+    .tpd-thumbs img.active {
+        border-color: var(--bs-primary)
+    }
+
+    /* Ringkasan kanan */
+    .tpd-title {
+        font-weight: 700;
+        line-height: 1.25
+    }
+
+    .tpd-price {
+        font-weight: 800;
+        font-size: 1.25rem
+    }
+
+    .tpd-meta .badge {
+        font-weight: 600
+    }
+
+    .tpd-fac {
+        max-height: 7.5rem;
+        overflow: auto
+    }
+
+    /* Chip fasilitas (opsional, simple) */
+    .tpd-chip {
+        display: inline-block;
+        padding: .25rem .5rem;
+        border-radius: 999px;
+        background: #f1f3f5;
+        font-size: .825rem;
+        margin: .125rem .25rem .25rem 0
+    }
+
+    @media (min-width:992px) {
+        .tpd-gallery {
+            min-height: 360px
+        }
+    }
+
+    @media (max-width:991.98px) {
+        .tpd-gallery {
+            min-height: 280px
+        }
+    }
+</style>
+
+@php
+    // Kumpulkan slide: cover + galeri
+    $__slides = [];
+    if (!empty($property->image_path)) {
+        $__slides[] = asset('storage/uploads/properties/covers/' . $property->image_path);
+    }
+    if (method_exists($property, 'images')) {
+        foreach ($property->images ?? [] as $img) {
+            if (!empty($img->image_path)) {
+                $__slides[] = asset('storage/uploads/properties/gallery/' . $img->image_path);
+            }
+        }
+    }
+    if (empty($__slides)) {
+        $__slides[] = 'https://placehold.co/800x800?text=No+Image';
+    }
+    $__carouselId = 'detailCarousel-' . $property->id;
+    $__thumbsId = 'detailThumbs-' . $property->id;
+@endphp
+
 <div class="modal fade" id="modalDetail{{ $property->id }}" tabindex="-1" aria-hidden="true"
     aria-labelledby="modalDetailTitle{{ $property->id }}">
-    <div class="modal-dialog modal-dialog-centered modal-modern">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content tpd">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalDetailTitle{{ $property->id }}">
-                    Detail Properti: {{ $property->name }}
+                    {{ $property->name }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
             <div class="modal-body">
-                {{-- Gambar --}}
-                @if (!empty($property->image_path))
-                    <div class="d-flex justify-content-center mb-3">
-                        <img src="{{ asset('uploads/' . $property->image_path) }}" alt="{{ $property->name }}"
-                            class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: cover;">
-                    </div>
-                @else
-                    <span class="text-muted">No Image</span>
-                @endif
+                <div class="row g-4 align-items-stretch">
+                    {{-- KIRI: GALERI + THUMBS --}}
+                    <div class="col-12 col-lg-5 d-flex flex-column">
+                        <div class="tpd-gallery card border-0 flex-grow-1">
+                            <div id="{{ $__carouselId }}" class="carousel slide" data-bs-ride="carousel"
+                                data-bs-interval="4000" data-bs-touch="true">
+                                <div class="carousel-inner">
+                                    @foreach ($__slides as $i => $src)
+                                        <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
+                                            <img src="{{ $src }}" alt="slide-{{ $i + 1 }}">
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @if (count($__slides) > 1)
+                                    <button class="carousel-control-prev" type="button"
+                                        data-bs-target="#{{ $__carouselId }}" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Prev</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button"
+                                        data-bs-target="#{{ $__carouselId }}" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+                                    <div class="carousel-indicators">
+                                        @foreach ($__slides as $i => $src)
+                                            <button type="button" data-bs-target="#{{ $__carouselId }}"
+                                                data-bs-slide-to="{{ $i }}"
+                                                class="{{ $i === 0 ? 'active' : '' }}"
+                                                aria-label="Slide {{ $i + 1 }}"
+                                                @if ($i === 0) aria-current="true" @endif></button>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
 
-                <div class="row g-3">
-                    <div class="col-6">
-                        <strong>Tipe Ruangan:</strong><br>
-                        <span class="text-break">{{ $property->room_type ?: '-' }}</span>
-                    </div>
-                    <div class="col-6">
-                        <strong>Luas:</strong><br>
-                        {{ $property->area ?: '-' }} m²
-                    </div>
-                    <div class="col-12">
-                        <strong>Fasilitas:</strong><br>
-                        <div class="text-break" style="max-height: 6rem; overflow-y: auto;">
-                            {{ $property->facilities ?: '-' }}
+                            {{-- Thumbnails --}}
+                            @if (count($__slides) > 1)
+                                <div class="tpd-thumbs mt-2" id="{{ $__thumbsId }}">
+                                    @foreach ($__slides as $i => $src)
+                                        <img src="{{ $src }}" alt="thumb-{{ $i + 1 }}"
+                                            class="{{ $i === 0 ? 'active' : '' }}" data-to="{{ $i }}">
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                     </div>
-                    <div class="col-6">
-                        <strong>Harga:</strong><br>
-                        {{ $property->price ? 'Rp ' . number_format($property->price, 0, ',', '.') : '-' }}
-                    </div>
-                    <div class="col-6">
-                        <strong>Unit:</strong><br>
-                        <span class="text-break">{{ $property->unit }}</span>
-                    </div>
-                    <div class="col-6">
-                        <strong>Jenis Ruangan:</strong><br>
-                        <span class="badge bg-brand">{{ ucfirst($property->type) }}</span>
-                    </div>
-                    <div class="col-6">
-                        <strong>Kapasitas:</strong><br>
-                        <span class="badge bg-success">{{ $property->capacity }} orang</span>
-                    </div>
-                    <div class="col-6">
-                        <strong>Dibuat pada:</strong><br>
-                        {{ optional($property->created_at)->format('d M Y H:i') ?: '-' }}
-                    </div>
-                    <div class="col-6">
-                        <strong>Diperbarui:</strong><br>
-                        {{ optional($property->updated_at)->format('d M Y H:i') ?: '-' }}
+
+                    {{-- KANAN: RINGKASAN + DETAIL --}}
+                    <div class="col-12 col-lg-7">
+                        <div class="d-flex flex-column h-100">
+                            <div class="mb-3">
+                                <div class="tpd-title h4 mb-2">{{ $property->name }}</div>
+
+                                <div class="tpd-meta d-flex flex-wrap gap-2">
+                                    <span class="badge bg-label-primary">{{ ucfirst($property->type ?? '-') }}</span>
+                                    <span class="badge bg-label-secondary">Kapasitas ±
+                                        {{ $property->capacity ?? '-' }}</span>
+                                    <span class="badge bg-label-info">Luas {{ $property->area ?? '-' }} m²</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="text-muted small mb-1"><strong>Fasilitas</strong></div>
+                                @php
+                                    $facStr = trim((string) $property->facilities);
+                                    $facArr = $facStr !== '' ? preg_split('/\s*,\s*/', $facStr) : [];
+                                @endphp
+                                @if (!empty($facArr))
+                                    <div class="tpd-fac">
+                                        @foreach ($facArr as $f)
+                                            @if ($f !== '')
+                                                <span class="tpd-chip">{{ $f }}</span>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="text-muted">-</div>
+                                @endif
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                <div class="tpd-price">
+                                    {{ $property->price ? 'Rp ' . number_format($property->price, 0, ',', '.') : 'Rp 0' }}
+                                    <small class="text-muted fw-normal">/ hari</small>
+                                </div>
+                                
+                            </div>
+
+                            <div class="row g-3 small text-muted">
+                                {{-- unit --}}
+                                <div class="col-6">
+                                    <div class="fw-semibold">Unit</div>
+                                    <div>{{ $property->unit ?: '-' }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-semibold">Tipe Ruangan</div>
+                                    <div>{{ $property->room_type ?: '-' }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-semibold">Dibuat</div>
+                                    <div>{{ optional($property->created_at)->format('d M Y H:i') ?: '-' }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-semibold">Status</div>
+                                    <div>{{ ucfirst($property->status ?? '-') }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-semibold">Diperbarui</div>
+                                    <div>{{ optional($property->updated_at)->format('d M Y H:i') ?: '-' }}</div>
+                                </div>
+                            </div>
+
+                            {{-- Aksi (opsional) --}}
+                            <div class="mt-4 d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary"
+                                    data-bs-dismiss="modal">Tutup</button>
+                                {{-- Bisa tambahkan tombol "Edit" / "Pesan" lain jika perlu --}}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-modern" data-bs-dismiss="modal">Tutup</button>
-            </div>
+            </div> {{-- /modal-body --}}
         </div>
     </div>
 </div>
+
+{{-- JS kecil: sinkronkan thumbnail & carousel --}}
+<script>
+    (function() {
+        const cid = "{{ $__carouselId }}";
+        const tid = "{{ $__thumbsId }}";
+        const gal = document.getElementById(cid);
+        const ths = document.getElementById(tid);
+
+        if (gal && ths) {
+            const inst = bootstrap.Carousel.getOrCreateInstance(gal);
+            // klik thumbnail -> pindah slide
+            ths.querySelectorAll('img[data-to]').forEach((img, i) => {
+                img.addEventListener('click', () => inst.to(i));
+            });
+            // update kelas active di thumb saat slide berganti
+            gal.addEventListener('slid.bs.carousel', (e) => {
+                const idx = e.to;
+                ths.querySelectorAll('img').forEach((im, j) => im.classList.toggle('active', j === idx));
+            });
+        }
+    })();
+</script>

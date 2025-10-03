@@ -9,6 +9,7 @@
 @section('head')
     <link href="{{ asset('/assets/vendor/libs/datatables/datatables.min.css') }}" rel="stylesheet">
     <style>
+        /* ikon & info */
         .icon-brand {
             color: #003A70 !important;
         }
@@ -25,13 +26,13 @@
             flex-shrink: 0;
         }
 
-        /* Kartu properti */
+        /* Kartu */
         .property-card {
             border-radius: 16px;
             overflow: hidden;
+            /* cegah elemen di dalam keluar (garis biru gak tembus ke sidebar) */
             transition: transform .22s ease, box-shadow .22s ease;
             box-shadow: 0 8px 20px rgba(0, 0, 0, .06);
-            will-change: transform;
             border: 1px solid rgba(0, 0, 0, .06);
         }
 
@@ -40,94 +41,103 @@
             box-shadow: 0 16px 36px rgba(0, 0, 0, .12);
         }
 
-        /* 📱 MOBILE (default) - gambar 4:3, rounded atas, tanpa shadow */
+        /* Frame gambar (hanya frame ini yang ngatur sudut & strip biru) */
+        /* Frame gambar tetap kotak & yang motong sudut kiri */
         .img-frame {
             position: relative;
+            isolation: isolate;
             width: 100%;
             aspect-ratio: 4 / 3;
-            border-radius: 16px 16px 0 0;
+            /* mobile */
             overflow: hidden;
             background: #f6f8fc;
-            box-shadow: none;
-            border-bottom: none;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .06);
         }
 
-        .img-frame img {
+        @media (min-width:768px) {
+            .img-frame {
+                aspect-ratio: 1 / 1;
+                border-radius: 16px 0 0 16px;
+            }
+        }
+
+        /* PENTING: semua parent carousel harus punya height:100% */
+        .img-frame .carousel,
+        .img-frame .carousel-inner,
+        .img-frame .carousel-item {
+            height: 100%;
+        }
+
+        /* Paksa gambar selalu penuh (tanpa space) */
+        .img-frame .carousel-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            /* penuh, crop jika perlu */
             display: block;
-            transition: transform .22s ease;
         }
 
-        /* Bar biru: MOBILE di ATAS */
+        /* Hilangkan radius di dalam carousel biar sisi kanan tetap rata */
+        .img-frame .carousel,
+        .img-frame .carousel-inner,
+        .img-frame .carousel-item,
+        .img-frame .carousel-item img {
+            border-radius: 0 !important;
+        }
+
+        /* Strip biru: mobile di atas, desktop di kiri */
         .img-frame::before {
             content: "";
             position: absolute;
+            z-index: 1;
             left: 0;
             right: 0;
             top: 0;
-            height: 6px;
+            height: 10px;
             background: var(--pupr-blue, #003A70);
             box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .06);
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
-            transition: height .22s ease, width .22s ease, opacity .22s ease;
+            transition: height .2s ease, width .2s ease, opacity .2s ease;
+            pointer-events: none;
         }
 
-        /* 💻 DESKTOP/TABLET (≥768px) - 1:1, rounded kiri saja, bar di kiri */
-        @media (min-width: 768px) {
-            .img-frame {
-                aspect-ratio: 1 / 1;
-                border-radius: 16px 0 0 16px;
-                /* ⬅️ kiri atas & kiri bawah bulat, kanan rata */
-                box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
-            }
-
+        @media (min-width:768px) {
             .img-frame::before {
                 top: 0;
                 bottom: 0;
                 left: 0;
                 right: auto;
+                width: 10px;
                 height: auto;
-                width: 6px;
-                /* bar di kiri */
+                border-radius: 16px 0 0 16px;
                 box-shadow: inset -1px 0 0 rgba(0, 0, 0, .06);
-                border-top-left-radius: 16px;
-                border-bottom-left-radius: 16px;
-                border-top-right-radius: 0;
-                border-bottom-right-radius: 0;
             }
         }
 
+        /* Layering aman: strip di atas gambar, controls/indicators di atas strip */
+        .img-frame .carousel {
+            position: relative;
+            z-index: 0;
+        }
 
-        /* Hover: bar menghilang + foto zoom */
+        .img-frame .carousel-indicators,
+        .img-frame .carousel-control-prev,
+        .img-frame .carousel-control-next {
+            z-index: 2;
+        }
+
+        /* Hover: hilangkan strip biru */
         .property-card:hover .img-frame::before {
             height: 0;
             opacity: 0;
         }
 
-        /* mobile */
         @media (min-width:768px) {
             .property-card:hover .img-frame::before {
                 width: 0;
                 opacity: 0;
-            }
-
-            /* desktop */
-        }
-
-        .property-card:hover .img-frame img {
-            transform: scale(1.05);
-        }
-
-        /* Reduce motion */
-        @media (prefers-reduced-motion:reduce) {
-
-            .property-card,
-            .img-frame::before,
-            .img-frame img {
-                transition: none;
             }
         }
     </style>
@@ -175,12 +185,75 @@
 
                                 <div class="row g-0">
 
+                                    @php
+                                        // Kumpulkan semua slide: cover + galeri
+                                        $slides = [];
+                                        if (!empty($property->image_path)) {
+                                            $slides[] = asset(
+                                                'storage/uploads/properties/covers/' . $property->image_path,
+                                            );
+                                        }
+                                        foreach ($property->images as $img) {
+                                            $slides[] = asset('storage/uploads/properties/gallery/' . $img->image_path);
+                                        }
+                                        // Fallback placeholder kalau kosong
+                                        if (empty($slides)) {
+                                            $slides[] = 'https://placehold.co/800x450?text=No+Image';
+                                        }
+
+                                        $carouselId = 'propCarousel-' . $property->id;
+                                    @endphp
+
                                     <div class="col-md-4 d-flex justify-content-center align-items-center">
-                                        <div class="img-frame">
-                                            <img src="{{ $property->image_path ? asset('uploads/' . $property->image_path) : 'https://placehold.co/400?text=No+Image' }}"
-                                                alt="{{ $property->name ?? 'No image' }}">
+                                        <div class="w-100">
+                                            <div class="img-frame"> {{-- ⬅️ Tambah wrapper --}}
+                                                <div id="{{ $carouselId }}" class="carousel slide" data-bs-ride="carousel"
+                                                    data-bs-interval="3000" data-bs-pause="hover" data-bs-touch="true">
+
+                                                    @if (count($slides) > 1)
+                                                        <div class="carousel-indicators">
+                                                            @foreach ($slides as $i => $src)
+                                                                <button type="button" data-bs-target="#{{ $carouselId }}"
+                                                                    data-bs-slide-to="{{ $i }}"
+                                                                    @class(['active' => $i === 0])
+                                                                    aria-current="{{ $i === 0 ? 'true' : 'false' }}"
+                                                                    aria-label="Slide {{ $i + 1 }}"></button>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+
+                                                    <div class="carousel-inner">
+                                                        @foreach ($slides as $i => $src)
+                                                            <div
+                                                                class="carousel-item @if ($i === 0) active @endif">
+                                                                <img src="{{ $src }}" class="d-block w-100"
+                                                                    alt="{{ $property->name ?? 'Property image' }}"
+                                                                    @if ($i > 0) loading="lazy" @endif>
+
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+
+                                                    @if (count($slides) > 1)
+                                                        <button class="carousel-control-prev" type="button"
+                                                            data-bs-target="#{{ $carouselId }}" data-bs-slide="prev">
+                                                            <span class="carousel-control-prev-icon"
+                                                                aria-hidden="true"></span>
+                                                            <span class="visually-hidden">Previous</span>
+                                                        </button>
+                                                        <button class="carousel-control-next" type="button"
+                                                            data-bs-target="#{{ $carouselId }}" data-bs-slide="next">
+                                                            <span class="carousel-control-next-icon"
+                                                                aria-hidden="true"></span>
+                                                            <span class="visually-hidden">Next</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+
+
 
 
 
@@ -371,6 +444,76 @@
                 });
         });
     </script>
+    <script>
+        // Kumpulkan semua URL gambar dari response API-mu
+        function buildSlidesFromData(data) {
+            const slides = [];
+            if (data?.property?.image_path) {
+                slides.push(`/storage/uploads/properties/covers/${data.property.image_path}`);
+            }
+            if (Array.isArray(data?.property?.images)) {
+                data.property.images.forEach(img => {
+                    if (img?.image_path) slides.push(`/storage/uploads/properties/gallery/${img.image_path}`);
+                });
+            }
+            return slides.length ? slides : ['https://placehold.co/800x600?text=No+Image'];
+        }
+
+        // Render galeri + indikator + thumbnails
+        function renderModalGallery(slides) {
+            const inner = document.getElementById('modalGalleryInner');
+            const indc = document.getElementById('modalGalleryIndicators');
+            const thumbs = document.getElementById('modalGalleryThumbs');
+            const gallery = document.getElementById('modalGallery');
+
+            inner.innerHTML = '';
+            indc.innerHTML = '';
+            thumbs.innerHTML = '';
+
+            slides.forEach((src, i) => {
+                inner.insertAdjacentHTML('beforeend',
+                    `<div class="carousel-item ${i===0?'active':''}">
+           <img src="${src}" alt="slide-${i+1}">
+         </div>`
+                );
+                indc.insertAdjacentHTML('beforeend',
+                    `<button type="button" data-bs-target="#modalGallery" data-bs-slide-to="${i}"
+                 class="${i===0?'active':''}" ${i===0?'aria-current="true"':''}
+                 aria-label="Slide ${i+1}"></button>`
+                );
+                const th = document.createElement('img');
+                th.src = src;
+                th.alt = `thumb-${i+1}`;
+                if (i === 0) th.classList.add('active');
+                th.onclick = () => bootstrap.Carousel.getOrCreateInstance(gallery).to(i);
+                thumbs.appendChild(th);
+            });
+
+            gallery.addEventListener('slid.bs.carousel', (e) => {
+                const idx = e.to;
+                thumbs.querySelectorAll('img').forEach((img, j) => img.classList.toggle('active', j === idx));
+            }, {
+                once: false
+            });
+        }
+
+        // Isi ringkasan kecil di sisi kiri
+        function renderModalSummary(data) {
+            const p = data?.property ?? {};
+            document.getElementById('tpSumName').textContent = p.name ?? '—';
+            document.getElementById('tpSumType').textContent = (p.type ?? '—').toUpperCase();
+            const cap = p.capacity ? `± ${Number(p.capacity).toLocaleString('id-ID')} orang` : '—';
+            document.getElementById('tpSumCapacity').textContent = `Kapasitas ${cap}`;
+
+            document.getElementById('tpSumArea').textContent = `Luas ${p.area ?? '—'} m²`;
+            document.getElementById('tpSumFacilities').textContent = p.facilities ?? '—';
+            const price = (parseInt(p.price) || 0).toLocaleString('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            });
+            document.getElementById('tpSumPrice').textContent = price;
+        }
+    </script>
 
     <script>
         // Fungsi hitung total harga
@@ -417,6 +560,7 @@
             if (window.currentPrice) calculateTotal(window.currentPrice);
         });
 
+
         // Saat fetch data properti selesai dan modal terbuka, set harga per hari dan hitung total awal
         document.querySelectorAll('.btn-pesan').forEach(button => {
             button.addEventListener('click', function() {
@@ -454,6 +598,11 @@
                         modal.querySelector('#start').value = '';
                         modal.querySelector('#end').value = '';
                         modal.querySelector('#ordered_unit').value = 1;
+
+                        const slides = buildSlidesFromData(data);
+                        renderModalGallery(slides);
+                        renderModalSummary(data);
+
 
                         // Reset total harga
                         document.getElementById('total_price').innerText = 'Rp 0';
