@@ -2,7 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,4 +23,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // =============== EVENTS API ================================
 Route::get('/events', [TransactionController::class, 'events']);
+
+Route::get('/api/events', [DashboardController::class, 'show_event']);
 // Route::get('/check', [TransactionController::class, 'check_available_ruangan']);

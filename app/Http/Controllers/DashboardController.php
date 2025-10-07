@@ -137,4 +137,23 @@ class DashboardController extends Controller
             'events' => $events,
         ]);
     }
+
+    public function show_event()
+    {
+        $today = now('Asia/Jakarta')->toDateString();
+
+        $events = Transaction::where('status', 'approved')
+            ->where(function ($q) use ($today) {
+                $q->where(function ($q2) use ($today) {
+
+                    $q2->where('start', '<=', $today)
+                        ->where('end', '>=', $today);
+                });
+            })
+            ->orderBy('start', 'desc')
+            ->take(10)
+            ->get();
+
+        return response()->json($events);
+    }
 }
