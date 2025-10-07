@@ -127,7 +127,7 @@
                                 // Tentukan sumber gambar (URL absolut, file lokal di /public/uploads, atau placeholder)
                                 $imgPath = $t->properties->image_path ?? '';
                                 $isUrl = \Illuminate\Support\Str::startsWith($imgPath, ['http://', 'https://']);
-                                $local = public_path('uploads/properties/covers/' . ltrim($imgPath, '/'));
+                                $local = public_path('storage/uploads/properties/covers/' . ltrim($imgPath, '/'));
                                 $img = $imgPath
                                     ? ($isUrl
                                         ? $imgPath
