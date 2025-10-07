@@ -44,10 +44,10 @@
                                 </a>
                             @endif
 
-                            <a href="{{ route('transactions.ruangan.export') }}" class="btn btn-success btn-modern"
+                            {{-- <a href="{{ route('transactions.ruangan.export') }}" class="btn btn-success btn-modern"
                                 data-bs-toggle="tooltip" data-bs-placement="top" title="Export ke Excel">
                                 <span class="tf-icons bx bx-cloud-download bx-sm"></span>
-                            </a>
+                            </a> --}}
                         </div>
                     </div>
 
@@ -132,7 +132,7 @@
                                     ? ($isUrl
                                         ? $imgPath
                                         : (file_exists($local)
-                                            ? asset('uploads/' . ltrim($imgPath, '/'))
+                                            ? asset('storage/uploads/properties/covers/' . ltrim($imgPath, '/'))
                                             : 'https://placehold.co/800x450?text=No+Image'))
                                     : 'https://placehold.co/800x450?text=No+Image';
                             @endphp
