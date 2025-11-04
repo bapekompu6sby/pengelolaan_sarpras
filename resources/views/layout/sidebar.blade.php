@@ -42,9 +42,9 @@
     <ul class="menu-inner py-1">
 
         {{-- Dashboard --}}
-        @php $isDash = isActive('dashboard'); @endphp
+        @php $isDash = isActive('home'); @endphp
         <li class="menu-item {{ $isDash ? 'active' : '' }}">
-            <a href="{{ route('dashboard') }}" class="menu-link" {{ $isDash ? 'aria-current=page' : '' }}>
+            <a href="{{ route('home') }}" class="menu-link" {{ $isDash ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
                 <div>Dashboard</div>
             </a>

@@ -2,16 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
-use App\Http\Controllers\CustomerServiceController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DetailTransactionController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KamarController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PropertiesController;
-use App\Http\Controllers\PropertiesControllerAsUser;
-use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PropertiesController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CustomerServiceController;
+use App\Http\Controllers\PropertiesControllerAsUser;
+use App\Http\Controllers\DetailTransactionController;
+use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +26,10 @@ use App\Http\Controllers\UsersController;
 | PUBLIC (tanpa autentikasi)
 |===================================================================== */
 
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/bukuPanduan', [DashboardController::class, 'bukuPanduan'])->name('bukuPanduan');
 Route::post('/customer_service/send', [CustomerServiceController::class, 'sendToWhatsapp'])->name('customer_service.send');
 Route::get('/tabelKegiatan', [DashboardController::class, 'tabelKegiatan'])->name('tabelKegiatan');
@@ -50,7 +54,7 @@ Route::middleware('auth')->group(function () {
                 Route::post('/store', [TransactionController::class, 'bookingStore'])->name('bookings.store');
         });
 
-        
+
 
         /* --------------------------------------------------------------
     | Transactions (umum – user login)
@@ -98,6 +102,11 @@ Route::middleware('auth')->group(function () {
     | ADMIN-ONLY
     |-------------------------------------------------------------- */
         Route::middleware('checkRole:admin | supervisor')->group(function () {
+
+                Route::get('/dashboardAdmin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
+
+                Route::get('/export/tahunan', [DashboardController::class, 'exportPerTahun'])->name('export.perTahun');
+
 
                 Route::get('bedroomsUse/export', [KamarController::class, 'bedroomsUse_export_matrix'])->name('bedroomsUse.export.matrix'); // /export/bedroomsUse-matrix
 
