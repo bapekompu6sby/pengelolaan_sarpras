@@ -186,18 +186,24 @@ class DashboardController extends Controller
 
         // Formatter aman untuk "Bulan Tahun"
         $fmtMY = function (\Carbon\Carbon $c) {
-            // Kalau Carbon v2 + locale id tersedia
-            if (method_exists($c, 'isoFormat')) {
-                return $c->locale('id')->isoFormat('MMMM YYYY'); // contoh: "November 2025"
+            try {
+                return method_exists($c, 'isoFormat')
+                    ? $c->locale('id')->isoFormat('MMMM YYYY')
+                    : $c->format('F Y');
+            } catch (\Throwable $e) {
+                return $c->format('F Y');
             }
-            // Fallback universal (Inggris)
-            return $c->format('F Y');
         };
+
 
         // ====== PERIODE HITUNG ======
         if ($useRange) {
             // Mode rentang bulan
-            $startMonthStr = $request->get('start_month', now()->format('Y-m')); // "YYYY-MM"
+            $startMonthStr = $request->get('start_month');
+            if (!$startMonthStr || !preg_match('/^\d{4}-\d{2}$/', $startMonthStr)) {
+                $startMonthStr = now()->format('Y-m');
+            }
+
             $endMonthStr   = $request->get('end_month', $startMonthStr);
 
             $startMonth = \Carbon\Carbon::createFromFormat('Y-m', $startMonthStr)->startOfMonth();
