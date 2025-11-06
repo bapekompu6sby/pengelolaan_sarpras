@@ -161,16 +161,14 @@ class DashboardController extends Controller
         return response()->json($events);
     }
 
-
     public function dashboardAdmin(Request $request)
     {
         // ====== FILTERS ======
-        // Robust: jangan andalkan boolean() (beda versi Laravel), pakai cek string "1"
         $useRange = $request->has('use_range') && (string)$request->get('use_range') === '1';
         $year  = (int) $request->get('year', now()->year);
         $month = (int) $request->get('month', 0); // 0 = semua bulan
 
-        // Daftar tahun (fallback 5 tahun terakhir kalau kosong)
+        // ====== Tahun (fallback 5 tahun terakhir) ======
         $years = Transaction::query()
             ->selectRaw('YEAR(`start`) as y')
             ->whereNotNull('start')
@@ -184,52 +182,35 @@ class DashboardController extends Controller
             $years = range($yNow, $yNow - 4);
         }
 
-        // Formatter aman untuk "Bulan Tahun"
-        $fmtMY = function (\Carbon\Carbon $c) {
-            try {
-                return method_exists($c, 'isoFormat')
-                    ? $c->locale('id')->isoFormat('MMMM YYYY')
-                    : $c->format('F Y');
-            } catch (\Throwable $e) {
-                return $c->format('F Y');
-            }
-        };
-
+        // ====== Formatter aman (tanpa locale) ======
+        $fmtMY = fn($c) => $c->format('F Y');
 
         // ====== PERIODE HITUNG ======
         if ($useRange) {
-            // Mode rentang bulan
             $startMonthStr = $request->get('start_month');
             if (!$startMonthStr || !preg_match('/^\d{4}-\d{2}$/', $startMonthStr)) {
                 $startMonthStr = now()->format('Y-m');
             }
 
-            $endMonthStr   = $request->get('end_month', $startMonthStr);
-
+            $endMonthStr = $request->get('end_month', $startMonthStr);
             $startMonth = \Carbon\Carbon::createFromFormat('Y-m', $startMonthStr)->startOfMonth();
             $endMonth   = \Carbon\Carbon::createFromFormat('Y-m', $endMonthStr)->endOfMonth();
 
             // Tukar kalau kebalik
             if ($endMonth->lt($startMonth)) {
-                [$startMonth, $endMonth] = [
-                    $endMonth->copy()->startOfMonth(),
-                    $startMonth->copy()->endOfMonth()
-                ];
+                [$startMonth, $endMonth] = [$endMonth->copy()->startOfMonth(), $startMonth->copy()->endOfMonth()];
             }
 
             $periodStart = $startMonth->copy()->startOfDay();
             $periodEnd   = $endMonth->copy()->endOfDay();
 
-            // Label periode
             $periodLabel = $startMonth->isSameMonth($endMonth)
                 ? $fmtMY($startMonth)
                 : $fmtMY($startMonth) . ' – ' . $fmtMY($endMonth);
 
-            // Kompatibilitas UI lama
             $month = 0;
             $year  = $startMonth->year;
         } else {
-            // Mode tahun/bulan tunggal
             if ($month >= 1 && $month <= 12) {
                 $periodStart = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
                 $periodEnd   = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
@@ -262,108 +243,77 @@ class DashboardController extends Controller
             ];
         }
 
-        // ====== HITUNG HARI TERPESAN (approved) DI PERIODE (overlap) ======
+        // ====== HITUNG HARI TERPESAN ======
+        // (tanpa LEAST/GREATEST agar aman di MariaDB lawas)
         $counts = Transaction::query()
             ->join('properties', 'properties.id', '=', 'transactions.property_id')
             ->where('transactions.status', 'approved')
             ->whereDate('transactions.start', '<=', $periodEnd->toDateString())
-            ->whereDate('transactions.end',   '>=', $periodStart->toDateString())
+            ->whereDate('transactions.end', '>=', $periodStart->toDateString())
             ->selectRaw("
             LOWER(properties.type) as prop_type,
             properties.id as property_id,
             SUM(
-                CASE
-                    WHEN LEAST(transactions.`end`, ?) < GREATEST(transactions.`start`, ?) THEN 0
-                    ELSE DATEDIFF(LEAST(transactions.`end`, ?), GREATEST(transactions.`start`, ?)) + 1
+                CASE 
+                    WHEN transactions.`end` < transactions.`start` THEN 0
+                    ELSE DATEDIFF(transactions.`end`, transactions.`start`) + 1
                 END
             ) as total_days
-        ", [
-                $periodEnd->toDateString(),
-                $periodStart->toDateString(),
-                $periodEnd->toDateString(),
-                $periodStart->toDateString()
-            ])
+        ")
             ->groupBy('prop_type', 'property_id')
             ->get();
 
         foreach ($counts as $row) {
             $t = $row->prop_type;
             if (!isset($charts[$t])) continue;
-
             $idx = array_search((int)$row->property_id, $charts[$t]['ids'], true);
             if ($idx !== false) {
                 $charts[$t]['data'][$idx] = (int) $row->total_days;
             }
         }
 
-        // Bersihkan mapping id sebelum dikirim ke JS
-        foreach ($charts as $k => $v) {
-            unset($charts[$k]['ids']);
-        }
+        foreach ($charts as $k => $v) unset($charts[$k]['ids']);
 
-        // ====== ITEMS TERBARU (opsional) ======
+        // ====== DATA TAMBAHAN ======
         $items = Transaction::with('properties')
             ->where('status', 'approved')
             ->latest('start')
             ->take(10)
             ->get();
 
-        // ====== STOCK & TERSEDIA HARI INI ======
         $today = now()->toDateString();
 
-        $aulaStock = Properties::where('type', 'aula')->sum('unit');
-        $aulaNotAvailable = Transaction::whereHas('properties', fn($q) => $q->where('type', 'aula'))
-            ->where('start', '<=', $today)
-            ->where('end',   '>=', $today)
-            ->where('status', 'approved')
-            ->sum('ordered_unit');
-        $availableAula = $aulaStock - $aulaNotAvailable;
+        // === Stock & Tersedia ===
+        $checkAvailable = function ($type) use ($today) {
+            $stock = Properties::where('type', $type)->sum('unit');
+            $notAvail = Transaction::whereHas('properties', fn($q) => $q->where('type', $type))
+                ->where('start', '<=', $today)
+                ->where('end', '>=', $today)
+                ->where('status', 'approved')
+                ->sum('ordered_unit');
+            return [$stock, $stock - $notAvail, $notAvail];
+        };
 
-        $kelasStock = Properties::where('type', 'kelas')->sum('unit');
-        $kelasNotAvailable = Transaction::whereHas('properties', fn($q) => $q->where('type', 'kelas'))
-            ->where('start', '<=', $today)
-            ->where('end',   '>=', $today)
-            ->where('status', 'approved')
-            ->sum('ordered_unit');
-        $availableKelas = $kelasStock - $kelasNotAvailable;
+        [$aulaStock, $availableAula, $aulaNotAvailable] = $checkAvailable('aula');
+        [$kelasStock, $availableKelas, $kelasNotAvailable] = $checkAvailable('kelas');
+        [$asramaStock, $availableAsrama, $asramaNotAvailable] = $checkAvailable('asrama');
+        [$paviliunStock, $availablePaviliun, $paviliunNotAvailable] = $checkAvailable('paviliun');
 
-        $asramaStock = Properties::where('type', 'asrama')->sum('unit');
-        $asramaNotAvailable = Transaction::whereHas('properties', fn($q) => $q->where('type', 'asrama'))
-            ->where('start', '<=', $today)
-            ->where('end',   '>=', $today)
-            ->where('status', 'approved')
-            ->sum('ordered_unit');
-        $availableAsrama = $asramaStock - $asramaNotAvailable;
-
-        $paviliunStock = Properties::where('type', 'paviliun')->sum('unit');
-        $paviliunNotAvailable = Transaction::whereHas('properties', fn($q) => $q->where('type', 'paviliun'))
-            ->where('status', 'approved')
-            ->where(function ($q) use ($today) {
-                $q->whereDate('start', '<=', $today)
-                    ->whereDate('end',   '>=', $today);
-            })
-            ->sum('ordered_unit');
-        $availablePaviliun = $paviliunStock - $paviliunNotAvailable;
-
-        // ====== EVENTS (opsional) ======
+        // ====== EVENTS ======
         $events = Transaction::where('status', 'approved')
             ->where(function ($q) use ($today) {
-                $q->where(function ($q2) use ($today) {
-                    $q2->where('start', '<=', $today)
-                        ->where('end',   '>=', $today);
-                });
+                $q->where('start', '<=', $today)->where('end', '>=', $today);
             })
             ->orderBy('start', 'desc')
             ->take(10)
             ->get();
 
-        // ====== RETURN VIEW (tanpa duplikat key) ======
+        // ====== RETURN VIEW ======
         return view('admin.dashboard', [
             'charts'               => $charts,
             'types'                => $typesWanted,
             'periodLabel'          => $periodLabel,
             'useRange'             => $useRange,
-
             'year'                 => $year,
             'years'                => $years,
             'month'                => $month,
@@ -382,7 +332,6 @@ class DashboardController extends Controller
                 11 => 'Nov',
                 12 => 'Des',
             ],
-
             'availableAula'        => $availableAula,
             'availableKelas'       => $availableKelas,
             'availableAsrama'      => $availableAsrama,
@@ -399,6 +348,7 @@ class DashboardController extends Controller
             'items'                => $items,
         ]);
     }
+
 
 
 
