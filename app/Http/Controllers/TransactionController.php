@@ -303,7 +303,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     public function transactionUpdate(Request $request, $id)
     {
         try {
-            $validated = $request->validate([
+            // 1) Validasi dasar (tanpa jam)
+            $baseRules = [
                 'user_id'          => 'required|integer',
                 'office'           => 'required|string|max:150',
                 'affiliation'      => 'required|string|in:internal_pu,external_pu',
@@ -314,8 +315,6 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'description'      => 'nullable|string',
                 'start'            => 'required|date',
                 'end'              => 'required|date|after_or_equal:start',
-                'jam_start'        => 'nullable|date_format:H:i',
-                'jam_end'          => 'nullable|date_format:H:i|after_or_equal:jam_start',
                 'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
                 'rejection_reason' => 'nullable|string|max:255|required_if:status,rejected',
                 'total_harga'      => 'required|numeric|min:0',
@@ -325,18 +324,44 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'payment_receipt'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
                 'request_letter'   => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
                 'response_letter'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:20480',
-            ], [
+            ];
+
+            // Validasi dulu supaya bisa baca ruangan_id dengan aman
+            $validatedBase = $request->validate($baseRules, [
                 'office.max' => 'Nama instansi terlalu panjang (maks 150 karakter).',
             ]);
 
-            DB::transaction(function () use ($request, $validated, $id) {
+            // 2) Cek tipe properti dari ruangan_id
+            $prop = Properties::findOrFail($validatedBase['ruangan_id']);
+            $isFasilitas = strtolower($prop->type) === 'fasilitas';
+
+            // 3) Tambah validasi JAM sesuai tipe
+            //    - Kalau fasilitas: wajib isi & format H:i (kalau tidak lintas tengah malam: pakai after_or_equal)
+            //    - Selain itu: nullable
+            $jamRules = $isFasilitas
+                ? [
+                    'jam_start' => ['required', 'date_format:H:i'],
+                    'jam_end'   => ['required', 'date_format:H:i', 'after_or_equal:jam_start'],
+                ]
+                : [
+                    'jam_start' => ['nullable'],
+                    'jam_end'   => ['nullable'],
+                ];
+
+            $validatedJam = $request->validate($jamRules);
+
+            // Gabungkan
+            $validated = array_merge($validatedBase, $validatedJam);
+
+            DB::transaction(function () use ($request, $validated, $id, $isFasilitas) {
                 $transaction = Transaction::findOrFail($id);
 
-                $paymentReceipt = $request->old_payment_receipt ?? $transaction->payment_receipt;
-                $requestLetter  = $request->old_request_letter  ?? $transaction->request_letter;
-                $responseLetter = $request->old_response_letter ?? $transaction->response_letter;
-                $billingQr      = $request->old_billing_qr      ?? $transaction->billing_qr;
-                $billingCode    = $transaction->billing_code;
+                // === File lama (fallback) ===
+                $paymentReceipt  = $request->old_payment_receipt ?? $transaction->payment_receipt;
+                $requestLetter   = $request->old_request_letter  ?? $transaction->request_letter;
+                $responseLetter  = $request->old_response_letter ?? $transaction->response_letter;
+                $billingQr       = $request->old_billing_qr      ?? $transaction->billing_qr;
+                $billingCode     = $transaction->billing_code;
                 $rejectionReason = $transaction->rejection_reason;
 
                 if ($request->hasFile('payment_receipt')) {
@@ -361,28 +386,35 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                     $rejectionReason = $validated['rejection_reason'];
                 }
 
+                // 4) Set nilai JAM:
+                //    - Jika fasilitas → pakai input (fallback ke lama jika perlu)
+                //    - Jika bukan fasilitas → null-kan pasti
+                $jamStart = $isFasilitas ? ($validated['jam_start'] ?? $transaction->jam_start) : null;
+                $jamEnd   = $isFasilitas ? ($validated['jam_end']   ?? $transaction->jam_end)   : null;
+
                 $updated = $transaction->update([
-                    'user_id'         => $validated['user_id'],
-                    'instansi'        => ucwords($validated['office']),
-                    'kegiatan'        => ucwords($validated['event']),
-                    'property_id'     => $validated['ruangan_id'],
-                    'description'     => $validated['description'] ?? null,
-                    'status'          => $validated['status'],
+                    'user_id'          => $validated['user_id'],
+                    'instansi'         => ucwords($validated['office']),
+                    'kegiatan'         => ucwords($validated['event']),
+                    'property_id'      => $validated['ruangan_id'],
+                    'description'      => $validated['description'] ?? null,
+                    'status'           => $validated['status'],
                     'rejection_reason' => $rejectionReason,
-                    'billing_code'    => $billingCode,
-                    'billing_qr'      => $billingQr,
-                    'start'           => $validated['start'],
-                    'end'             => $validated['end'],
-                    'jam_start'       => $validated['jam_start'],
-                    'jam_end'         => $validated['jam_end'],
-                    'total_harga'     => $validated['total_harga'],
-                    'phone_number'    => $validated['phone_number'],
-                    'email'           => $validated['email'],
-                    'affiliation'     => $validated['affiliation'],
-                    'ordered_unit'    => $validated['ordered_unit'],
-                    'payment_receipt' => $paymentReceipt,
-                    'request_letter'  => $requestLetter,
-                    'response_letter' => $responseLetter,
+                    'billing_code'     => $billingCode,
+                    'billing_qr'       => $billingQr,
+                    // pastikan format date input sudah YYYY-MM-DD di Blade
+                    'start'            => $validated['start'],
+                    'end'              => $validated['end'],
+                    'jam_start'        => $jamStart,
+                    'jam_end'          => $jamEnd,
+                    'total_harga'      => $validated['total_harga'],
+                    'phone_number'     => $validated['phone_number'],
+                    'email'            => $validated['email'],
+                    'affiliation'      => $validated['affiliation'],
+                    'ordered_unit'     => $validated['ordered_unit'],
+                    'payment_receipt'  => $paymentReceipt,
+                    'request_letter'   => $requestLetter,
+                    'response_letter'  => $responseLetter,
                 ]);
 
                 if (!$updated) {
@@ -392,19 +424,18 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
             return back()->with('success', 'Transaksi berhasil diperbarui.');
         } catch (ValidationException $e) {
-            // VALIDASI GAGAL
             return back()
-                ->withErrors($e->errors()) // <-- aman di semua kasus
+                ->withErrors($e->errors())
                 ->with('failed', 'Gagal memperbarui transaksi. Periksa form yang disorot.')
                 ->withInput();
         } catch (\Throwable $e) {
-            // ERROR LAIN
             Log::error('Transaction update failed', ['id' => $id, 'error' => $e->getMessage()]);
             return back()
                 ->with('failed', 'Gagal memperbarui transaksi. Silakan coba lagi.')
                 ->withInput();
         }
     }
+
 
 
 
