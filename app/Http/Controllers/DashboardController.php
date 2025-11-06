@@ -244,24 +244,24 @@ class DashboardController extends Controller
         }
 
         // ====== HITUNG HARI TERPESAN ======
-        // (tanpa LEAST/GREATEST agar aman di MariaDB lawas)
         $counts = Transaction::query()
             ->join('properties', 'properties.id', '=', 'transactions.property_id')
             ->where('transactions.status', 'approved')
             ->whereDate('transactions.start', '<=', $periodEnd->toDateString())
             ->whereDate('transactions.end', '>=', $periodStart->toDateString())
-            ->selectRaw("
-            LOWER(properties.type) as prop_type,
-            properties.id as property_id,
-            SUM(
-                CASE 
-                    WHEN transactions.`end` < transactions.`start` THEN 0
-                    ELSE DATEDIFF(transactions.`end`, transactions.`start`) + 1
-                END
-            ) as total_days
-        ")
-            ->groupBy('prop_type', 'property_id')
+            ->select([
+                DB::raw('LOWER(properties.type) as prop_type'),
+                'properties.id as property_id',
+                DB::raw('SUM(
+            CASE
+                WHEN transactions.`end` < transactions.`start` THEN 0
+                ELSE DATEDIFF(transactions.`end`, transactions.`start`) + 1
+            END
+        ) as total_days')
+            ])
+            ->groupBy(DB::raw('LOWER(properties.type)'), 'properties.id')
             ->get();
+
 
         foreach ($counts as $row) {
             $t = $row->prop_type;
