@@ -167,6 +167,7 @@ class DashboardController extends Controller
     public function dashboardAdmin(Request $request)
     {
         // === FILTER ===
+        $useRange = $request->boolean('use_range'); // toggle dari UI
         $year  = (int) $request->get('year', now()->year);
         $month = (int) $request->get('month', 0); // 0 = semua bulan
 
@@ -184,13 +185,44 @@ class DashboardController extends Controller
             $years = range($yNow, $yNow - 4);
         }
 
-        // === PERIODE HITUNG (untuk overlap hari) ===
-        if ($month >= 1 && $month <= 12) {
-            $periodStart = Carbon::create($year, $month, 1)->startOfDay();
-            $periodEnd   = Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+        // === PERIODE HITUNG ===
+        if ($useRange) {
+            // Mode rentang bulan: pakai start_month & end_month
+            $startMonthStr = $request->get('start_month', now()->format('Y-m')); // "YYYY-MM"
+            $endMonthStr   = $request->get('end_month', $startMonthStr);
+
+            $startMonth = \Carbon\Carbon::createFromFormat('Y-m', $startMonthStr)->startOfMonth();
+            $endMonth   = \Carbon\Carbon::createFromFormat('Y-m', $endMonthStr)->endOfMonth();
+
+            // Tukar kalau kebalik
+            if ($endMonth->lt($startMonth)) {
+                [$startMonth, $endMonth] = [$endMonth->copy()->startOfMonth(), $startMonth->copy()->endOfMonth()];
+            }
+
+            $periodStart = $startMonth->copy()->startOfDay();
+            $periodEnd   = $endMonth->copy()->endOfDay();
+
+            // Label periode untuk view
+            $periodLabel = $startMonth->isSameMonth($endMonth)
+                ? $startMonth->translatedFormat('F Y')
+                : $startMonth->translatedFormat('F Y') . ' – ' . $endMonth->translatedFormat('F Y');
+
+            // Untuk kompatibilitas view lama
+            $month = 0;         // tampilkan "Jan–Des" diganti label custom
+            $year  = $startMonth->year;
         } else {
-            $periodStart = Carbon::create($year, 1, 1)->startOfDay();
-            $periodEnd   = Carbon::create($year, 12, 31)->endOfDay();
+            // Mode lama: year + month
+            if ($month >= 1 && $month <= 12) {
+                $periodStart = \Carbon\Carbon::create($year, $month, 1)->startOfDay();
+                $periodEnd   = \Carbon\Carbon::create($year, $month, 1)->endOfMonth()->endOfDay();
+            } else {
+                $periodStart = \Carbon\Carbon::create($year, 1, 1)->startOfDay();
+                $periodEnd   = \Carbon\Carbon::create($year, 12, 31)->endOfDay();
+            }
+
+            $periodLabel = $month >= 1 && $month <= 12
+                ? $periodStart->translatedFormat('F Y')                // contoh: "November 2025"
+                : 'Jan–Des ' . $year;                                    // contoh: "Jan–Des 2025"
         }
 
         // === MASTER PROPERTIES: semua properti per tipe ===
@@ -208,19 +240,16 @@ class DashboardController extends Controller
             $labels = ($props->has($t) ? $props[$t]->pluck('name')->all() : []);
             $ids    = ($props->has($t) ? $props[$t]->pluck('id')->all()   : []);
             $charts[$t] = [
-                'labels' => $labels,                     // X = semua properti
-                'ids'    => $ids,                        // untuk mapping
-                'data'   => array_fill(0, count($labels), 0), // default 0
+                'labels' => $labels,
+                'ids'    => $ids,
+                'data'   => array_fill(0, count($labels), 0),
             ];
         }
 
-        // === HITUNG JUMLAH HARI TERPESAN (approved) PER PROPERTI di periode ===
-        // Rumus overlap hari:
-        // 0 jika tidak overlap, else DATEDIFF(LEAST(end, periodEnd), GREATEST(start, periodStart)) + 1
+        // === HITUNG JUMLAH HARI TERPESAN (approved) PER PROPERTI di periode (overlap) ===
         $counts = Transaction::query()
             ->join('properties', 'properties.id', '=', 'transactions.property_id')
             ->where('transactions.status', 'approved')
-            // syarat ada overlap dengan periode
             ->whereDate('transactions.start', '<=', $periodEnd)
             ->whereDate('transactions.end', '>=', $periodStart)
             ->selectRaw("
@@ -236,21 +265,27 @@ class DashboardController extends Controller
             ->groupBy('type', 'property_id')
             ->get();
 
-        // Mapping hasil ke array data (ikut urutan labels semua properti)
         foreach ($counts as $row) {
             $t = $row->type;
             if (!isset($charts[$t])) continue;
 
             $idx = array_search((int)$row->property_id, $charts[$t]['ids'], true);
             if ($idx !== false) {
-                $charts[$t]['data'][$idx] = (int)$row->total_days; // <-- jumlah HARI, bukan jumlah transaksi
+                $charts[$t]['data'][$idx] = (int)$row->total_days;
             }
         }
 
-        // buang 'ids' sebelum ke JS
         foreach ($charts as $k => $v) {
             unset($charts[$k]['ids']);
         }
+
+        // ... (blok items/stock/events kamu biarkan)
+        // (potonganmu mulai dari $items = Transaction::with('properties') ... sampai return view tetap)
+
+        // ====== di bagian return view, tambahkan 'periodLabel' & 'useRange' ======
+
+        // ... sisanya: items, stock, events, dll ...
+
 
         // (opsional) list item terbaru
         $items = Transaction::with('properties')
@@ -341,7 +376,12 @@ class DashboardController extends Controller
             ->get();
 
         return view('admin.dashboard', [
-            'items'        => $items,
+            // ... existing binds ...
+            'charts'       => $charts,
+            'types'        => $typesWanted,
+            'periodLabel'  => $periodLabel,
+            'useRange'     => $useRange,
+            // yang lama tetap dikirim agar Blade lama tidak rusak:
             'year'         => $year,
             'years'        => $years,
             'month'        => $month,

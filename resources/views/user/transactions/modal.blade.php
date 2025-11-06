@@ -152,6 +152,14 @@
                     <div class="col-12 col-md-6">
                         <p><strong>Sampai Acara:</strong> {{ $t->end }}</p>
                     </div>
+                    <div class="col-12 col-md-6">
+                        <p><strong>Jam Mulai Acara:</strong> {{ $t->jam_start }}</p>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <p><strong>Jam Sampai Acara:</strong> {{ $t->jam_end }}</p>
+                    </div>
+
+                    
                 </div>
 
                 <hr class="mt-0">

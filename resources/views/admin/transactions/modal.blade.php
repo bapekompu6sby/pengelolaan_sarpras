@@ -464,6 +464,24 @@
                                         name="end" value="{{ $t->end }}">
                                 </div>
                             </div>
+                            {{-- jam --}}
+                            @if ($t->properties->type == 'fasilitas')
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="jam_start-{{ $t->id }}" class="form-label">Mulai</label>
+                                        <input type="time" class="form-control"
+                                            id="jam_start-{{ $t->id }}" name="jam_start" step="60"
+                                            value="{{ old('jam_start', $t->jam_start ? \Carbon\Carbon::parse($t->jam_start)->format('H:i') : '') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="jam_end-{{ $t->id }}" class="form-label">Selesai</label>
+                                        <input type="time" class="form-control" id="jam_end-{{ $t->id }}"
+                                            name="jam_end" step="60"
+                                            value="{{ old('jam_end', $t->jam_end ? \Carbon\Carbon::parse($t->jam_end)->format('H:i') : '') }}">
+                                    </div>
+                                </div>
+                            @endif
+
                         </div>
 
                         {{-- Dokumen --}}

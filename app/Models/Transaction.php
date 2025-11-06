@@ -16,6 +16,8 @@ class Transaction extends Model
         'kegiatan',
         'start',
         'end',
+        'jam_start',
+        'jam_end',
         'color',
         'property_id',
         'status',

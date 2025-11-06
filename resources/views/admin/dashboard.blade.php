@@ -194,47 +194,104 @@
             </div>
         </div>
 
-        {{-- FILTER BULAN & TAHUN --}}
+        {{-- FILTER PERIODE (UI terkelompok & jelas) --}}
         <div class="card card-soft mb-3">
             <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
-                {{-- Kiri: Filter untuk grafik --}}
+
+                {{-- Kiri: Filter --}}
                 <form method="GET" action="{{ route('dashboardAdmin') }}"
-                    class="d-flex flex-wrap align-items-center gap-2 mb-0">
-                    <label class="form-label mb-0 fw-semibold text-uppercase small text-secondary">Tahun</label>
-                    <select name="year" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
-                        @foreach ($years as $y)
-                            <option value="{{ $y }}" @selected((int) $year === (int) $y)>{{ $y }}</option>
-                        @endforeach
-                    </select>
+                    class="w-100 w-md-auto d-flex flex-column gap-2 mb-0" id="filterForm">
 
-                    <label class="form-label mb-0 fw-semibold text-uppercase small text-secondary">Bulan</label>
-                    <select name="month" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
-                        @foreach ($monthOptions as $val => $label)
-                            <option value="{{ $val }}" @selected((int) $month === (int) $val)>{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    {{-- MODE SWITCH --}}
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="form-label mb-0 fw-semibold text-uppercase small text-secondary">Mode
+                                Periode</span>
+                            <div class="btn-group" role="group" aria-label="Mode Periode">
+                                @php $isRange = $useRange ?? false; @endphp
+                                <input type="radio" class="btn-check" name="mode_radio" id="mode-single"
+                                    autocomplete="off" {{ $isRange ? '' : 'checked' }}>
+                                <label class="btn btn-sm btn-outline-primary" for="mode-single">Per Bulan</label>
 
-                    <a href="{{ route('dashboardAdmin') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                                <input type="radio" class="btn-check" name="mode_radio" id="mode-range" autocomplete="off"
+                                    {{ $isRange ? 'checked' : '' }}>
+                                <label class="btn btn-sm btn-outline-primary" for="mode-range">Rentang Bulan</label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">Terapkan</button>
+                            <a href="{{ route('dashboardAdmin') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                        </div>
+                    </div>
+
+                    {{-- HIDDEN: nilai yang benar-benar dikirim (sesuai controller) --}}
+                    <input type="hidden" name="use_range" id="useRangeHidden" value="{{ $isRange ? 1 : 0 }}">
+
+                    {{-- GROUP: PER BULAN --}}
+                    <fieldset id="group-single" class="border rounded p-2 bg-light">
+                        <legend class="float-none w-auto px-2 small text-secondary mb-0">Per Bulan</legend>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                            <label class="form-label mb-0 fw-semibold text-uppercase small text-secondary">Tahun</label>
+                            <select name="year" class="form-select form-select-sm w-auto">
+                                @foreach ($years as $y)
+                                    <option value="{{ $y }}" @selected((int) $year === (int) $y)>{{ $y }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <label class="form-label mb-0 fw-semibold text-uppercase small text-secondary">Bulan</label>
+                            <select name="month" class="form-select form-select-sm w-auto">
+                                @foreach ($monthOptions as $val => $label)
+                                    <option value="{{ $val }}" @selected((int) $month === (int) $val)>{{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Pilih 1 bulan tertentu atau “Semua Bulan”.</small>
+                        </div>
+                    </fieldset>
+
+                    {{-- GROUP: RENTANG BULAN --}}
+                    <fieldset id="group-range" class="border rounded p-2 bg-light">
+                        <legend class="float-none w-auto px-2 small text-secondary mb-0">Rentang Bulan</legend>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                            <label class="form-label mb-0 fw-semibold text-uppercase small text-secondary">Periode</label>
+                            <input type="month" name="start_month" id="startMonth"
+                                class="form-control form-control-sm w-auto"
+                                value="{{ request('start_month', now()->format('Y-m')) }}">
+                            <span class="mx-1">s.d.</span>
+                            <input type="month" name="end_month" id="endMonth"
+                                class="form-control form-control-sm w-auto"
+                                value="{{ request('end_month', request('start_month', now()->format('Y-m'))) }}">
+                            <small class="text-muted">Sistem otomatis menyamakan/menukar jika rentang terbalik.</small>
+                        </div>
+                    </fieldset>
                 </form>
+                <p class="muted mt-2 mb-3 px-3">
+                    Sumbu-X menampilkan <b>SEMUA properti</b> per tipe. Nilai Y = jumlah hari terpesan <b>approved</b> pada
+                    <b>{{ $periodLabel }}</b>.
+                </p>
 
-                {{-- Kanan: Tombol Export Excel --}}
-                <form method="GET" action="{{ route('export.perTahun') }}">
-                    <input type="hidden" name="year" value="{{ $year }}">
+                {{-- Kanan: Export Excel (pojok kanan atas) --}}
+                <form method="GET" action="{{ route('export.perTahun') }}"
+                    class="d-flex align-items-center gap-2 ms-auto align-self-start mt-2 mt-md-0">
+                    <label for="exportYear" class="form-label mb-0 small text-secondary">Tahun</label>
+                    <select name="year" id="exportYear" class="form-select form-select-sm w-auto">
+                        @foreach ($years as $yy)
+                            <option value="{{ $yy }}" {{ (int) now()->year === (int) $yy ? 'selected' : '' }}>
+                                {{ $yy }}</option>
+                        @endforeach
+                    </select>
+
                     <button type="submit" class="btn btn-success btn-sm d-flex align-items-center gap-1 shadow-sm">
                         <i class="bi bi-file-earmark-excel"></i> Export Excel
                     </button>
                 </form>
+
+
             </div>
 
-            <p class="muted mt-2 mb-3 px-3">
-                Sumbu-X menampilkan <b>SEMUA properti</b> per tipe. Nilai Y = jumlah pesanan <b>approved</b>
-                {{ $month ? "pada bulan {$monthOptions[$month]}" : 'Jan–Des' }} {{ $year }}.
-            </p>
         </div>
-
-
-
-
 
         {{-- 5 CHART: per tipe (X = semua properti, Y = jumlah pesanan) --}}
         @php
@@ -278,6 +335,52 @@
 @endsection
 
 @section('script')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const isRangeServer = {{ $useRange ?? false ? 'true' : 'false' }};
+            const useRangeHidden = document.getElementById('useRangeHidden');
+
+            const groupSingle = document.getElementById('group-single');
+            const groupRange = document.getElementById('group-range');
+
+            const modeSingle = document.getElementById('mode-single');
+            const modeRange = document.getElementById('mode-range');
+
+            const startMonth = document.getElementById('startMonth');
+            const endMonth = document.getElementById('endMonth');
+
+            function setMode(rangeMode) {
+                useRangeHidden.value = rangeMode ? 1 : 0;
+
+                groupRange.style.display = rangeMode ? 'block' : 'none';
+                groupSingle.style.display = rangeMode ? 'none' : 'block';
+
+                // Enable/disable agar field yang tidak dipakai tidak terkirim
+                groupRange.querySelectorAll('input,select').forEach(el => el.disabled = !rangeMode);
+                groupSingle.querySelectorAll('input,select').forEach(el => el.disabled = rangeMode);
+            }
+
+            // Inisialisasi tampilan awal dari server
+            setMode(isRangeServer);
+
+            // Toggle via radio
+            modeSingle.addEventListener('change', () => setMode(false));
+            modeRange.addEventListener('change', () => setMode(true));
+
+            // Validasi ringan untuk rentang: end >= start
+            function clampEnd() {
+                if (!startMonth.value) return;
+                // set minimal end = start
+                endMonth.min = startMonth.value;
+                if (endMonth.value && endMonth.value < startMonth.value) {
+                    endMonth.value = startMonth.value;
+                }
+            }
+            startMonth?.addEventListener('change', clampEnd);
+            clampEnd();
+        });
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const CHARTS = @json($charts);

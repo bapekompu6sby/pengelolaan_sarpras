@@ -253,12 +253,6 @@
                                         </div>
                                     </div>
 
-
-
-
-
-
-
                                     <!-- Konten -->
                                     <div class="col-md-8">
                                         <div class="card-body d-flex flex-column justify-content-between"
@@ -327,7 +321,8 @@
                                             @auth
                                                 @if (auth()->user()->role != 'supervisor')
                                                     <button class="btn btn-primary btn-pesan mt-3"
-                                                        data-property-id="{{ $property->id }}" data-bs-toggle="modal"
+                                                        data-property-id="{{ $property->id }}"
+                                                        data-type="{{ $property->type }}" data-bs-toggle="modal"
                                                         data-bs-target="#addEvent">
                                                         Pesan Sekarang
                                                     </button>
@@ -354,6 +349,29 @@
 
 @section('script')
     <script src="{{ asset('/assets/vendor/libs/fullcalendar/lib/main.min.js') }}"></script>
+    <script>
+        function fillSel(id, from, to, step = 1) {
+            const s = document.getElementById(id);
+            for (let v = from; v <= to; v += step) {
+                const opt = document.createElement('option');
+                opt.value = opt.textContent = String(v).padStart(2, '0');
+                s.appendChild(opt);
+            }
+        }
+        fillSel('h_start', 0, 23);
+        fillSel('h_end', 0, 23);
+        fillSel('m_start', 0, 59, 1);
+        fillSel('m_end', 0, 59, 1);
+
+        function syncHidden() {
+            jam_start.value = `${h_start.value}:${m_start.value}`;
+            jam_end.value = `${h_end.value}:${m_end.value}`;
+        }
+        ['h_start', 'm_start', 'h_end', 'm_end'].forEach(id => {
+            document.getElementById(id).addEventListener('change', syncHidden);
+        });
+        syncHidden();
+    </script>
     <script>
         const getEvents = async () => {
             const response = await fetch('/api/events');
@@ -400,17 +418,61 @@
         });
 
         document.getElementById('checkAvailabilityBtn').addEventListener('click', function() {
-            let venueId = document.getElementById('venue').value;
-            let startDate = document.getElementById('start').value;
-            let endDate = document.getElementById('end').value;
-            let unit = document.getElementById('ordered_unit').value;
-            let bookBtn = document.getElementById('createTransactionBtn');
+            const venueId = document.getElementById('venue').value;
+            const startDate = document.getElementById('start').value;
+            const endDate = document.getElementById('end').value;
+            const unit = document.getElementById('ordered_unit').value;
+            const bookBtn = document.getElementById('createTransactionBtn');
+            const propertyType = document.getElementById('property_type')?.value || null;
+            const jamStart = document.getElementById('jam_start')?.value || null;
+            const jamEnd = document.getElementById('jam_end')?.value || null;
+            const resultDiv = document.getElementById('availabilityResult');
 
+            // 🧱 Validasi dasar
             if (!venueId || !startDate || !endDate) {
                 alert('Pilih tanggal, ruangan, dan jumlah terlebih dahulu.');
                 return;
             }
 
+            // ⏰ Tambahan validasi khusus fasilitas
+            // if (propertyType === 'fasilitas') {
+            //     if (!jamStart || !jamEnd) {
+            //         alert('Untuk tipe fasilitas, jam mulai dan jam selesai wajib diisi!');
+            //         return;
+            //     }
+            //     if (jamEnd <= jamStart) {
+            //         alert('Jam selesai harus lebih besar dari jam mulai!');
+            //         return;
+            //     }
+            // }
+
+            if (propertyType === 'fasilitas') {
+                if (!jamStart || !jamEnd) {
+                    alert('Untuk tipe fasilitas, jam mulai dan jam selesai wajib diisi!');
+                    return;
+                }
+
+                // Ubah jadi menit supaya bisa dibanding lebih akurat
+                const [startH, startM] = jamStart.split(':').map(Number);
+                const [endH, endM] = jamEnd.split(':').map(Number);
+                const startTotal = startH * 60 + startM;
+                const endTotal = endH * 60 + endM;
+
+                // Kalau jam selesai lebih kecil, anggap lewat tengah malam
+                const durasi = endTotal >= startTotal ?
+                    endTotal - startTotal :
+                    (24 * 60 - startTotal) + endTotal;
+
+                if (durasi <= 0) {
+                    alert('Jam selesai harus lebih besar dari jam mulai!');
+                    return;
+                }
+
+
+            }
+
+
+            // 🚀 Kirim data ke backend
             fetch("{{ route('properties.check') }}", {
                     method: 'POST',
                     headers: {
@@ -421,26 +483,33 @@
                         venue_id: venueId,
                         start_date: startDate,
                         end_date: endDate,
-                        ordered_unit: unit
+                        ordered_unit: unit,
+                        jam_start: jamStart,
+                        jam_end: jamEnd,
+                        property_type: propertyType
                     })
                 })
                 .then(res => res.json())
                 .then(data => {
-                    let resultDiv = document.getElementById('availabilityResult');
+                    console.log('Response:', data);
                     if (data.available) {
-                        resultDiv.innerHTML =
-                            `<span class="text-success">✅ ${data.avail_count} Ruangan Tersedia!</span>`;
+                        resultDiv.innerHTML = `
+                <span class="text-success">
+                    ✅ ${data.avail_count} ${propertyType === 'fasilitas' ? 'slot waktu' : 'ruangan'} tersedia!
+                </span>`;
                         bookBtn.disabled = false;
                     } else {
-                        resultDiv.innerHTML =
-                            `<span class="text-danger"> ${data.avail_count} Ruangan Tersedia !</span>`;
+                        resultDiv.innerHTML = `
+                <span class="text-danger">
+                    ⛔ Tidak tersedia${propertyType === 'fasilitas' ? ' pada jam tersebut' : ' di tanggal ini'}.
+                    (${data.avail_count} unit tersisa)
+                </span>`;
                         bookBtn.disabled = true;
                     }
                 })
                 .catch(err => {
-                    console.log(err);
-                    console.error(err);
-                    alert('Error checking availability.');
+                    console.error('Error checking availability:', err);
+                    alert('Terjadi kesalahan saat mengecek ketersediaan.');
                 });
         });
     </script>
@@ -576,6 +645,7 @@
                     .then(response => response.json())
                     .then(data => {
                         console.log(data);
+
                         // Simpan harga per hari ke global variable
                         window.currentPrice = parseInt(data.property.price) || 0;
 
@@ -586,23 +656,45 @@
                         const modalTitle = modal.querySelector('.modal-title');
                         modalTitle.textContent = 'Pesan Ruangan: ' + data.property.name;
 
+                        // Set data properti
                         modal.querySelector('#venue_name').value = data.property.name;
                         modal.querySelector('#venue').value = data.property.id;
 
+                        // 🧠 Simpan tipe properti ke hidden input (biar dikirim ke server)
+                        let typeInput = modal.querySelector('#property_type');
+                        if (!typeInput) {
+                            const hidden = document.createElement('input');
+                            hidden.type = 'hidden';
+                            hidden.id = 'property_type';
+                            hidden.name = 'property_type';
+                            modal.querySelector('form').appendChild(hidden);
+                            typeInput = hidden;
+                        }
+                        typeInput.value = data.property.type;
 
+                        // ✅ (TIDAK ADA LAGI IF FASILITAS)
+                        // Field jam sudah di-render dari HTML langsung — hanya perlu toggle tampilannya kalau mau
+
+                        const jamContainer = modal.querySelector('#jamFieldsContainer');
+                        if (jamContainer) {
+                            // Kalau kamu mau otomatis sembunyikan kalau bukan fasilitas (opsional)
+                            jamContainer.classList.toggle('d-none', data.property.type !== 'fasilitas');
+                        }
+
+                        // Isi data user
                         modal.querySelector('#name').value = data.user.name || '';
                         modal.querySelector('#email').value = data.user.email || '';
                         modal.querySelector('#phone_number').value = data.user.phone_number || '';
 
-                        // Reset input tanggal dan unit (opsional)
+                        // Reset input tanggal & unit
                         modal.querySelector('#start').value = '';
                         modal.querySelector('#end').value = '';
                         modal.querySelector('#ordered_unit').value = 1;
 
+                        // Render gambar dan ringkasan
                         const slides = buildSlidesFromData(data);
                         renderModalGallery(slides);
                         renderModalSummary(data);
-
 
                         // Reset total harga
                         document.getElementById('total_price').innerText = 'Rp 0';

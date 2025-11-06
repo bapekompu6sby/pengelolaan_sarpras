@@ -34,41 +34,84 @@ class PropertiesController extends Controller
 
     public function checkAvailability(Request $request)
     {
-
         $request->validate([
-            'venue_id'    => 'required|integer',
-            'start_date' => 'required|date',
-            'end_date'   => 'required|date',
-            'ordered_unit' => 'required|integer'
+            'venue_id'     => 'required|integer',
+            'start_date'   => 'required|date',
+            'end_date'     => 'required|date',
+            'ordered_unit' => 'required|integer',
+            'jam_start'    => 'nullable|date_format:H:i',
+            'jam_end'      => 'nullable|date_format:H:i',
+            'property_type' => 'nullable|string',
         ]);
 
         $propertyId = $request->venue_id;
-        $start  = $request->start_date;
-        $end    = $request->end_date;
-        $unit = $request->ordered_unit;
+        $start      = $request->start_date;
+        $end        = $request->end_date;
+        $unit       = $request->ordered_unit;
+        $jamStart   = $request->jam_start;
+        $jamEnd     = $request->jam_end;
+        $type       = strtolower($request->property_type ?? '');
 
+        $prop = Properties::findOrFail($propertyId);
+
+        // Base query (cek tanggal)
         $transactions = Transaction::where('property_id', $propertyId)
-            ->where('status', '=', 'approved') // Optional
+            ->where('status', '=', 'approved')
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start', [$start, $end])
                     ->orWhereBetween('end', [$start, $end]);
-            })->get();
-        $transactions_unit = $transactions->sum('ordered_unit');
-        $avail = false;
-        $prop = Properties::find($propertyId);
-        $avail_unit = $prop->unit - $transactions_unit;
+            });
 
+        // ✅ Kalau fasilitas, tambahkan pengecekan jam juga
 
+        // Misal: filter property yang sama (W A J I B, biar gak nabrak di ruangan lain)
+        $transactions->where('transactions.property_id', $propertyId);
 
-        if ($avail_unit >= $unit) {
-            $avail = true;
+        // Abaikan baris tanpa jam (kalau kebijakanmu jam wajib di fasilitas)
+        $transactions->whereNotNull('transactions.jam_start')
+            ->whereNotNull('transactions.jam_end');
+
+        // ✅ Cek overlap jam
+        if ($type === 'fasilitas' && $jamStart && $jamEnd) {
+            $reqWrap = strtotime($jamEnd) <= strtotime($jamStart);
+
+            $transactions->where(function ($q) use ($jamStart, $jamEnd, $reqWrap) {
+                if (!$reqWrap) {
+                    // NORMAL: existing_start < req_end AND existing_end > req_start
+                    $q->whereRaw('TIME(transactions.jam_start) < ? AND TIME(transactions.jam_end) > ?', [
+                        $jamEnd,   // req_end
+                        $jamStart, // req_start
+                    ]);
+                } else {
+                    // LINTAS TENGAH MALAM: existing_start < req_end OR existing_end > req_start
+                    $q->where(function ($qq) use ($jamStart, $jamEnd) {
+                        $qq->whereRaw('TIME(transactions.jam_start) < ?', [$jamEnd])   // start < req_end
+                            ->orWhereRaw('TIME(transactions.jam_end) > ?',  [$jamStart]); // end   > req_start
+                    });
+                }
+            });
         }
 
+
+        $transactions = $transactions->get();
+        $transactions_unit = $transactions->sum('ordered_unit');
+
+        $avail_unit = $prop->unit - $transactions_unit;
+        $avail = $avail_unit >= $unit;
+
         return response()->json([
-            'available' => $avail,
-            'avail_count' => $avail_unit
+            'available'   => $avail,
+            'avail_count' => $avail_unit,
+            'checked_type' => $type,
+            'debug'       => [
+                'start' => $start,
+                'end' => $end,
+                'jam_start' => $jamStart,
+                'jam_end' => $jamEnd,
+            ],
         ]);
     }
+
 
     public function index()
     {
