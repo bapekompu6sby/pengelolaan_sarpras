@@ -249,17 +249,17 @@ class DashboardController extends Controller
             ->where('transactions.status', 'approved')
             ->whereDate('transactions.start', '<=', $periodEnd->toDateString())
             ->whereDate('transactions.end', '>=', $periodStart->toDateString())
-            ->select([
-                DB::raw('LOWER(properties.type) as prop_type'),
-                'properties.id as property_id',
-                DB::raw('SUM(
+            ->selectRaw("
+        LOWER(properties.type) as prop_type,
+        properties.id as property_id,
+        SUM(
             CASE
                 WHEN transactions.`end` < transactions.`start` THEN 0
                 ELSE DATEDIFF(transactions.`end`, transactions.`start`) + 1
             END
-        ) as total_days')
-            ])
-            ->groupBy(DB::raw('LOWER(properties.type)'), 'properties.id')
+        ) as total_days
+    ")
+            ->groupBy(DB::raw('LOWER(properties.type)'), DB::raw('properties.id'))
             ->get();
 
 
