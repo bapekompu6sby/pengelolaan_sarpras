@@ -51,7 +51,7 @@ class HomeController extends Controller
     {
         $today = now('Asia/Jakarta')->toDateString();
 
-        $data = Transaction::where('status', 'approved')
+        $data = Transaction::with('properties', 'user')->where('status', 'approved')
             ->where(function ($q) use ($today) {
                 $q->where(function ($q2) use ($today) {
 
