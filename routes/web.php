@@ -26,8 +26,11 @@ use App\Http\Controllers\Auth\RedirectAuthenticatedUsersController;
 | PUBLIC (tanpa autentikasi)
 |===================================================================== */
 
+Route::get('/internalBapekom', [HomeController::class, 'internalBapekomp'])->name('internalBapekomp');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/bukuPanduan', [DashboardController::class, 'bukuPanduan'])->name('bukuPanduan');

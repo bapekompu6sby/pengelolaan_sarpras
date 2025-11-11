@@ -308,6 +308,50 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        // ====== REKAP PER BULAN / PIVOT ======
+        $pivotYear = (int) $request->get('pivot_year', now()->year);
+
+        $rekapBulanan = DB::table('properties as p')
+            ->leftJoin('transactions as t', function ($join) use ($pivotYear) {
+                $join->on('p.id', '=', 't.property_id')
+                    ->whereYear('t.start', '=', $pivotYear)
+                    ->where('t.status', '=', 'approved');
+            })
+            ->selectRaw("
+        p.name as properti,
+        LOWER(p.type) as jenis,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=1 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as jan,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=2 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as feb,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=3 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as mar,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=4 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as apr,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=5 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as mei,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=6 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as jun,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=7 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as jul,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=8 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as agu,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=9 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as sep,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=10 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as okt,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=11 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as nov,
+        COALESCE(SUM(CASE WHEN MONTH(t.start)=12 THEN DATEDIFF(t.end,t.start)+1 ELSE 0 END),0) as des,
+        COALESCE(SUM(DATEDIFF(t.end,t.start)+1),0) as total
+    ")
+            ->groupBy('p.name', 'p.type')
+            ->orderBy('p.type')
+            ->orderBy('p.name')
+            ->get();
+
+        // Jika AJAX → kirim HTML partial aja
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.pivot', [
+                    'rekapBulanan' => $rekapBulanan,
+                    'pivotYear' => $pivotYear
+                ])->render()
+            ]);
+        }
+
+
+
+
         // ====== RETURN VIEW ======
         return view('admin.dashboard', [
             'charts'               => $charts,
@@ -346,6 +390,8 @@ class DashboardController extends Controller
             'paviliunStock'        => $paviliunStock,
             'events'               => $events,
             'items'                => $items,
+            'rekapBulanan'         => $rekapBulanan,
+            'pivotYear'            => $pivotYear,
         ]);
     }
 

@@ -51,6 +51,15 @@
         .card-body {
             padding: 1rem 1.25rem;
         }
+
+        #pivot-table-container table td,
+        #pivot-table-container table th {
+            font-size: 0.875rem;
+        }
+
+        #pivot-table-container table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
     </style>
 @endsection
 
@@ -330,11 +339,83 @@
                 </div>
             @endforeach
         </div>
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold">
+                    <i class="fa-solid fa-calendar-alt text-warning me-2"></i>
+                    Rekap Peminjaman per Bulan (<span id="pivot-year-label">{{ $pivotYear }}</span>)
+                </h5>
+
+                <select id="pivot-year" class="form-select form-select-sm" style="width: 120px;">
+                    @foreach ($years as $y)
+                        <option value="{{ $y }}" {{ $y == $pivotYear ? 'selected' : '' }}>{{ $y }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="card-body p-0">
+                <div id="pivot-table-container">
+                    @include('admin.pivot', ['rekapBulanan' => $rekapBulanan])
+                </div>
+            </div>
+        </div>
 
     </div>
 @endsection
 
 @section('script')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#pivot-year').on('change', function() {
+                let year = $(this).val();
+                $('#pivot-year-label').text(year);
+
+                $.ajax({
+                    url: "{{ route('dashboardAdmin') }}",
+                    type: "GET",
+                    data: {
+                        pivot_year: year
+                    },
+                    beforeSend: function() {
+                        $('#pivot-table-container').html(`
+            <div class="text-center py-5 text-muted">
+                <div class="spinner-border text-warning" role="status"></div>
+                <p class="mt-2">Memuat data...</p>
+            </div>
+        `);
+                    },
+                    success: function(res) {
+                        // Kalau res.html tidak ada, berarti bukan JSON yang datang
+                        if (res.html) {
+                            $('#pivot-table-container').html(res.html);
+                        } else {
+                            $('#pivot-table-container').html(`
+                <div class="text-danger text-center py-5">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    Format data tidak sesuai (cek response di console)
+                </div>
+            `);
+                            console.log(res);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log(xhr.responseText);
+                        $('#pivot-table-container').html(`
+            <div class="text-danger text-center py-5">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                Gagal memuat data (${xhr.status})
+            </div>
+        `);
+                    }
+                });
+
+            });
+        });
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const isRangeServer = {{ $useRange ?? false ? 'true' : 'false' }};

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -44,5 +45,23 @@ class HomeController extends Controller
             default:
                 return redirect()->route('dashboard');
         }
+    }
+
+    public function internalBapekomp()
+    {
+        $today = now('Asia/Jakarta')->toDateString();
+
+        $data = Transaction::where('status', 'approved')
+            ->where(function ($q) use ($today) {
+                $q->where(function ($q2) use ($today) {
+
+                    $q2->where('start', '<=', $today)
+                        ->where('end', '>=', $today);
+                });
+            })
+            ->orderBy('start', 'desc')
+            ->get();
+
+        return view('internal_bapekom', compact('data'));
     }
 }
