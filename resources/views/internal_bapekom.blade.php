@@ -1,7 +1,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daftar Pemesanan</title>
+  <title>Peminjaman Sarpras Dan Kegiatan Pelatihan</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -70,6 +70,23 @@
     .header-logo img { width:44px; height:44px; }
     .header-logo h1 { font-size:1.5rem; font-weight:700; }
     .header-logo h1 span { font-size:1rem; color:#0d6efd; }
+
+    .btn-filter {
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .btn-filter:hover {
+      background-color: #0056b3;
+      color: #ffffff;
+    }
+
+    .btn-filter.active {
+      background-color: #004085;
+      color: #ffffff;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -115,8 +132,8 @@
 
   function chipAffiliation($aff) {
       return match($aff) {
-          'external_pu' => 'Eksternal PUPR',
-          'internal_pu' => 'Internal PUPR',
+          'external_pu' => 'Eksternal PU',
+          'internal_pu' => 'Internal PU',
           default       => ucfirst(str_replace('_',' ', (string)$aff)),
       };
   }
@@ -129,7 +146,7 @@
     </div>
 
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-      <h1 class="h4 mb-0">Daftar Pemesanan</h1>
+      <h1 class="h4 mb-0">Peminjaman Sarpras Dan Kegiatan Pelatihan Yang Sedang Berlangsung</h1>
       <div class="d-flex gap-2">
         <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
           <i class="bi bi-printer"></i> Cetak
@@ -140,29 +157,15 @@
     {{-- Toolbar filter (dummy UI, siap di-wire ke controller bila perlu) --}}
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <form class="row g-2">
-          <div class="col-12 col-md-4">
-            <label class="form-label">Cari Instansi / Kegiatan</label>
-            <input type="text" class="form-control" placeholder="Ketik kata kunci..." />
+        <div class="d-flex gap-2 mb-3">
+          <div class="input-group flex-grow-1">
+            <input type="text" class="form-control" id="searchBar" placeholder="Cari kegiatan atau instansi..." oninput="searchData()">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
           </div>
-          <div class="col-6 col-md-3">
-            <label class="form-label">Status</label>
-            <select class="form-select">
-              <option value="">Semua</option>
-              <option>approved</option>
-              <option>pending</option>
-              <option>rejected</option>
-            </select>
-          </div>
-          <div class="col-6 col-md-3">
-            <label class="form-label">Rentang Tanggal</label>
-            <input type="date" class="form-control" />
-          </div>
-          <div class="col-12 col-md-2 d-grid">
-            <label class="form-label d-none d-md-block">&nbsp;</label>
-            <button type="button" class="btn btn-primary">Terapkan</button>
-          </div>
-        </form>
+          <button class="btn btn-filter" onclick="activateFilter(this, 'today')">Hari Ini</button>
+          <button class="btn btn-filter" onclick="activateFilter(this, 'week')">Satu Minggu Kedepan</button>
+          <button class="btn btn-filter" onclick="activateFilter(this, 'month')">Satu Bulan Kedepan</button>
+        </div>
       </div>
     </div>
 
@@ -181,7 +184,7 @@
       $updated = $t->updated_at ? Carbon::parse($t->updated_at)->translatedFormat('d M Y') : '—';
     @endphp
 
-    <div class="booking-card mb-4">
+    <div class="booking-card mb-4" data-start="{{ $t->start }}" data-end="{{ $t->end }}">
       {{-- Header title + badges --}}
       <div class="booking-head">
         <h2 class="booking-title">{{ $t->kegiatan ?? '—' }}</h2>
@@ -282,10 +285,9 @@
                 </div>
               </div>
 
-              <div class="meta">
-                Dibuat: {{ $created }} · Diperbarui: {{ $updated }}
-              </div>
+              
             </div>
+            
           </div>
         </div>
       </div>
@@ -309,6 +311,51 @@
       btn.textContent = expanded ? ' Sembunyikan' : ' Lihat lebih banyak';
     });
   });
+
+  function activateFilter(button, range) {
+    document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    filterData(range);
+  }
+
+  function filterData(range) {
+    const today = new Date();
+    let startDate = today;
+    let endDate = new Date();
+
+    if (range === 'week') {
+      endDate.setDate(today.getDate() + 7);
+    } else if (range === 'month') {
+      endDate.setMonth(today.getMonth() + 1);
+    }
+
+    document.querySelectorAll('.booking-card').forEach(card => {
+      const start = new Date(card.dataset.start.replace(/-/g, '/'));
+      const end = new Date(card.dataset.end.replace(/-/g, '/'));
+
+      if ((range === 'today' && start.toDateString() === today.toDateString()) ||
+          (start >= startDate && start <= endDate) ||
+          (end >= startDate && end <= endDate)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function searchData() {
+    const query = document.getElementById('searchBar').value.toLowerCase();
+    document.querySelectorAll('.booking-card').forEach(card => {
+      const title = card.querySelector('.booking-title').textContent.toLowerCase();
+      const instansi = card.querySelector('.val').textContent.toLowerCase();
+
+      if (title.includes(query) || instansi.includes(query)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
 </script>
 </body>
 

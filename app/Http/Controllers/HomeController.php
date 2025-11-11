@@ -46,22 +46,18 @@ class HomeController extends Controller
                 return redirect()->route('dashboard');
         }
     }
+public function internalBapekomp()
+{
+    $today = now('Asia/Jakarta')->toDateString();
 
-    public function internalBapekomp()
-    {
-        $today = now('Asia/Jakarta')->toDateString();
+    $data = Transaction::with(['properties', 'user'])
+        ->where('status', 'approved')
+        // tampilkan yang masih berlangsung/akan datang
+        ->whereDate('end', '>=', $today)
+        ->orderBy('start', 'asc')
+        ->get();
 
-        $data = Transaction::with('properties', 'user')->where('status', 'approved')
-            ->where(function ($q) use ($today) {
-                $q->where(function ($q2) use ($today) {
+    return view('internal_bapekom', compact('data'));
+}
 
-                    $q2->where('start', '<=', $today)
-                        ->where('end', '>=', $today);
-                });
-            })
-            ->orderBy('start', 'desc')
-            ->get();
-
-        return view('internal_bapekom', compact('data'));
-    }
 }
