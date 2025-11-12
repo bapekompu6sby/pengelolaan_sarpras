@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,355 +10,351 @@
 
   <style>
     :root{
-      --card-radius: 18px;
-      --hr-color: #eef2f7;
-      --soft-border: #e9eef5;
+      /* Brand System */
+      --primary: #0d6efd;           /* PUPR-ish Blue */
+      --primary-700: #0b5ed7;
+      --accent: #f4c93a;            /* Warm accent (PUPR yellow) */
+      --success-soft: #d1fae5;
+      --success-ink: #059669;
       --ink: #0f172a;
       --muted:#5b6b7c;
+      --soft-border: #e9eef5;
+      --hr-color: #eef2f7;
+      --card-radius: 18px;
     }
+
+    /* App background */
+    body{
+      background:
+        radial-gradient(1200px 600px at -10% -10%, #eef4ff 0%, transparent 60%),
+        radial-gradient(800px 500px at 120% -20%, #fff7db 0%, transparent 55%),
+        #ffffff;
+    }
+
+    /* Header */
+    .header-logo { display:flex; align-items:center; gap:1rem; }
+    .header-logo img { width:44px; height:44px; }
+    .header-logo h1 { font-weight:800; font-size: clamp(1.2rem, 1rem + 1.2vw, 1.6rem); margin:0; }
+    .header-logo h1 span { font-size:1rem; color:var(--primary); }
+
+    .page-title{ font-weight:800; color:var(--ink); }
+
+    /* Toolbar card with subtle gradient */
+    .toolbar-card{
+      border-radius: 14px;
+      border: 1px solid var(--soft-border);
+      background: linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
+      box-shadow: 0 2px 10px rgba(15,23,42,.06);
+    }
+
+    /* Search */
+    .input-group .form-control{
+      border-color: var(--soft-border);
+    }
+    .input-group .form-control:focus{ box-shadow: 0 0 0 .2rem rgba(13,110,253,.15); border-color: var(--primary); }
+
+    /* Filter buttons */
+    .btn-filter{
+      border: 1px solid var(--soft-border);
+      background: #ffffff;
+      color: var(--ink);
+      padding: .5rem 1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: .2s ease;
+    }
+    .btn-filter:hover{ background: #f8fafc; }
+    .btn-filter.active{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 6px 16px rgba(13,110,253,.25);
+    }
+    .btn-filter:focus-visible{ outline: 3px solid rgba(13,110,253,.35); outline-offset: 2px; }
+
+    /* Print button */
+    .btn-ghost{
+      border: 1px dashed var(--soft-border);
+      color: var(--muted);
+      background: #fff;
+    }
+    .btn-ghost:hover{ border-color: var(--primary); color: var(--primary); background: #f8fbff; }
+
+    /* Card */
     .booking-card{
       border: 1px solid var(--soft-border);
       border-radius: var(--card-radius);
       background: #fff;
-      box-shadow: 0 2px 8px rgba(15,23,42,.06);
+      box-shadow: 0 8px 24px rgba(15,23,42,.06);
       overflow: hidden;
+      transition: transform .15s ease, box-shadow .15s ease;
     }
-    .booking-head{
-      padding: 22px 24px 12px;
-    }
+    .booking-card:hover{ transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,23,42,.1); }
+
+    .booking-head{ padding: 22px 24px 12px; }
     .booking-title{
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--ink);
-      line-height: 1.3;
-      margin: 0 0 10px;
+      font-size: clamp(1.05rem, .9rem + .6vw, 1.4rem);
+      font-weight: 800; color: var(--ink); line-height: 1.3; margin: 0 0 10px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      overflow-wrap:anywhere; word-break: break-word;
     }
-    .badge-pill{
-      border-radius: 999px;
-      padding: .35rem .75rem;
-      font-weight: 600;
-    }
-    .badge-approve{ background:#d1fae5; color:#059669; }
+
+    .badge-pill{ border-radius: 999px; padding: .35rem .75rem; font-weight: 700; font-size:.8rem; }
+    .badge-approve{ background:var(--success-soft); color:var(--success-ink); }
     .chip-grey{ background:#eef2f7; color:#374151; }
 
-    .hr-soft{ margin: 0; border:0; border-top:1px solid var(--hr-color); }
+    .hr-soft{ margin:0; border:0; border-top:1px solid var(--hr-color); }
     .booking-body{ padding: 18px 24px; }
 
-    .info-icon{
-      width: 36px; height: 36px;
-      border-radius: 10px;
-      display:flex; align-items:center; justify-content:center;
-      background:#f5f8fb; color:#6b7280; font-size: 18px;
-      flex: none;
-    }
-    .label{ font-size:.9rem; color: var(--muted); margin-bottom:2px;}
-    .val{ font-size:1rem; color:#111827; }
+    /* Info items */
+    .info-icon{ width: 36px; height: 36px; border-radius: 10px; display:flex; align-items:center; justify-content:center; background: #f5f8fb; color:#4062a1; font-size: 18px; flex:none; }
+    .label{ font-size:.82rem; color: var(--muted); margin-bottom:2px; }
+    .val{ font-size:1rem; color:#111827; overflow-wrap:anywhere; word-break:break-word; }
 
+    /* PIC panel with accent border */
     .pic-panel{
       border:1px solid var(--soft-border);
       border-radius: 14px;
       padding:16px;
-      background:#fbfdff;
+      background:
+        linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
     }
-    .pic-title{ font-weight:700; margin:0; }
-    .muted{ color: var(--muted); }
-    .meta{ font-size:.85rem; color: var(--muted); }
+    .pic-title{ font-weight:800; margin:0; color: var(--ink); }
 
-    .see-more{ color:#0d6efd; text-decoration:none; font-weight:600; }
+    .see-more{ color:var(--primary); text-decoration:none; font-weight:700; }
     .see-more:hover{ text-decoration:underline; }
 
-    /* header area yang sudah kamu punya */
-    .header-logo { display:flex; align-items:center; gap:1rem; }
-    .header-logo img { width:44px; height:44px; }
-    .header-logo h1 { font-size:1.5rem; font-weight:700; }
-    .header-logo h1 span { font-size:1rem; color:#0d6efd; }
-
-    .btn-filter {
-      background-color: #0d6efd;
-      color: white;
-      border: none;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .btn-filter:hover {
-      background-color: #0056b3;
-      color: #ffffff;
-    }
-
-    .btn-filter.active {
-      background-color: #004085;
-      color: #ffffff;
+    /* Mobile toolbar: filters wrap neatly */
+    @media (max-width: 576.98px) {
+      .filter-group .btn-filter{ flex: 1 1 auto; }
     }
   </style>
 </head>
-<body class="bg-light">
+<body>
 @php
   use Carbon\Carbon;
-
-  // Normalisasi agar bisa handle array atau object
-  $items = collect($data ?? [])->map(function ($it) {
-      return is_array($it) ? (object) $it : $it;
-  });
-
-  function rupiah($v) {
-      if ($v === null || $v === '') return '—';
-      return 'Rp ' . number_format((int)$v, 0, ',', '.');
-  }
-
-  function fmtDate($d) {
-      if (!$d) return '—';
-      return Carbon::parse($d)->translatedFormat('d M Y');
-  }
-
-  function fmtDateRange($start, $end) {
-      if (!$start && !$end) return '—';
-      if ($start && !$end) return fmtDate($start);
-      if (!$start && $end)  return fmtDate($end);
-      $s = Carbon::parse($start);
-      $e = Carbon::parse($end);
-      // Jika bulan sama → "11–14 Nov 2025", else → "29 Nov 2025 – 02 Des 2025"
-      if ($s->month === $e->month && $s->year === $e->year) {
-          return $s->format('d') . '–' . $e->translatedFormat('d M Y');
-      }
-      return $s->translatedFormat('d M Y') . ' – ' . $e->translatedFormat('d M Y');
-  }
-
-  function badgeStatusClass($status) {
-      return match($status) {
-          'approved'   => 'success',
-          'pending'    => 'warning',
-          'rejected'   => 'danger',
-          default      => 'secondary',
-      };
-  }
-
-  function chipAffiliation($aff) {
-      return match($aff) {
-          'external_pu' => 'Eksternal PU',
-          'internal_pu' => 'Internal PU',
-          default       => ucfirst(str_replace('_',' ', (string)$aff)),
-      };
-  }
+  $items = collect($data ?? [])->map(function ($it) { return is_array($it) ? (object) $it : $it; });
+  function fmtDate($d) { if (!$d) return '—'; return Carbon::parse($d)->translatedFormat('d M Y'); }
+  function fmtDateRange($start,$end){ if(!$start && !$end) return '—'; if($start && !$end) return fmtDate($start); if(!$start && $end) return fmtDate($end); $s=Carbon::parse($start); $e=Carbon::parse($end); if($s->month===$e->month && $s->year===$e->year){ return $s->format('d').'–'.$e->translatedFormat('d M Y'); } return $s->translatedFormat('d M Y').' – '.$e->translatedFormat('d M Y'); }
+  function chipAffiliation($aff){ return match($aff){ 'external_pu'=>'Eksternal PU','internal_pu'=>'Internal PU', default => ucfirst(str_replace('_',' ', (string)$aff)), }; }
 @endphp
 
   <div class="container py-4">
-    <div class="header-logo mb-4">
-      <img src="{{ asset('/assets/img/favicon/logo.png') }}" alt="Logo PUPR" class="img-fluid">
-      <h1>Topang<span>+</span></h1>
-    </div>
-
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-      <h1 class="h4 mb-0">Peminjaman Sarpras Dan Kegiatan Pelatihan Yang Sedang Berlangsung</h1>
-      <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-          <i class="bi bi-printer"></i> Cetak
-        </button>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+      <div class="header-logo">
+        <img src="{{ asset('/assets/img/favicon/logo.png') }}" alt="Logo PUPR" class="img-fluid">
+        <h1>Topang<span>+</span></h1>
       </div>
+      <button class="btn btn-ghost btn-sm" onclick="window.print()"><i class="bi bi-printer me-2"></i>Cetak</button>
     </div>
 
-    {{-- Toolbar filter (dummy UI, siap di-wire ke controller bila perlu) --}}
-    <div class="card shadow-sm mb-4">
+    <h2 class="page-title h3 mb-3">Peminjaman Sarpras Dan Kegiatan Pelatihan</h2>
+
+    <!-- Toolbar: mobile stack, desktop inline -->
+    <div class="card toolbar-card mb-4">
       <div class="card-body">
-        <div class="d-flex gap-2 mb-3">
-          <div class="input-group flex-grow-1">
-            <input type="text" class="form-control" id="searchBar" placeholder="Cari kegiatan atau instansi..." oninput="searchData()">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-          </div>
-          <button class="btn btn-filter" onclick="activateFilter(this, 'today')">Hari Ini</button>
-          <button class="btn btn-filter" onclick="activateFilter(this, 'week')">Satu Minggu Kedepan</button>
-          <button class="btn btn-filter" onclick="activateFilter(this, 'month')">Satu Bulan Kedepan</button>
-        </div>
-      </div>
-    </div>
-
-
-  @forelse($items as $t)
-    @php
-      $jam = ($t->jam_start && $t->jam_end) ? ($t->jam_start.' — '.$t->jam_end) : 'Full day';
-      $aff = chipAffiliation($t->affiliation ?? '');
-      $status = $t->status ?? 'approved';
-      $instansi = $t->instansi ?? '—';
-      $room = $t->properties->name ?? ($t->room_name ?? '—');
-      $unit = $t->ordered_unit ?? '—';
-      $desc = trim((string)($t->description ?? '—'));
-      $descShort = \Illuminate\Support\Str::limit($desc, 160);
-      $created = $t->created_at ? Carbon::parse($t->created_at)->translatedFormat('d M Y') : '—';
-      $updated = $t->updated_at ? Carbon::parse($t->updated_at)->translatedFormat('d M Y') : '—';
-    @endphp
-
-    <div class="booking-card mb-4" data-start="{{ $t->start }}" data-end="{{ $t->end }}">
-      {{-- Header title + badges --}}
-      <div class="booking-head">
-        <h2 class="booking-title">{{ $t->kegiatan ?? '—' }}</h2>
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <span class="badge badge-pill badge-approve text-capitalize">{{ $status }}</span>
-          <span class="badge badge-pill chip-grey">{{ $aff }}</span>
-        </div>
-      </div>
-
-      <hr class="hr-soft">
-
-      <div class="booking-body">
-        <div class="row g-4">
-          {{-- Left info list --}}
-          <div class="col-12 col-lg-7">
-            <div class="d-flex align-items-start gap-3 mb-3">
-              <div class="info-icon"><i class="bi bi-calendar-event"></i></div>
-              <div>
-                <div class="label">Tanggal</div>
-                <div class="val">{{ fmtDateRange($t->start ?? null, $t->end ?? null) }} ·
-                  @if($t->start && $t->end)
-                    {{ Carbon::parse($t->start)->diffInDays(Carbon::parse($t->end)) + 1 }} hari
-                  @endif
-                </div>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-start gap-3 mb-3">
-              <div class="info-icon"><i class="bi bi-clock"></i></div>
-              <div>
-                <div class="label">Jam</div>
-                <div class="val">{{ $jam }}</div>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-start gap-3 mb-3">
-              <div class="info-icon"><i class="bi bi-building"></i></div>
-              <div>
-                <div class="label">Instansi</div>
-                <div class="val">{{ $instansi }}</div>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-start gap-3 mb-3">
-              <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
-              <div>
-                <div class="label">Ruangan</div>
-                <div class="val">{{ $room }} · Unit dipesan: {{ $unit }}</div>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-start gap-3">
-              <div class="info-icon"><i class="bi bi-file-text"></i></div>
-              <div>
-                <div class="label">Deskripsi</div>
-                <div class="val">
-                  <span class="desc-short">{{ $descShort }}</span>
-                  @if(strlen($desc) > strlen($descShort))
-                    <span class="desc-full d-none">{{ $desc }}</span>
-                    <a href="#" class="see-more ms-1" data-expand> Lihat lebih banyak</a>
-                  @endif
-                </div>
-              </div>
+        <div class="row g-2 align-items-md-center">
+          <div class="col-12 col-md">
+            <div class="input-group">
+              <input type="text" class="form-control" id="searchBar" placeholder="Cari kegiatan atau instansi..." oninput="searchData()">
+              <span class="input-group-text d-none d-md-inline"><i class="bi bi-search"></i></span>
+              <button class="btn btn-outline-secondary d-md-none" type="button" onclick="applyFilters()"><i class="bi bi-search"></i></button>
             </div>
           </div>
-
-          {{-- Right PIC panel --}}
-          <div class="col-12 col-lg-5">
-            <div class="pic-panel h-100">
-              <p class="pic-title mb-1">Pemesan (PIC)</p>
-              <div class="mb-3">{{ $t->name ?? '—' }}</div>
-
-              <div class="d-flex align-items-start gap-3 mb-2">
-                <div class="info-icon"><i class="bi bi-telephone"></i></div>
-                <div>
-                  <div class="label">Telepon</div>
-                  <div class="val">
-                    @if(!empty($t->phone_number))
-                      <a href="tel:{{ $t->phone_number }}">{{ $t->phone_number }}</a>
-                    @else
-                      —
-                    @endif
-                  </div>
-                </div>
-              </div>
-
-              <div class="d-flex align-items-start gap-3 mb-3">
-                <div class="info-icon"><i class="bi bi-envelope"></i></div>
-                <div>
-                  <div class="label">Email</div>
-                  <div class="val">
-                    @if(!empty($t->email))
-                      <a href="mailto:{{ $t->email }}">{{ $t->email }}</a>
-                    @else
-                      —
-                    @endif
-                  </div>
-                </div>
-              </div>
-
-              
+          <div class="col-12 col-md-auto">
+            <div class="d-flex flex-wrap gap-2 filter-group">
+              <button class="btn btn-filter active" onclick="activateFilter(this, 'all')">All</button>
+              <button class="btn btn-filter" onclick="activateFilter(this, 'today')">Today</button>
+              <button class="btn btn-filter" onclick="activateFilter(this, 'upcoming')">Upcoming</button>
             </div>
-            
           </div>
         </div>
       </div>
     </div>
-  @empty
-    <div class="alert alert-info">Belum ada data pemesanan.</div>
-  @endforelse
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Toggle "Lihat lebih banyak"
-  document.querySelectorAll('[data-expand]').forEach(function(btn){
-    btn.addEventListener('click', function(e){
+    <!-- GRID KARTU -->
+    <div id="grid" class="row row-cols-1 row-cols-lg-2 g-4">
+      @forelse($items as $t)
+        @php
+          $jam = ($t->jam_start && $t->jam_end) ? ($t->jam_start.' — '.$t->jam_end) : 'Full day';
+          $aff = chipAffiliation($t->affiliation ?? '');
+          $status = $t->status ?? 'approved';
+          $instansi = $t->instansi ?? '—';
+          $room = $t->properties->name ?? ($t->room_name ?? '—');
+          $unit = $t->ordered_unit ?? '—';
+          $desc = trim((string)($t->description ?? '—'));
+          $descShort = \Illuminate\Support\Str::limit($desc, 160);
+        @endphp
+
+        <div class="col">
+          <div class="booking-card h-100" data-start="{{ $t->start }}" data-end="{{ $t->end }}">
+            <div class="booking-head">
+              <h2 class="booking-title">{{ $t->kegiatan ?? '—' }}</h2>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="badge badge-pill badge-approve">{{ ucfirst($status) }}</span>
+                <span class="badge badge-pill chip-grey">{{ $aff }}</span>
+              </div>
+            </div>
+            <hr class="hr-soft">
+            <div class="booking-body">
+              <div class="row g-4">
+                <div class="col-12 col-lg-7">
+                  <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="info-icon"><i class="bi bi-calendar-event"></i></div>
+                    <div>
+                      <div class="label">Tanggal</div>
+                      <div class="val">{{ fmtDateRange($t->start ?? null, $t->end ?? null) }} · @if($t->start && $t->end) {{ Carbon::parse($t->start)->diffInDays(Carbon::parse($t->end)) + 1 }} hari @endif</div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="info-icon"><i class="bi bi-clock"></i></div>
+                    <div>
+                      <div class="label">Jam</div>
+                      <div class="val">{{ $jam }}</div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="info-icon"><i class="bi bi-building"></i></div>
+                    <div>
+                      <div class="label">Instansi</div>
+                      <div class="val">{{ $instansi }}</div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="info-icon"><i class="bi bi-geo-alt"></i></div>
+                    <div>
+                      <div class="label">Ruangan</div>
+                      <div class="val">{{ $room }} · Unit dipesan: {{ $unit }}</div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="info-icon"><i class="bi bi-file-text"></i></div>
+                    <div>
+                      <div class="label">Deskripsi</div>
+                      <div class="val" data-desc>
+                        <span class="desc-short">{{ $descShort }}</span>
+                        @if(strlen($desc) > strlen($descShort))
+                          <span class="desc-full d-none">{{ $desc }}</span>
+                          <a href="#" class="see-more ms-1" data-expand>Lihat lebih banyak</a>
+                        @endif
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-lg-5">
+                  <div class="pic-panel h-100">
+                    <p class="pic-title mb-1">Pemesan (PIC)</p>
+                    <div class="mb-3">{{ $t->name ?? '—' }}</div>
+
+                    <div class="d-flex align-items-start gap-3 mb-2">
+                      <div class="info-icon"><i class="bi bi-telephone"></i></div>
+                      <div>
+                        <div class="label">Telepon</div>
+                        <div class="val">@if(!empty($t->phone_number))<a href="tel:{{ $t->phone_number }}">{{ $t->phone_number }}</a>@else — @endif</div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                      <div class="info-icon"><i class="bi bi-envelope"></i></div>
+                      <div>
+                        <div class="label">Email</div>
+                        <div class="val">@if(!empty($t->email))<a href="mailto:{{ $t->email }}">{{ $t->email }}</a>@else — @endif</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      @empty
+        <div class="col">
+          <div class="alert alert-info mb-0">Belum ada data pemesanan.</div>
+        </div>
+      @endforelse
+
+      <!-- Empty state for filtered results -->
+      <div id="emptyState" class="col-12 d-none">
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-search" style="font-size:2rem"></i>
+          <p class="mt-2 mb-0">Tidak ada hasil yang cocok dengan filter/pencarian.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Toggle "Lihat lebih banyak"
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-expand]');
+      if (!btn) return;
       e.preventDefault();
-      const wrap = btn.closest('.val');
+      const wrap = btn.closest('[data-desc]');
+      if (!wrap) return;
       const shortEl = wrap.querySelector('.desc-short');
       const fullEl  = wrap.querySelector('.desc-full');
-      const expanded = fullEl.classList.toggle('d-none') === false;
-      shortEl.classList.toggle('d-none', expanded);
-      btn.textContent = expanded ? ' Sembunyikan' : ' Lihat lebih banyak';
+      const isExpanded = wrap.classList.toggle('is-expanded');
+      if (shortEl) shortEl.classList.toggle('d-none', isExpanded);
+      if (fullEl)  fullEl.classList.toggle('d-none', !isExpanded);
+      btn.textContent = isExpanded ? 'Sembunyikan' : 'Lihat lebih banyak';
     });
-  });
 
-  function activateFilter(button, range) {
-    document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
-    filterData(range);
-  }
+    // ====== GRID FILTERING ======
+    let currentRange = 'all';
 
-  function filterData(range) {
-    const today = new Date();
-    let startDate = today;
-    let endDate = new Date();
-
-    if (range === 'week') {
-      endDate.setDate(today.getDate() + 7);
-    } else if (range === 'month') {
-      endDate.setMonth(today.getMonth() + 1);
+    function setVisibility(card, visible) {
+      const col = card.closest('.col') || card.parentElement;
+      if (!col) return;
+      col.classList.toggle('d-none', !visible);
     }
 
-    document.querySelectorAll('.booking-card').forEach(card => {
-      const start = new Date(card.dataset.start.replace(/-/g, '/'));
-      const end = new Date(card.dataset.end.replace(/-/g, '/'));
+    function inRange(range, start, end, now) {
+      if (range === 'all') return true;
+      if (range === 'today') return (start <= now && end >= now); // berlangsung hari ini
+      if (range === 'upcoming') return (start > now);
+      return true;
+    }
 
-      if ((range === 'today' && start.toDateString() === today.toDateString()) ||
-          (start >= startDate && start <= endDate) ||
-          (end >= startDate && end <= endDate)) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  }
+    function applyFilters() {
+      const q = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
+      const now = new Date();
+      let visibleCount = 0;
 
-  function searchData() {
-    const query = document.getElementById('searchBar').value.toLowerCase();
-    document.querySelectorAll('.booking-card').forEach(card => {
-      const title = card.querySelector('.booking-title').textContent.toLowerCase();
-      const instansi = card.querySelector('.val').textContent.toLowerCase();
+      document.querySelectorAll('.booking-card').forEach(card => {
+        const start = new Date((card.dataset.start || '').replace(/-/g, '/'));
+        const endRaw = (card.dataset.end || card.dataset.start || '').replace(/-/g, '/');
+        const end = new Date(endRaw);
+        const title = card.querySelector('.booking-title')?.textContent.toLowerCase() || '';
+        const bodyText = card.querySelector('.booking-body')?.textContent.toLowerCase() || '';
 
-      if (title.includes(query) || instansi.includes(query)) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  }
-</script>
+        const matchRange = inRange(currentRange, start, end, now);
+        const matchSearch = !q || title.includes(q) || bodyText.includes(q);
+        const show = matchRange && matchSearch;
+        setVisibility(card, show);
+        if (show) visibleCount++;
+      });
+
+      document.getElementById('emptyState')?.classList.toggle('d-none', visibleCount !== 0);
+    }
+
+    function activateFilter(button, range) {
+      document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      currentRange = range;
+      applyFilters();
+    }
+
+    function searchData() { applyFilters(); }
+
+    document.addEventListener('DOMContentLoaded', applyFilters);
+  </script>
 </body>
 
 </html>
