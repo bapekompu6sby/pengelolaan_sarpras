@@ -8,7 +8,7 @@
                     class="img-fluid">
             </span>
             <span class="app-brand-text demo menu-text fw-bold ms-2 text-truncate"
-                style="max-width:120px;">Topang</span>
+                style="max-width:120px;">Topang </span>
         </a>
 
 
@@ -55,7 +55,7 @@
         <li class="menu-item {{ $isTbl ? 'active' : '' }}">
             <a href="{{ route('tabelKegiatan') }}" class="menu-link" {{ $isTbl ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                <div>Kegiatan Hari Ini</div>
+                <div>Ongoing Activities</div>
             </a>
         </li>
 
@@ -64,7 +64,7 @@
         <li class="menu-item {{ $isCal ? 'active' : '' }}">
             <a href="{{ route('calendar') }}" class="menu-link" {{ $isCal ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div>Kalender Kegiatan</div>
+                <div>Calendar</div>
             </a>
         </li>
 
@@ -73,7 +73,7 @@
         <li class="menu-item {{ $isBookings ? 'active' : '' }}">
             <a href="{{ route('bookings') }}" class="menu-link" {{ $isBookings ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-building-house"></i>
-                <div>Peminjaman Ruangan</div>
+                <div>Booking</div>
             </a>
         </li>
 
@@ -85,7 +85,7 @@
                     <a href="{{ route('transactions.historyTransaction') }}" class="menu-link"
                         {{ $isHistory ? 'aria-current=page' : '' }}>
                         <i class="menu-icon tf-icons bx bx-history"></i>
-                        <div>Riwayat Peminjaman</div>
+                        <div>History</div>
                     </a>
                 </li>
             @endif
@@ -97,7 +97,7 @@
                 <li class="menu-item {{ $isPenghunis ? 'active' : '' }}">
                     <a href="{{ route('penghunis') }}" class="menu-link" {{ $isPenghunis ? 'aria-current=page' : '' }}>
                         <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                        <div>Kamar Terpakai</div>
+                        <div>Dorm Status</div>
                     </a>
                 </li>
 
@@ -117,7 +117,7 @@
                         @php $isUsers = isActive('users'); @endphp
                         <li class="menu-item {{ $isUsers ? 'active' : '' }}">
                             <a href="{{ route('users') }}" class="menu-link" {{ $isUsers ? 'aria-current=page' : '' }}>
-                                <div>Data User</div>
+                                <div>User</div>
                             </a>
                         </li>
 
@@ -126,7 +126,7 @@
                         <li class="menu-item {{ $isProps ? 'active' : '' }}">
                             <a href="{{ route('properties') }}" class="menu-link"
                                 {{ $isProps ? 'aria-current=page' : '' }}>
-                                <div>Data Ruangan</div>
+                                <div>Rooms</div>
                             </a>
                         </li>
 
@@ -134,7 +134,7 @@
                         @php $isKamar = isActive('kamar'); @endphp
                         <li class="menu-item {{ $isKamar ? 'active' : '' }}">
                             <a href="{{ route('kamar') }}" class="menu-link" {{ $isKamar ? 'aria-current=page' : '' }}>
-                                <div>Data Kamar</div>
+                                <div>Dorm Rooms</div>
                             </a>
                         </li>
 
@@ -143,7 +143,7 @@
                         <li class="menu-item {{ $isTx ? 'active' : '' }}">
                             <a href="{{ route('transactions') }}" class="menu-link"
                                 {{ $isTx ? 'aria-current=page' : '' }}>
-                                <div>Peminjaman Ruangan</div>
+                                <div>Transactions History</div>
                             </a>
                         </li>
                     </ul>
@@ -156,7 +156,7 @@
         <li class="menu-item {{ $isGuide ? 'active' : '' }}">
             <a href="{{ route('bukuPanduan') }}" class="menu-link" {{ $isGuide ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-book"></i>
-                <div>Buku Panduan</div>
+                <div>User Guide</div>
             </a>
         </li>
 

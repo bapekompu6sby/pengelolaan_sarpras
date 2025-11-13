@@ -361,28 +361,54 @@
       col.classList.toggle('d-none', !visible);
     }
 
-    function inRange(range, start, end, now) {
+    // Normalisasi string tanggal ke format YYYY-MM-DD saja
+    function normalizeDateStr(value) {
+      if (!value) return '';
+      return value.toString().slice(0, 10); // ambil hanya bagian YYYY-MM-DD
+    }
+
+    // range cek berbasis tanggal murni (bukan jam)
+    function inRange(range, startStr, endStr, todayStr) {
       if (range === 'all') return true;
-      if (range === 'today') return (start <= now && end >= now); // berlangsung hari ini
-      if (range === 'upcoming') return (start > now);
+
+      const s = startStr || endStr;
+      const e = endStr || startStr;
+
+      if (!s && !e) return false;
+
+      if (range === 'today') {
+        // tampilkan semua kegiatan yang tanggalnya overlap dengan hari ini
+        // (start <= today <= end) dengan end bersifat inklusif
+        return (s <= todayStr && e >= todayStr);
+      }
+
+      if (range === 'upcoming') {
+        // kegiatan yang baru akan dimulai setelah hari ini
+        return s > todayStr;
+      }
+
       return true;
     }
 
     function applyFilters() {
       const q = (document.getElementById('searchBar')?.value || '').toLowerCase().trim();
-      const now = new Date();
+
+      // todayStr: YYYY-MM-DD
+      const todayStr = new Date().toISOString().slice(0, 10);
+
       let visibleCount = 0;
 
       document.querySelectorAll('.booking-card').forEach(card => {
-        const start = new Date((card.dataset.start || '').replace(/-/g, '/'));
-        const endRaw = (card.dataset.end || card.dataset.start || '').replace(/-/g, '/');
-        const end = new Date(endRaw);
+        const startStr = normalizeDateStr(card.dataset.start || '');
+        const endStr   = normalizeDateStr(card.dataset.end || card.dataset.start || '');
+
         const title = card.querySelector('.booking-title')?.textContent.toLowerCase() || '';
         const bodyText = card.querySelector('.booking-body')?.textContent.toLowerCase() || '';
 
-        const matchRange = inRange(currentRange, start, end, now);
+        const matchRange = inRange(currentRange, startStr, endStr, todayStr);
         const matchSearch = !q || title.includes(q) || bodyText.includes(q);
         const show = matchRange && matchSearch;
+
         setVisibility(card, show);
         if (show) visibleCount++;
       });
