@@ -4,11 +4,12 @@
     <div class="app-brand demo px-3 py-2 mb-3">
         <a href="{{ route('dashboard') }}" class="app-brand-link d-flex align-items-center text-decoration-none ps-3">
             <span class="app-brand-logo demo d-inline-flex align-items-center justify-content-center">
-                <img src="{{ asset('/assets/img/favicon/logo.png') }}" width="44" height="44" alt="Logo PUPR"
+                <img src="{{ asset('/assets/img/favicon/logo.png') }}" width="44" height="44" alt="Logo Topang"
                     class="img-fluid">
             </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-2 text-truncate"
-                style="max-width:120px;">Topang </span>
+            <span class="app-brand-text demo menu-text fw-bold ms-2 text-truncate" style="max-width:120px;">
+                Topang<span style="color: #0d6efd;">+</span>
+            </span>
         </a>
 
 
@@ -55,7 +56,7 @@
         <li class="menu-item {{ $isTbl ? 'active' : '' }}">
             <a href="{{ route('tabelKegiatan') }}" class="menu-link" {{ $isTbl ? 'aria-current=page' : '' }}>
                 <i class="menu-icon tf-icons bx bx-grid-alt"></i>
-                <div>Ongoing Activities</div>
+                <div>Today’s Event</div>
             </a>
         </li>
 
@@ -78,6 +79,17 @@
         </li>
 
         @auth
+            {{-- Reservasi (Admin only) --}}
+            @if (in_array($role, ['admin', 'supervisor']))
+                @php $isTx = isActive('transactions'); @endphp
+                <li class="menu-item {{ $isTx ? 'active' : '' }}">
+                    <a href="{{ route('transactions') }}" class="menu-link" {{ $isTx ? 'aria-current=page' : '' }}>
+                        <i class="menu-icon tf-icons bx bx-file-blank"></i>
+                        <div>Reservations</div>
+                    </a>
+                </li>
+            @endif
+
             {{-- Riwayat (khusus user) --}}
             @if ($role === 'user')
                 @php $isHistory = isActive('transactions.historyTransaction'); @endphp
@@ -103,7 +115,7 @@
 
                 {{-- Data Master (submenu) --}}
                 @php
-                    $isMasterOpen = isActive(['users', 'properties', 'kamar', 'transactions']);
+                    $isMasterOpen = isActive(['users', 'properties', 'kamar']);
                 @endphp
                 <li class="menu-item {{ $isMasterOpen ? 'active open' : '' }}">
                     <a href="#" class="menu-link menu-toggle" id="data-master"
@@ -134,16 +146,7 @@
                         @php $isKamar = isActive('kamar'); @endphp
                         <li class="menu-item {{ $isKamar ? 'active' : '' }}">
                             <a href="{{ route('kamar') }}" class="menu-link" {{ $isKamar ? 'aria-current=page' : '' }}>
-                                <div>Dorm Rooms</div>
-                            </a>
-                        </li>
-
-                        {{-- Peminjaman Ruangan (Admin table) --}}
-                        @php $isTx = isActive('transactions'); @endphp
-                        <li class="menu-item {{ $isTx ? 'active' : '' }}">
-                            <a href="{{ route('transactions') }}" class="menu-link"
-                                {{ $isTx ? 'aria-current=page' : '' }}>
-                                <div>Transactions History</div>
+                                <div>Dormitories</div>
                             </a>
                         </li>
                     </ul>
