@@ -34,6 +34,7 @@
       --text-xl: 20px;             /* h3 */
       --text-sm: 14px;             /* small */
       --text-xs: 12px;             /* extra small */
+      --ink:#0f172a;
     }
 
     /* App background */
@@ -115,8 +116,20 @@
     .badge-approve{ background:var(--success-soft); color:var(--success-ink); }
     .badge-state-ongoing{ background:#f4c93a; color:#eef4ff; }
     .badge-state-upcoming{ background:#ece9ff; color:#5b47d6; }
-    .booking-title{ font-size: var(--text-xl); font-weight: 600; color: var(--ink); line-height: 1.3; margin: 0 0 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap:anywhere; word-break: break-word; letter-spacing:-0.01em; }
-
+    .booking-title{
+        font-size: var(--text-xl);
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.3;
+        margin: 0 0 6px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        overflow-wrap:anywhere;
+        word-break: break-word;
+        letter-spacing:-0.01em;
+      }
     .badge-pill{ border-radius: 999px; padding: .35rem .75rem; font-weight: 700; font-size:.8rem; }
     .badge-approve{ background:var(--success-soft); color:var(--success-ink); }
     .chip-grey{ background:#eef2f7; color:#374151; }
@@ -155,6 +168,17 @@
     .text-xs{ font-size: var(--text-xs); }
     .tracking-tight{ letter-spacing:-0.01em; }
     code,pre,kbd,samp,.font-mono{ font-family: var(--font-mono); }
+    /* MOBILE – tampilkan judul full, tanpa terpotong */
+      @media (max-width: 576.98px) {
+        .booking-title{
+          display: block;              /* lepas dari -webkit-box */
+          -webkit-line-clamp: unset;   /* hapus batas 2 baris */
+          -webkit-box-orient: unset;
+          overflow: visible;           /* biar boleh tinggi ke bawah */
+          white-space: normal;
+        }
+      }
+
   </style>
 </head>
 <body>
