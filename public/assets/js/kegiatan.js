@@ -16,8 +16,7 @@ $(document).ready(function() {
             infoFiltered: '(disaring dari total _MAX_ data)'
         },
         columnDefs: [
-            { targets: [1], className: 'fw-semibold' },
-            { targets: [4], className: 'text-nowrap' }
+            { targets: [1], className: 'fw-semibold' }
         ]
     });
 

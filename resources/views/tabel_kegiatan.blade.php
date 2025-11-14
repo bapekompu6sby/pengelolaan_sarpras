@@ -77,12 +77,7 @@
                         <h1 class="h3 fw-bold text-dark mb-4">Kegiatan Hari Ini</h1>
                     </div>
                     <div class="col-12 col-md-6 text-md-end">
-                        <h5 id="sliderTitle" class="mb-0 d-inline-flex align-items-center">
-                            <span class="badge bg-label-primary me-2">
-                                <i class="bx bx-slideshow"></i>
-                            </span>
-                            Slide
-                        </h5>
+                        
                     </div>
                 </div>
 
@@ -158,8 +153,6 @@
                                 <th>Instansi</th>
                                 <th>Kegiatan</th>
                                 <th>Tanggal</th>
-                                <th>Pemesan</th>
-                                <th>Kontak</th>
                                 <th>Ruangan</th>
                             </tr>
                         </thead>
@@ -173,8 +166,6 @@
                                         <small class="text-muted">{{ $e->description }}</small>
                                     </td>
                                     <td>{{ tanggalRangeID($e->start, $e->end) }}</td>
-                                    <td>{{ $e->name }}</td>
-                                    <td class="text-nowrap">{{ $e->phone_number }}</td>
                                     <td>{{ $e->properties->name ?? '-' }}</td>
                                 </tr>
                             @empty
