@@ -135,6 +135,25 @@ class TransactionController extends Controller
         return redirect()->back()->with('success', 'Surat permohonan berhasil diunggah');
     }
 
+    public function update_deskription(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'description' => 'nullable|string|max:1000',
+            ], [
+                'description.max' => 'Deskripsi terlalu panjang, maksimal 1000 karakter.',
+            ]);
+        } catch (ValidationException $e) {
+            return redirect()->back()->with('failed', $e->validator->errors()->first());
+        }
+
+        $transaction = Transaction::findOrFail($id);
+        $transaction->description = $request->input('description');
+        $transaction->save();
+
+        return redirect()->back()->with('success', 'Deskripsi berhasil diperbarui');
+    }
+
 
 
 

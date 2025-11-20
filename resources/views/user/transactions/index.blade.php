@@ -154,7 +154,7 @@
                                                 title="{{ $t->properties->name }}">
                                                 {{ $t->properties->name }}
                                             </span>
-                                            <i class='bx bxs-building-house fs-4 me-1 ' ></i>
+                                            <i class='bx bxs-building-house fs-4 me-1 '></i>
                                         </div>
                                     </div>
 
@@ -171,7 +171,8 @@
 
                                             {{-- Instansi --}}
                                             <div class="d-flex align-items-start">
-                                                <i class="bx bxs-buildings fs-4 me-2  flex-shrink-0 " style="color: #003A70"></i>
+                                                <i class="bx bxs-buildings fs-4 me-2  flex-shrink-0 "
+                                                    style="color: #003A70"></i>
                                                 <div class="fs-7 text-break">
                                                     <strong>Instansi:</strong> {{ ucfirst($t->instansi) }}
                                                 </div>
@@ -187,7 +188,8 @@
 
                                             {{-- Tanggal --}}
                                             <div class="d-flex align-items-start">
-                                                <i class="bx bx-calendar fs-4 me-2 flex-shrink-0 " style="color: #003A70"></i>
+                                                <i class="bx bx-calendar fs-4 me-2 flex-shrink-0 "
+                                                    style="color: #003A70"></i>
                                                 <div class="fs-7 text-break">
                                                     <strong>Tanggal:</strong>
                                                     {{ \Carbon\Carbon::parse($t->start)->format('d-m-Y') }} –
@@ -197,7 +199,8 @@
 
                                             {{-- Status --}}
                                             <div class="d-flex align-items-start mt-1">
-                                                <i class="bx bx-badge-check fs-4 me-2 flex-shrink-0 " style="color: #003A70"></i>
+                                                <i class="bx bx-badge-check fs-4 me-2 flex-shrink-0 "
+                                                    style="color: #003A70"></i>
                                                 <div class="fs-7 text-break">
                                                     <strong>Status:</strong>
                                                     @php
@@ -262,5 +265,6 @@
 
                 </div>
             </div>
+            
         </div>
     @endsection

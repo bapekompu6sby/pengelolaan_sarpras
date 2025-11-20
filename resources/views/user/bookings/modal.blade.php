@@ -255,8 +255,11 @@
 
 
                             <div class="mb-3">
-                                <label for="description" class="form-label">Deskripsi</label>
-                                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                <label for="description" class="form-label text-danger">Permintaan tambahan sesuai
+                                    fasilitas*</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                    placeholder="Contoh: kursi kelasnya berbentuk U, butuh kabel HDMI, cameranya di tengah, dll..."></textarea>
+                                <small class="form-text text-muted">Jika belum terpikir, nanti bisa di update di "History"</small>
                             </div>
 
                             <div class="row">

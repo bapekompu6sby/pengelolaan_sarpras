@@ -36,7 +36,6 @@
                         <p><strong>Affiliation:</strong> {{ $t->affiliation }}</p>
                         <p><strong>Phone:</strong> {{ $t->phone_number }}</p>
                         <p><strong>Email:</strong> {{ $t->email }}</p>
-                        <p><strong>Description:</strong> {{ $t->description }}</p>
                         <p><strong>Unit:</strong> {{ $t->ordered_unit }}</p>
                         <p><strong>Total Harga:</strong> Rp {{ number_format($t->total_harga, 0, ',', '.') }}</p>
 
@@ -158,20 +157,39 @@
                     <div class="col-12 col-md-6">
                         <p><strong>Jam Sampai Acara:</strong> {{ $t->jam_end }}</p>
                     </div>
+                    <div class="col-12 col-md-6">
+                        <p><strong>Dipesan pada:</strong> {{ $t->created_at->format('Y-m-d') }}</p>
+                    </div>
 
-                    
+
                 </div>
 
                 <hr class="mt-0">
 
                 <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <p><strong>Dipesan pada:</strong> {{ $t->created_at->format('Y-m-d') }}</p>
+                    <div class="col-12">
+                        <strong>Permintaan tambahan sesuai fasilitas:</strong>
+
+                        <form action="{{ route('transactions.updateDescription', $t->id) }}" method="POST"
+                            class="mt-2">
+                            @csrf
+
+                            <textarea name="description" class="form-control mb-2" rows="3" placeholder="Update deskripsi..."
+                                style="resize: vertical;">{{ $t->description }}</textarea>
+
+                            <button type="submit" class="btn btn-primary btn-sm w-auto">
+                                Update
+                            </button>
+                        </form>
                     </div>
                 </div>
 
+
+
+
+
                 @if ($t->status == 'approved')
-                    <div class="row g-3">
+                    <div class="row g-3 mt-4">
                         <div class="col-12 col-md-6">
                             <p><strong>QR Survey Kepuasan:</strong></p>
                             <p class="text-muted small mb-0">atau klik barcode berikut:</p>
