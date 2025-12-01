@@ -75,6 +75,8 @@ Route::middleware('auth')->group(function () {
                 // Upload dokumen
                 Route::post('/updatePaymentReceipt/{id}', [TransactionController::class, 'update_payment_receipt'])->name('transactions.payment');
                 Route::post('/updateRequestLetter/{id}', [TransactionController::class, 'update_request_letter'])->name('transactions.request_letter');
+                Route::post('/updateDeskription/{id}', [TransactionController::class, 'update_deskription'])->name('transactions.updateDescription');
+
 
                 // Ruangan – list/export/hapus
                 Route::get('/ruangan/export', [TransactionController::class, 'ruangan_export'])->name('transactions.ruangan.export');
