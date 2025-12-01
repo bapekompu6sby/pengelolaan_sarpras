@@ -35,21 +35,34 @@
         </div>
     @endif
 
+    @php
+        $matrixData = $matrixData ?? null;
+        $matrixMode = $matrixMode ?? 'embed';
+        $showMatrixOnly = $showMatrixOnly ?? false;
+    @endphp
+
     <div class="container-fluid flex-grow-1 p-0">
         <div class="row g-0">
             <div class="col-12 px-3 py-3">
-                <div class="card card-modern">
+                <div class="card card-modern @if($showMatrixOnly) d-none @endif" id="transactionsListWrapper">
                     {{-- Header card pakai aksen border-bottom biru dari .card-modern --}}
-                    <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <h5 class="mb-0 text-brand">Peminjaman Ruangan</h5>
 
-                        <button class="btn btn-success btn-modern d-flex align-items-center" data-bs-toggle="modal"
-                            data-bs-target="#exportRuanganModal" data-bs-html="true"
-                            data-bs-original-title="<i class='bx bx-spreadsheet bx-xs'></i> <span>Export to Excel</span>">
-                            <i class="bx bx-cloud-download bx-sm me-1"></i>
-                            Export
-                        </button>
-
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('transactions.ruangan.matrix') }}"
+                                class="btn btn-outline-primary btn-modern d-flex align-items-center js-show-matrix"
+                                data-matrix-url="{{ route('transactions.ruangan.matrix') }}">
+                                <i class="bx bx-table bx-sm me-1"></i>
+                                Lihat Rekap Tabel
+                            </a>
+                            <button class="btn btn-success btn-modern d-flex align-items-center" data-bs-toggle="modal"
+                                data-bs-target="#exportRuanganModal" data-bs-html="true"
+                                data-bs-original-title="<i class='bx bx-spreadsheet bx-xs'></i> <span>Export to Excel</span>">
+                                <i class="bx bx-cloud-download bx-sm me-1"></i>
+                                Export
+                            </button>
+                        </div>
                     </div>
 
                     <div class="card-body mt-3">
@@ -180,6 +193,12 @@
 
                     </div> {{-- /card-body --}}
                 </div>
+
+                <div id="matrixPanelWrapper" class="{{ $matrixData ? '' : 'd-none' }}">
+                    @if ($matrixData)
+                        @include('admin.transactions.matrix_panel', array_merge($matrixData, ['mode' => $matrixMode ?? 'embed']))
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -248,6 +267,95 @@
                         }
                         form.classList.add('was-validated');
                     }, false);
+                })();
+            </script>
+            <script>
+                (function() {
+                    const trigger = document.querySelector('.js-show-matrix');
+                    const listWrapper = document.getElementById('transactionsListWrapper');
+                    const matrixWrapper = document.getElementById('matrixPanelWrapper');
+
+                    if (!trigger || !listWrapper || !matrixWrapper) {
+                        return;
+                    }
+
+                    const toggleView = (showMatrix) => {
+                        if (showMatrix) {
+                            listWrapper.classList.add('d-none');
+                            matrixWrapper.classList.remove('d-none');
+                        } else {
+                            matrixWrapper.classList.add('d-none');
+                            listWrapper.classList.remove('d-none');
+                        }
+                    };
+
+                    const setLoading = () => {
+                        matrixWrapper.innerHTML =
+                            '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3 mb-0">Memuat rekap ruangan...</p></div>';
+                    };
+
+                    const loadMatrix = (url, params = '') => {
+                        if (!url) return;
+                        toggleView(true);
+                        setLoading();
+                        const finalUrl = params ? `${url}?${params}` : url;
+                        fetch(finalUrl, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then((res) => {
+                                if (!res.ok) throw new Error('Request failed');
+                                return res.json();
+                            })
+                            .then((data) => {
+                                matrixWrapper.innerHTML = data.html || '';
+                                attachMatrixEvents();
+                            })
+                            .catch(() => {
+                                matrixWrapper.innerHTML =
+                                    `<div class="alert alert-danger m-4">Gagal memuat rekap. <a href="${url}" class="alert-link">Buka di tab baru</a> atau coba lagi.</div><div class="mt-3 text-center"><button type="button" class="btn btn-outline-secondary js-matrix-error-back">Kembali</button></div>`;
+                                const errBack = matrixWrapper.querySelector('.js-matrix-error-back');
+                                if (errBack) {
+                                    errBack.addEventListener('click', () => toggleView(false), {
+                                        once: true
+                                    });
+                                }
+                            });
+                    };
+
+                    const attachMatrixEvents = () => {
+                        const closeBtn = matrixWrapper.querySelector('.js-matrix-close');
+                        if (closeBtn) {
+                            closeBtn.addEventListener('click', () => toggleView(false), {
+                                once: true
+                            });
+                        }
+
+                        const form = matrixWrapper.querySelector('[data-matrix-form="embed"]');
+                        if (form) {
+                            form.addEventListener('submit', (e) => {
+                                e.preventDefault();
+                                const params = new URLSearchParams(new FormData(form)).toString();
+                                loadMatrix(form.getAttribute('action'), params);
+                            });
+                        }
+
+                        const resetBtn = matrixWrapper.querySelector('.js-matrix-reset');
+                        if (resetBtn) {
+                            resetBtn.addEventListener('click', () => {
+                                const url = resetBtn.dataset.url || trigger.dataset.matrixUrl;
+                                loadMatrix(url);
+                            });
+                        }
+                    };
+
+                    trigger.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const url = this.dataset.matrixUrl || this.getAttribute('href');
+                        loadMatrix(url);
+                    });
                 })();
             </script>
         @endpush

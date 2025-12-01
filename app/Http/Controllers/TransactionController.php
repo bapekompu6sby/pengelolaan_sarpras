@@ -569,6 +569,121 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
         return Excel::download(new RuanganMultiMonthExport($start, $count, $templatePath), $fname);
     }
 
+    public function ruangan_matrix_preview(Request $request)
+    {
+        Validator::make($request->all(), [
+            'start_month' => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+            'end_month'   => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+        ])->validate();
+
+        $startMonthStr = $request->input('start_month', now()->format('Y-m'));
+        $endMonthStr   = $request->input('end_month',   now()->format('Y-m'));
+
+        $start = Carbon::createFromFormat('Y-m-d', $startMonthStr . '-01')->startOfMonth();
+        $end   = Carbon::createFromFormat('Y-m-d', $endMonthStr . '-01')->endOfMonth();
+
+        if ($end->lt($start)) {
+            [$start, $end] = [$end->copy()->startOfMonth(), $start->copy()->endOfMonth()];
+            [$startMonthStr, $endMonthStr] = [$start->format('Y-m'), $end->format('Y-m')];
+        }
+
+        $properties = Properties::orderBy('name')->get(['id', 'name']);
+
+        $dates = collect();
+        $cursor = $start->copy();
+        while ($cursor->lte($end)) {
+            $dates->push($cursor->copy());
+            $cursor->addDay();
+        }
+
+        $matrix = [];
+        foreach ($dates as $date) {
+            $matrix[$date->toDateString()] = [];
+        }
+
+        $transactions = Transaction::select('name', 'instansi', 'kegiatan', 'start', 'end', 'phone_number', 'property_id')
+            ->where('status', 'approved')
+            ->whereDate('start', '<=', $end->toDateString())
+            ->whereDate('end',   '>=', $start->toDateString())
+            ->orderBy('start')
+            ->get();
+
+        $propIds = $properties->pluck('id')->all();
+        $totals = array_fill_keys($propIds, 0);
+
+        foreach ($transactions as $tx) {
+            if (!isset($totals[$tx->property_id])) {
+                continue;
+            }
+
+            $txStart = Carbon::parse($tx->start)->max($start);
+            $txEnd   = Carbon::parse($tx->end)->min($end);
+
+            if ($txEnd->lt($txStart)) {
+                continue;
+            }
+
+            $entry = [
+                'kegiatan' => trim((string) $tx->kegiatan),
+                'instansi' => trim((string) $tx->instansi),
+                'name' => trim((string) $tx->name),
+                'phone' => trim((string) $tx->phone_number),
+                'range' => $txStart->format('d M Y') . ' - ' . $txEnd->format('d M Y'),
+            ];
+
+            $day = $txStart->copy();
+            while ($day->lte($txEnd)) {
+                $ymd = $day->toDateString();
+
+                if (!isset($matrix[$ymd][$tx->property_id])) {
+                    $matrix[$ymd][$tx->property_id] = [];
+                }
+
+                $matrix[$ymd][$tx->property_id][] = $entry;
+
+                $day->addDay();
+            }
+        }
+
+        foreach ($matrix as $perDay) {
+            foreach ($perDay as $propId => $entries) {
+                if (!empty($entries)) {
+                    $totals[$propId] = ($totals[$propId] ?? 0) + 1;
+                }
+            }
+        }
+
+        $maxTotal = count($totals) ? max($totals) : 0;
+
+        $data = [
+            'properties' => $properties,
+            'dates' => $dates,
+            'matrix' => $matrix,
+            'totals' => $totals,
+            'maxTotal' => $maxTotal,
+            'period' => [
+                'start' => $start,
+                'end' => $end,
+            ],
+            'filters' => [
+                'start_month' => $startMonthStr,
+                'end_month' => $endMonthStr,
+            ],
+        ];
+
+        if ($request->ajax()) {
+            $html = view('admin.transactions.matrix_panel', $data + ['mode' => 'embed'])->render();
+            return response()->json(['html' => $html]);
+        }
+        return view('admin.transactions.index', [
+            'transactions' => collect(),
+            'ruangan' => collect(),
+            'matrixData' => $data,
+            'matrixMode' => 'page',
+            'showMatrixOnly' => true,
+        ]);
+    }
+
 
     /* ========================================================
                    $$\                           $$\                     
@@ -673,6 +788,12 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
                 return $r;
             });
 
-        return view('admin.transactions.index', compact('transactions', 'ruangan'));
+        return view('admin.transactions.index', [
+            'transactions' => $transactions,
+            'ruangan' => $ruangan,
+            'matrixData' => null,
+            'matrixMode' => 'embed',
+            'showMatrixOnly' => false,
+        ]);
     }
 }
