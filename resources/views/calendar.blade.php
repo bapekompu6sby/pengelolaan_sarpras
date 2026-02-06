@@ -17,7 +17,7 @@
         <div class="col">
             <div class="card calendar-container">
                 <div class="card-body">
-                  <h1 class="h3 fw-bold text-dark mb-4">Kalender</h1>
+                    <h1 class="h3 fw-bold text-dark mb-4">Kalender</h1>
                     <div id="calendar"></div>
                 </div>
             </div>
@@ -28,6 +28,7 @@
 
 @section('script')
 <script src="{{ asset('/assets/vendor/libs/fullcalendar/lib/main.min.js') }}"></script>
+
 <script>
     const venue = document.getElementById('venue');
 
@@ -45,7 +46,17 @@
         const startDate = document.getElementById('start');
         const endDate = document.getElementById('end');
 
+        const isMobile = window.matchMedia("(max-width: 576px)").matches;
         var calendar = new FullCalendar.Calendar(calendarEl, {
+            // Nama hari: mobile pendek, desktop panjang
+            dayHeaderFormat: isMobile ? {
+                    weekday: "short"
+                } // Min, Sen, Sel, Rab, Kam, Jum, Sab
+                :
+                {
+                    weekday: "long"
+                },
+            locale: 'id',
             initialDate: new Date(),
 
             events: await getEvents(),
