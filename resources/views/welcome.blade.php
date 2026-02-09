@@ -223,7 +223,17 @@
 
         document.addEventListener('DOMContentLoaded', async function() {
             const calendarEl = document.getElementById('calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
+            const isMobile = window.matchMedia("(max-width: 576px)").matches;
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                // Nama hari: mobile pendek, desktop panjang
+                dayHeaderFormat: isMobile ? {
+                        weekday: "short"
+                    } // Min, Sen, Sel, Rab, Kam, Jum, Sab
+                    :
+                    {
+                        weekday: "long"
+                    },
+                locale: 'id',
                 initialDate: new Date(),
                 events: await getEvents(),
             });
