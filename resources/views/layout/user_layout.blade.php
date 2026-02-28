@@ -252,8 +252,7 @@
                                     document.write(new Date().getFullYear());
                                 </script>
                                 {{-- | v2 MBKM ITATS 2025 --}}
-                                , by <span class="fw-bolder">Bapekom 6 Surabaya</span> colab with
-                                <span class="fw-bolder">MBKM UTM 2024</span>
+                                , by <span class="fw-bolder">Bapekom 6 Surabaya</span>
                             </div>
                         </div>
                     </footer>
