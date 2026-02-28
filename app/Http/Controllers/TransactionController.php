@@ -334,7 +334,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 'description'      => 'nullable|string',
                 'start'            => 'required|date',
                 'end'              => 'required|date|after_or_equal:start',
-                'status'           => 'required|string|in:pending,approved,rejected,waiting_payment',
+                'status'           => 'required|string|in:pending,approved,rejected,waiting_payment,cancelled',
                 'rejection_reason' => 'nullable|string|max:255|required_if:status,rejected',
                 'total_harga'      => 'required|numeric|min:0',
                 'billing_code'     => 'nullable|string',
@@ -814,5 +814,14 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
             'matrixMode' => 'embed',
             'showMatrixOnly' => false,
         ]);
+    }
+
+    public function cancel_transaction($id)
+    {
+        $transaction = Transaction::findOrFail($id);
+        $transaction->status = 'cancelled';
+        $transaction->save();
+
+        return redirect()->back()->with('success', 'Transaksi berhasil dibatalkan');
     }
 }

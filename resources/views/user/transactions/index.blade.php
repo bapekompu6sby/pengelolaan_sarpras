@@ -10,6 +10,7 @@
 
 @section('head')
     <link href="{{ asset('/assets/vendor/libs/datatables/datatables.min.css') }}" rel="stylesheet">
+    
 @endsection
 
 @section('content')
@@ -91,6 +92,8 @@
                                                 <span class="badge bg-danger">Ditolak</span>
                                             @elseif ($t->status === 'waiting_payment')
                                                 <span class="badge bg-info">Menunggu Pembayaran</span>
+                                            @elseif ($t->status === 'cancelled')
+                                                <span class="badge bg-danger">Dibatalkan</span>
                                             @elseif ($t->status === 'pending')
                                                 <span class="badge bg-warning">Menunggu</span>
                                             @elseif ($t->status === 'approved')
@@ -221,6 +224,10 @@
                                                             <span class="badge badge-lg bg-warning text-dark">Menunggu</span>
                                                         @break
 
+                                                        @case('cancelled')
+                                                            <span class="badge badge-lg bg-danger">Dibatalkan</span>
+                                                        @break
+
                                                         @case('approved')
                                                             @if (!$isInternal && !$hasBilling)
                                                                 <span class="badge badge-lg bg-warning text-dark">Disetujui tapi
@@ -265,6 +272,6 @@
 
                 </div>
             </div>
-            
+
         </div>
     @endsection

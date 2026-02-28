@@ -565,6 +565,8 @@
                                     <option class="text-info" value="waiting_payment"
                                         {{ $t->status == 'waiting_payment' ? 'selected' : '' }}>Menunggu Pembayaran
                                     </option>
+                                    <option class="text-danger" value="cancelled"
+                                        {{ $t->status == 'canceled' ? 'selected' : '' }}>Dibatalkan</option>
                                     <option class="text-danger" value="rejected"
                                         {{ $t->status == 'rejected' ? 'selected' : '' }}>Ditolak</option>
                                 </select>

@@ -44,6 +44,8 @@
                                 <span class="badge bg-danger">Ditolak</span>
                             @elseif ($t->status === 'waiting_payment')
                                 <span class="badge bg-info">Menunggu Pembayaran</span>
+                            @elseif ($t->status === 'cancelled')
+                                <span class="badge bg-danger">Dibatalkan</span>
                             @elseif ($t->status === 'pending')
                                 <span class="badge bg-warning">Menunggu</span>
                             @elseif ($t->status === 'approved')
@@ -174,19 +176,52 @@
                             class="mt-2">
                             @csrf
 
-                            <textarea name="description" class="form-control mb-2" rows="3" placeholder="Update deskripsi..."
+                            <textarea name="description" class="form-control mb-3" rows="3" placeholder="Update deskripsi..."
                                 style="resize: vertical;">{{ $t->description }}</textarea>
 
-                            <button type="submit" class="btn btn-primary btn-sm w-auto">
-                                Update
-                            </button>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+                                <!-- Tombol Update -->
+                                <button type="submit" class="btn btn-primary btn-sm px-4">
+                                    Update
+                                </button>
+
+                                <!-- Tombol Batalkan -->
+                                <button type="button" class="btn btn-danger btn-sm px-4"
+                                    onclick="confirmCancel({{ $t->id }})">
+                                    Batalkan Pesanan
+                                </button>
+
+                            </div>
                         </form>
                     </div>
                 </div>
 
+                <form id="cancelForm-{{ $t->id }}" action="{{ route('transactions.cancel', $t->id) }}"
+                    method="POST" class="d-none">
+                    @csrf
+                    @method('POST')
+                </form>
 
-
-
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                <script>
+                    function confirmCancel(id) {
+                        Swal.fire({
+                            title: 'Konfirmasi Pembatalan',
+                            text: 'Yakin ingin membatalkan pesanan ini?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Batalkan',
+                            cancelButtonText: 'Tidak',
+                            reverseButtons: true,
+                            focusCancel: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                document.getElementById(`cancelForm-${id}`).submit();
+                            }
+                        });
+                    }
+                </script>
 
                 @if ($t->status == 'approved')
                     <div class="row g-3 mt-4">

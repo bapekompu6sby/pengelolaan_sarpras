@@ -189,6 +189,10 @@
             box-shadow: 0 0 0 1px rgba(0, 0, 0, .06) inset;
             border-radius: 12px;
         }
+
+        .swal2-container {
+            z-index: 20000 !important;
+        }
     </style>
     <!-- Helpers -->
     @section('head')

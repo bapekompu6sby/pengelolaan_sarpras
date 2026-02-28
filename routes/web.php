@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
                 Route::post('/updatePaymentReceipt/{id}', [TransactionController::class, 'update_payment_receipt'])->name('transactions.payment');
                 Route::post('/updateRequestLetter/{id}', [TransactionController::class, 'update_request_letter'])->name('transactions.request_letter');
                 Route::post('/updateDeskription/{id}', [TransactionController::class, 'update_deskription'])->name('transactions.updateDescription');
+                Route::post('/cancel/{id}', [TransactionController::class, 'cancel_transaction'])->name('transactions.cancel');
 
 
                 // Ruangan – list/export/hapus

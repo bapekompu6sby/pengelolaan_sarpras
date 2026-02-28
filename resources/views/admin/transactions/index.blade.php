@@ -44,7 +44,7 @@
     <div class="container-fluid flex-grow-1 p-0">
         <div class="row g-0">
             <div class="col-12 px-3 py-3">
-                <div class="card card-modern @if($showMatrixOnly) d-none @endif" id="transactionsListWrapper">
+                <div class="card card-modern @if ($showMatrixOnly) d-none @endif" id="transactionsListWrapper">
                     {{-- Header card pakai aksen border-bottom biru dari .card-modern --}}
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <h5 class="mb-0 text-brand">Peminjaman Ruangan</h5>
@@ -130,6 +130,8 @@
                                                     <span class="badge bg-info">Menunggu Pembayaran</span>
                                                 @elseif ($t->status === 'pending')
                                                     <span class="badge bg-warning">Menunggu</span>
+                                                @elseif ($t->status === 'cancelled')
+                                                    <span class="badge bg-danger">Dibatalkan</span>
                                                 @elseif ($t->status === 'approved')
                                                     @php
                                                         $isInternal = ($t->affiliation ?? '') === 'internal_pu';
@@ -196,7 +198,9 @@
 
                 <div id="matrixPanelWrapper" class="{{ $matrixData ? '' : 'd-none' }}">
                     @if ($matrixData)
-                        @include('admin.transactions.matrix_panel', array_merge($matrixData, ['mode' => $matrixMode ?? 'embed']))
+                        @include(
+                            'admin.transactions.matrix_panel',
+                            array_merge($matrixData, ['mode' => $matrixMode ?? 'embed']))
                     @endif
                 </div>
             </div>
