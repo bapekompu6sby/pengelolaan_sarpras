@@ -88,6 +88,13 @@ Route::middleware('auth')->group(function () {
                 Route::get('/ruangan/matrix', [TransactionController::class, 'ruangan_matrix_preview'])
                         ->name('transactions.ruangan.matrix');
 
+                Route::get('transactions/ruangan/export-baru', [TransactionController::class, 'exportBaru'])
+                        ->name('transactions.ruangan.export-baru');
+                Route::get('transactions/ruangan/export-simple', [TransactionController::class, 'exportRuanganSimple'])
+                        ->name('transactions.ruangan.export-simple');
+
+
+
 
                 Route::get('/ruangan', [TransactionController::class, 'ruangan_show'])->name('transactions.ruangan.show');
                 Route::delete('/ruangan', [TransactionController::class, 'ruangan_destroy'])->name('transactions.ruangan.destroy');

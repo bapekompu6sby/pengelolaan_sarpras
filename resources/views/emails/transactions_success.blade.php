@@ -265,7 +265,13 @@
                 {{-- <p><a href="{{ url('/transactions/'.$trx->id) }}" class="btn" target="_blank" rel="noopener">Lihat Detail Transaksi</a></p> --}}
 
                 <p class="muted">Jika ada pertanyaan, balas email ini atau hubungi admin kami.</p>
-                <p>Terima kasih,<br><strong>Bapekom 6 Surabaya</strong></p>
+                <p>
+                    Terima kasih,<br>
+                    <strong>Bapekom 6 Surabaya</strong><br>
+                    <span style="font-size: 12px; color: #666;">
+                        Collab with MBKM UTM 2024
+                    </span>
+                </p>
             </div>
 
             <div class="footer">

@@ -62,6 +62,11 @@
                                 <i class="bx bx-cloud-download bx-sm me-1"></i>
                                 Export
                             </button>
+                            <button class="btn btn-outline-success btn-modern d-flex align-items-center"
+                                data-bs-toggle="modal" data-bs-target="#exportRuanganBaruModal">
+                                <i class="bx bx-file-export bx-sm me-1"></i>
+                                Export Rekap
+                            </button>
                         </div>
                     </div>
 
@@ -203,10 +208,119 @@
                             array_merge($matrixData, ['mode' => $matrixMode ?? 'embed']))
                     @endif
                 </div>
+
+                {{--
+    ============================================================
+    MODAL — taruh di luar card, sebelum @endpush atau @endsection
+    ============================================================
+--}}
+                <div class="modal fade modal-modern" id="exportRuanganBaruModal" data-bs-backdrop="static" tabindex="-1"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title d-flex align-items-center gap-2">
+                                    <i class="bx bx-file-export text-success"></i>
+                                    Export Rekap Ruangan
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+
+                            <form id="exportRuanganBaruForm" action="{{ route('transactions.ruangan.export-simple') }}"
+                                method="GET" novalidate>
+                                @csrf
+
+                                <div class="modal-body">
+                                    <p class="text-muted small mb-3">
+                                        Pilih rentang bulan data yang ingin diekspor.
+                                    </p>
+
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <label for="startMonthBaru" class="form-label fw-semibold">
+                                                Bulan Awal <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="month" id="startMonthBaru" name="start_month"
+                                                class="form-control" required>
+                                            <div class="invalid-feedback">Pilih bulan awal.</div>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <label for="endMonthBaru" class="form-label fw-semibold">
+                                                Bulan Akhir <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="month" id="endMonthBaru" name="end_month"
+                                                class="form-control" required>
+                                            <div class="invalid-feedback">Pilih bulan akhir.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary"
+                                        data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" id="btnExportBaruSubmit"
+                                        class="btn btn-success d-flex align-items-center gap-2">
+                                        <i class="bx bx-download"></i>
+                                        Download Excel
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         @push('scripts')
+            <script>
+                (function() {
+                    const modalEl = document.getElementById('exportRuanganBaruModal');
+                    const form = document.getElementById('exportRuanganBaruForm');
+                    const startEl = document.getElementById('startMonthBaru');
+                    const endEl = document.getElementById('endMonthBaru');
+                    const submitBtn = document.getElementById('btnExportBaruSubmit');
+
+                    // Fokus ke bulan awal saat modal dibuka
+                    modalEl.addEventListener('shown.bs.modal', function() {
+                        startEl.focus();
+                    });
+
+                    // Reset state tombol & validasi saat modal ditutup
+                    modalEl.addEventListener('hidden.bs.modal', function() {
+                        form.classList.remove('was-validated');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="bx bx-download"></i> Download Excel';
+                    });
+
+                    form.addEventListener('submit', function(e) {
+                        if (!form.checkValidity()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            form.classList.add('was-validated');
+                            return;
+                        }
+
+                        form.classList.add('was-validated');
+
+                        // Swap jika end < start
+                        const s = startEl.value;
+                        const en = endEl.value;
+                        if (s && en && en < s) {
+                            endEl.value = s;
+                            startEl.value = en;
+                        }
+
+                        // UX: disable + spinner
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML =
+                            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mempersiapkan...';
+                    });
+                })();
+            </script>
             <script>
                 (function() {
                     const table = document.getElementById('datatable2');

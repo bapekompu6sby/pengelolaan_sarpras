@@ -4,27 +4,27 @@ namespace App\Http\Controllers;
 
 
 
-use App\Models\User;
-
+use App\Exports\RuanganExports;
+use App\Exports\RuanganMultiMonthExport;
+use App\Exports\RuanganSimpleExport;
+use App\Exports\WismaExports;
+use App\Models\DetailKamarTransaction;
 use App\Models\Kamar;
 use App\Models\Properties;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Exports\WismaExports;
 use Illuminate\Support\Carbon;
-use App\Exports\RuanganExports;
-use PHPUnit\Event\Code\Throwable;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Models\DetailKamarTransaction;
 use Illuminate\Support\Facades\Storage;
-use App\Exports\RuanganMultiMonthExport;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
+use PHPUnit\Event\Code\Throwable;
 
 class TransactionController extends Controller
 {
@@ -702,6 +702,37 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'showMatrixOnly' => true,
         ]);
     }
+
+    public function exportRuanganSimple(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_month' => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+            'end_month'   => ['nullable', 'regex:/^\d{4}\-\d{2}$/'],
+        ]);
+
+        if ($validator->fails()) {
+            return back()->with('failed', 'Format bulan harus YYYY-MM');
+        }
+
+        $startMonthStr = $request->input('start_month', now()->format('Y-m'));
+        $endMonthStr   = $request->input('end_month',   now()->format('Y-m'));
+
+        $start = Carbon::createFromFormat('Y-m-d', $startMonthStr . '-01')->startOfMonth();
+        $end   = Carbon::createFromFormat('Y-m-d', $endMonthStr   . '-01')->endOfMonth();
+
+        if ($end->lt($start)) {
+            [$start, $end] = [$end->copy()->startOfMonth(), $start->copy()->endOfMonth()];
+        }
+
+        $fname = sprintf(
+            'rekap-ruangan_%s_s.d._%s.xlsx',
+            $start->format('Y-m'),
+            $end->format('Y-m')
+        );
+
+        return Excel::download(new RuanganSimpleExport($start, $end), $fname);
+    }
+
 
 
     /* ========================================================
