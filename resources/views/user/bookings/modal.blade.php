@@ -259,7 +259,8 @@
                                     fasilitas*</label>
                                 <textarea class="form-control" id="description" name="description" rows="3"
                                     placeholder="Contoh: kursi kelasnya berbentuk U, butuh kabel HDMI, cameranya di tengah, dll..."></textarea>
-                                <small class="form-text text-muted">Jika belum terpikir, nanti bisa di update di "History"</small>
+                                <small class="form-text text-muted">Jika belum terpikir, nanti bisa di update di
+                                    "History"</small>
                             </div>
 
                             <div class="row">
@@ -269,6 +270,13 @@
                                         min="1" value="1" required>
                                     <small class="text-danger d-block mt-1">Untuk tipe Aula dan Kelas, hanya ada 1
                                         Ruangan</small>
+                                </div>
+                                {{-- ← TAMBAH DI SINI --}}
+                                <div class="col-md-6 mb-3">
+                                    <label for="jumlah_peserta" class="form-label">Jumlah Peserta</label>
+                                    <input type="number" class="form-control" id="jumlah_peserta"
+                                        name="jumlah_peserta" min="1" placeholder="Contoh: 30" required>
+                                    <small class="form-text text-muted">Perkiraan jumlah peserta kegiatan</small>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Total Harga</label>

@@ -434,6 +434,15 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="jumlah_peserta-{{ $t->id }}" class="form-label">Jumlah
+                                    Peserta</label>
+                                <input type="number" class="form-control" id="jumlah_peserta-{{ $t->id }}"
+                                    name="jumlah_peserta" min="1" value="{{ $t->jumlah_peserta }}">
+                                <div class="form-text">Isi jumlah peserta yang mengikuti kegiatan.</div>
+                            </div>
+
+
+                            <div class="mb-3">
                                 <label for="description-{{ $t->id }}" class="form-label">Deskripsi</label>
                                 <textarea class="form-control" id="description-{{ $t->id }}" name="description" rows="3">{{ $t->description }}</textarea>
                             </div>

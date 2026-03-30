@@ -37,6 +37,7 @@
                         <p><strong>Phone:</strong> {{ $t->phone_number }}</p>
                         <p><strong>Email:</strong> {{ $t->email }}</p>
                         <p><strong>Unit:</strong> {{ $t->ordered_unit }}</p>
+                        <p><strong>Jumlah Peserta:</strong> {{ $t->jumlah_peserta ?? '-' }}</p>
                         <p><strong>Total Harga:</strong> Rp {{ number_format($t->total_harga, 0, ',', '.') }}</p>
 
                         <p class="mt-3 mb-1"><strong>Status :</strong>

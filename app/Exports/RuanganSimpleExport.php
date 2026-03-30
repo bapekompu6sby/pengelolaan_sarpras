@@ -48,6 +48,7 @@ class RuanganSimpleExport implements
             'No. HP',
             'Instansi',
             'Kegiatan',
+            'Jumlah Peserta',
             'Ruangan',
             'Tanggal Mulai',
             'Tanggal Selesai',
@@ -74,6 +75,7 @@ class RuanganSimpleExport implements
             $t->phone_number ?? '-',
             ucfirst($t->instansi),
             $t->kegiatan,
+            $t->jumlah_peserta ?? '-',
             $t->properties->name ?? '-',
             Carbon::parse($t->start)->format('d/m/Y'),
             Carbon::parse($t->end)->format('d/m/Y'),
@@ -90,10 +92,10 @@ class RuanganSimpleExport implements
             'C' => 16,   // HP
             'D' => 22,   // Instansi
             'E' => 35,   // Kegiatan
-            'F' => 25,   // Ruangan
-            'G' => 15,   // Tgl Mulai
-            'H' => 15,   // Tgl Selesai
-            'I' => 22,   // Status
+            'F' => 16,   // Jumlah Peserta  ← tambah
+            'G' => 25,   // Ruangan
+            'H' => 15,   // Tgl Mulai
+            'I' => 15,   // Tgl Selesai
         ];
     }
 

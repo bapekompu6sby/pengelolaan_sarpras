@@ -18,6 +18,7 @@ class Transaction extends Model
         'end',
         'jam_start',
         'jam_end',
+        'jumlah_peserta',
         'color',
         'property_id',
         'status',
