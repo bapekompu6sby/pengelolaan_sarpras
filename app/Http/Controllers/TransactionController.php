@@ -87,6 +87,26 @@ class TransactionController extends Controller
 
 
 
+    /**
+     * Ambil transaksi dengan pengecekan kepemilikan.
+     * Admin/supervisor dapat mengakses semua transaksi.
+     * User biasa hanya dapat mengakses transaksi miliknya sendiri.
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    private function findOwnedTransaction(int $id): Transaction
+    {
+        $user = auth()->user();
+
+        if (in_array($user->role, ['admin', 'supervisor'], true)) {
+            return Transaction::findOrFail($id);
+        }
+
+        return Transaction::where('id', $id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+    }
+
     public function update_payment_receipt(Request $request, $id)
     {
         try {
@@ -99,10 +119,11 @@ class TransactionController extends Controller
             return redirect()->back()->with('failed', $e->validator->errors()->first());
         }
 
-        $transaction = Transaction::findOrFail($id);
+        // Ownership check: user hanya bisa update transaksi miliknya sendiri
+        $transaction = $this->findOwnedTransaction((int) $id);
 
         if ($request->hasFile('payment_receipt')) {
-            $path = $request->file('payment_receipt')->store('uploads/payment_receipt', 'public');
+            $path = $request->file('payment_receipt')->store('private_uploads/payment_receipt');
             $transaction->payment_receipt = basename($path);
         }
 
@@ -123,10 +144,11 @@ class TransactionController extends Controller
             return redirect()->back()->with('failed', $e->validator->errors()->first());
         }
 
-        $transaction = Transaction::findOrFail($id);
+        // Ownership check: user hanya bisa update transaksi miliknya sendiri
+        $transaction = $this->findOwnedTransaction((int) $id);
 
         if ($request->hasFile('request_letter')) {
-            $path = $request->file('request_letter')->store('uploads/request_letter', 'public');
+            $path = $request->file('request_letter')->store('private_uploads/request_letter');
             $transaction->request_letter = basename($path);
         }
 
@@ -147,7 +169,8 @@ class TransactionController extends Controller
             return redirect()->back()->with('failed', $e->validator->errors()->first());
         }
 
-        $transaction = Transaction::findOrFail($id);
+        // Ownership check: user hanya bisa update transaksi miliknya sendiri
+        $transaction = $this->findOwnedTransaction((int) $id);
         $transaction->description = $request->input('description');
         $transaction->save();
 
@@ -244,23 +267,28 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'email'          => 'nullable|email', // ← penting
             'affiliation'    => 'required|string',
             'ordered_unit'   => 'required|integer',
-            'total_harga'    => 'required|integer',
+            // 'total_harga' dihapus dari sini untuk keamanan (SEC-013)
         ]);
 
         // Upload bukti bayar (opsional)
         $paymentReceiptPath = $request->hasFile('payment_receipt')
-            ? $request->file('payment_receipt')->store('uploads/payment_receipt', 'public')
+            ? $request->file('payment_receipt')->store('private_uploads/payment_receipt')
             : null;
 
         // Upload surat permohonan (opsional)
         $requestLetterPath = $request->hasFile('request_letter')
-            ? $request->file('request_letter')->store('uploads/request_letter', 'public')
+            ? $request->file('request_letter')->store('private_uploads/request_letter')
             : null;
 
         $namePaymentReceipt = $paymentReceiptPath ? basename($paymentReceiptPath) : null;
         $nameRequestLetter  = $requestLetterPath ? basename($requestLetterPath) : null;
 
         $colorKey = array_rand($colors, 1);
+
+        // Hitung harga di backend (SEC-013)
+        $property = Properties::findOrFail($request->venue);
+        $days = \Carbon\Carbon::parse($request->start)->diffInDays(\Carbon\Carbon::parse($request->end)) + 1;
+        $totalHarga = ($request->affiliation === 'internal_pu') ? 0 : ((int) $property->price * $days * $request->ordered_unit);
 
         // SIMPAN TRANSAKSI
         $transaction = Transaction::create([
@@ -271,8 +299,8 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             'end'             => $request->end,
             'jam_start'       => $request->jam_start,
             'jam_end'         => $request->jam_end,
-            'jumlah_peserta' => $request->jumlah_peserta,
-            'total_harga'     => $request->total_harga,
+            'jumlah_peserta'  => $request->jumlah_peserta,
+            'total_harga'     => $totalHarga,
             'color'           => $colors[$colorKey],
             'property_id'     => $request->venue,
             'payment_receipt' => $namePaymentReceipt,
@@ -299,14 +327,20 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                         ->subject('Transaksi Berhasil #' . ($transaction->code ?? $transaction->id));
 
                     if ($transaction->request_letter) {
-                        $path = storage_path('app/public/uploads/request_letter/' . $transaction->request_letter);
-                        if (is_file($path)) {
+                        $filename = basename($transaction->request_letter);
+                        $privPath = storage_path('app/private_uploads/request_letter/' . $filename);
+                        $pubPath  = storage_path('app/public/uploads/request_letter/' . $filename);
+                        $path = is_file($privPath) ? $privPath : $pubPath;
+                        if ($filename && is_file($path)) {
                             $message->attach($path, ['as' => 'surat_permohonan.pdf']);
                         }
                     }
                     if ($transaction->payment_receipt) {
-                        $path = storage_path('app/public/uploads/payment_receipt/' . $transaction->payment_receipt);
-                        if (is_file($path)) {
+                        $filename = basename($transaction->payment_receipt);
+                        $privPath = storage_path('app/private_uploads/payment_receipt/' . $filename);
+                        $pubPath  = storage_path('app/public/uploads/payment_receipt/' . $filename);
+                        $path = is_file($privPath) ? $privPath : $pubPath;
+                        if ($filename && is_file($path)) {
                             $message->attach($path, ['as' => 'bukti_bayar.' . pathinfo($path, PATHINFO_EXTENSION)]);
                         }
                     }
@@ -323,6 +357,10 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
     public function transactionUpdate(Request $request, $id)
     {
+        if (auth()->user()->role === 'supervisor') {
+            abort(403, 'Supervisor tidak dapat mengubah transaksi.');
+        }
+
         try {
             // 1) Validasi dasar (tanpa jam)
             $baseRules = [
@@ -387,16 +425,16 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
                 $rejectionReason = $transaction->rejection_reason;
 
                 if ($request->hasFile('payment_receipt')) {
-                    $paymentReceipt = basename($request->file('payment_receipt')->store('uploads/payment_receipt', 'public'));
+                    $paymentReceipt = basename($request->file('payment_receipt')->store('private_uploads/payment_receipt'));
                 }
                 if ($request->hasFile('request_letter')) {
-                    $requestLetter = basename($request->file('request_letter')->store('uploads/request_letter', 'public'));
+                    $requestLetter = basename($request->file('request_letter')->store('private_uploads/request_letter'));
                 }
                 if ($request->hasFile('response_letter')) {
-                    $responseLetter = basename($request->file('response_letter')->store('uploads/response_letter', 'public'));
+                    $responseLetter = basename($request->file('response_letter')->store('private_uploads/response_letter'));
                 }
                 if ($request->hasFile('billing_qr')) {
-                    $billingQr = basename($request->file('billing_qr')->store('uploads/billing_qr', 'public'));
+                    $billingQr = basename($request->file('billing_qr')->store('private_uploads/billing_qr'));
                 }
                 if (!empty($validated['billing_code'])) {
                     $billingCode = $validated['billing_code'];
@@ -524,12 +562,21 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
 
 
 
-    public function ruangan_destroy()
+    public function ruangan_destroy(Request $request)
     {
-        $ids = explode(',', request()->selected);
-        Transaction::destroy($ids);
-        // arilmubin
-        return redirect()->back()->with('success', 'Transaksi berhasil dihapus');
+        $request->validate([
+            'selected' => 'required|string|regex:/^[\d,]+$/',
+        ]);
+        
+        $ids = array_filter(array_map('intval', explode(',', $request->selected)));
+        
+        if (empty($ids)) {
+            return redirect()->back()->with('failed', 'Tidak ada transaksi yang dipilih.');
+        }
+
+        Transaction::whereIn('id', $ids)->delete();
+        
+        return redirect()->back()->with('success', count($ids) . ' transaksi berhasil dihapus');
     }
 
     public function ruangan_export()
@@ -853,10 +900,53 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
 
     public function cancel_transaction($id)
     {
-        $transaction = Transaction::findOrFail($id);
+        // Ownership check: user hanya bisa membatalkan transaksi miliknya sendiri
+        $transaction = $this->findOwnedTransaction((int) $id);
+
+        // Hanya transaksi berstatus pending atau waiting_payment yang bisa dibatalkan user biasa
+        $cancellableStatuses = ['pending', 'waiting_payment'];
+        $userRole = auth()->user()->role;
+        if (! in_array($userRole, ['admin', 'supervisor'], true)
+            && ! in_array($transaction->status, $cancellableStatuses, true)) {
+            return redirect()->back()->with('failed', 'Transaksi tidak dapat dibatalkan pada status ini.');
+        }
+
         $transaction->status = 'cancelled';
         $transaction->save();
 
         return redirect()->back()->with('success', 'Transaksi berhasil dibatalkan');
+    }
+
+    /**
+     * Menyediakan file aman (Private storage) dengan validasi role dan kepemilikan.
+     */
+    public function serve_file($type, $filename)
+    {
+        $allowedTypes = ['payment_receipt', 'request_letter', 'response_letter', 'billing_qr'];
+        if (!in_array($type, $allowedTypes)) {
+            abort(404);
+        }
+
+        $transaction = Transaction::where($type, $filename)->firstOrFail();
+        $user = auth()->user();
+
+        // Otorisasi: Admin & Supervisor bisa lihat semua. User hanya bisa lihat miliknya sendiri.
+        if (!in_array($user->role, ['admin', 'supervisor'], true)) {
+            if ($transaction->user_id !== $user->id) {
+                abort(403, 'Akses ke file ini ditolak.');
+            }
+        }
+
+        // Cek fallback: periksa di private_uploads dulu, jika tidak ada cek folder public lama
+        $privatePath = storage_path("app/private_uploads/{$type}/{$filename}");
+        $publicPath  = storage_path("app/public/uploads/{$type}/{$filename}");
+
+        if (file_exists($privatePath)) {
+            return response()->file($privatePath);
+        } elseif (file_exists($publicPath)) {
+            return response()->file($publicPath);
+        }
+
+        abort(404, 'File tidak ditemukan.');
     }
 }

@@ -499,7 +499,7 @@
                             <div class="mb-3 min-w-0">
                                 <p class="mb-1 fw-semibold">Bukti Pembayaran</p>
                                 @if ($t->payment_receipt)
-                                    <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
+                                    <a href="{{ route('secure.file', ['type' => 'payment_receipt', 'filename' => $t->payment_receipt]) }}"
                                         target="_blank" class="text-break text-wrap d-inline-block">Download</a>
                                     <input type="hidden" name="old_payment_receipt"
                                         value="{{ $t->payment_receipt }}">
@@ -514,7 +514,7 @@
                             <div class="mb-3 min-w-0">
                                 <p class="mb-1 fw-semibold">Surat Permohonan</p>
                                 @if ($t->request_letter)
-                                    <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
+                                    <a href="{{ route('secure.file', ['type' => 'request_letter', 'filename' => $t->request_letter]) }}"
                                         target="_blank" class="text-break text-wrap d-inline-block">Download</a>
                                     <input type="hidden" name="old_request_letter"
                                         value="{{ $t->request_letter }}">
@@ -529,7 +529,7 @@
                             <div class="mb-3 min-w-0">
                                 <p class="mb-1 fw-semibold">Kode Pembayaran</p>
                                 @if ($t->billing_qr)
-                                    <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                    <a href="{{ route('secure.file', ['type' => 'billing_qr', 'filename' => $t->billing_qr]) }}"
                                         target="_blank" class="text-break text-wrap d-inline-block">Download</a>
                                     <input type="hidden" name="old_billing_qr" value="{{ $t->billing_qr }}">
                                 @else
@@ -546,7 +546,7 @@
                             <div class="mb-3 min-w-0">
                                 <p class="mb-1 fw-semibold">Surat Balasan Permohonan</p>
                                 @if ($t->response_letter)
-                                    <a href="{{ asset('storage/uploads/response_letter/' . $t->response_letter) }}"
+                                    <a href="{{ route('secure.file', ['type' => 'response_letter', 'filename' => $t->response_letter]) }}"
                                         target="_blank" class="text-break text-wrap d-inline-block">Download</a>
                                     <input type="hidden" name="old_response_letter"
                                         value="{{ $t->response_letter }}">
@@ -598,7 +598,7 @@
                                         accept=".pdf,image/*">
                                     @if ($t->billing_qr)
                                         <p class="mt-2 mb-0">File saat ini:
-                                            <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                            <a href="{{ route('secure.file', ['type' => 'billing_qr', 'filename' => $t->billing_qr]) }}"
                                                 target="_blank">Download</a>
                                         </p>
                                     @endif

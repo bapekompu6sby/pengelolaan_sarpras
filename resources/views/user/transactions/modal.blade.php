@@ -69,7 +69,7 @@
                         {{-- Payment Receipt --}}
                         <p class="mb-1"><strong>Bukti Pembayaran:</strong>
                             @if ($t->payment_receipt)
-                                <a href="{{ asset('storage/uploads/payment_receipt/' . $t->payment_receipt) }}"
+                                <a href="{{ route('secure.file', ['type' => 'payment_receipt', 'filename' => $t->payment_receipt]) }}"
                                     target="_blank">Download</a>
                             @else
                                 <em>Tidak ada</em>
@@ -88,7 +88,7 @@
                         {{-- Request Letter --}}
                         <p class="mt-3 mb-1"><strong>Surat Permohonan:</strong>
                             @if ($t->request_letter)
-                                <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
+                                <a href="{{ route('secure.file', ['type' => 'request_letter', 'filename' => $t->request_letter]) }}"
                                     target="_blank">Download</a>
                             @else
                                 <em>Tidak ada</em>
@@ -107,7 +107,7 @@
                         {{-- File code billing --}}
                         <p class="mt-3 mb-1"><strong>File code billing:</strong>
                             @if ($t->billing_qr)
-                                <a href="{{ asset('storage/uploads/billing_qr/' . $t->billing_qr) }}"
+                                <a href="{{ route('secure.file', ['type' => 'billing_qr', 'filename' => $t->billing_qr]) }}"
                                     target="_blank">Download</a>
                             @else
                                 <em>Belum di upload admin</em>
@@ -117,7 +117,7 @@
                         {{-- Surat Balasan --}}
                         @if ($t->response_letter)
                             <p class="mt-3 mb-1"><strong>Surat Balasan Permohonan:</strong>
-                                <a href="{{ asset('storage/uploads/response_letter/' . $t->response_letter) }}"
+                                <a href="{{ route('secure.file', ['type' => 'response_letter', 'filename' => $t->response_letter]) }}"
                                     target="_blank">Download</a>
                             </p>
                         @endif

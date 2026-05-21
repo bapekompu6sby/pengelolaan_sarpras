@@ -77,7 +77,7 @@ Route::middleware('auth')->group(function () {
                 Route::post('/updateRequestLetter/{id}', [TransactionController::class, 'update_request_letter'])->name('transactions.request_letter');
                 Route::post('/updateDeskription/{id}', [TransactionController::class, 'update_deskription'])->name('transactions.updateDescription');
                 Route::post('/cancel/{id}', [TransactionController::class, 'cancel_transaction'])->name('transactions.cancel');
-
+                Route::get('/secure-file/{type}/{filename}', [TransactionController::class, 'serve_file'])->name('secure.file');
 
                 // Ruangan – list/export/hapus
                 Route::get('/ruangan/export', [TransactionController::class, 'ruangan_export'])->name('transactions.ruangan.export');
@@ -117,7 +117,7 @@ Route::middleware('auth')->group(function () {
         /* --------------------------------------------------------------
     | ADMIN-ONLY
     |-------------------------------------------------------------- */
-        Route::middleware('checkRole:admin | supervisor')->group(function () {
+        Route::middleware('checkRole:admin|supervisor')->group(function () {
 
                 Route::get('/dashboardAdmin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
 
