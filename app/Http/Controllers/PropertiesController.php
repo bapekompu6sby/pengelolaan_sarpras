@@ -54,60 +54,63 @@ class PropertiesController extends Controller
 
         $prop = Properties::findOrFail($propertyId);
 
-        // Base query (cek tanggal)
+        // Base query: cek transaksi yang sudah approved di rentang tanggal yang diminta
         $transactions = Transaction::where('property_id', $propertyId)
             ->where('status', '=', 'approved')
             ->where(function ($query) use ($start, $end) {
+                // Overlap: transaksi yang start atau end-nya ada di dalam rentang yang diminta
                 $query->whereBetween('start', [$start, $end])
-                    ->orWhereBetween('end', [$start, $end]);
-            });
-
-        // ✅ Kalau fasilitas, tambahkan pengecekan jam juga
-
-        // Misal: filter property yang sama (W A J I B, biar gak nabrak di ruangan lain)
-        $transactions->where('transactions.property_id', $propertyId);
-
-        // Abaikan baris tanpa jam (kalau kebijakanmu jam wajib di fasilitas)
-        $transactions->whereNotNull('transactions.jam_start')
-            ->whereNotNull('transactions.jam_end');
-
-        // ✅ Cek overlap jam
-        if ($type === 'fasilitas' && $jamStart && $jamEnd) {
-            $reqWrap = strtotime($jamEnd) <= strtotime($jamStart);
-
-            $transactions->where(function ($q) use ($jamStart, $jamEnd, $reqWrap) {
-                if (!$reqWrap) {
-                    // NORMAL: existing_start < req_end AND existing_end > req_start
-                    $q->whereRaw('TIME(transactions.jam_start) < ? AND TIME(transactions.jam_end) > ?', [
-                        $jamEnd,   // req_end
-                        $jamStart, // req_start
-                    ]);
-                } else {
-                    // LINTAS TENGAH MALAM: existing_start < req_end OR existing_end > req_start
-                    $q->where(function ($qq) use ($jamStart, $jamEnd) {
-                        $qq->whereRaw('TIME(transactions.jam_start) < ?', [$jamEnd])   // start < req_end
-                            ->orWhereRaw('TIME(transactions.jam_end) > ?',  [$jamStart]); // end   > req_start
+                    ->orWhereBetween('end', [$start, $end])
+                    ->orWhere(function ($q) use ($start, $end) {
+                        // Kasus: transaksi yang "membungkus" rentang yang diminta
+                        $q->where('start', '<=', $start)->where('end', '>=', $end);
                     });
-                }
             });
+
+        // ✅ Filter jam HANYA untuk tipe fasilitas
+        // Untuk aula, kelas, asrama, paviliun: SEMUA transaksi di rentang tanggal dihitung sebagai konflik
+        if ($type === 'fasilitas') {
+            // Abaikan transaksi fasilitas yang tidak punya data jam
+            $transactions->whereNotNull('transactions.jam_start')
+                ->whereNotNull('transactions.jam_end');
+
+            // Cek overlap jam (termasuk skenario lintas tengah malam)
+            if ($jamStart && $jamEnd) {
+                $reqWrap = strtotime($jamEnd) <= strtotime($jamStart);
+
+                $transactions->where(function ($q) use ($jamStart, $jamEnd, $reqWrap) {
+                    if (!$reqWrap) {
+                        // NORMAL: existing_start < req_end AND existing_end > req_start
+                        $q->whereRaw('TIME(transactions.jam_start) < ? AND TIME(transactions.jam_end) > ?', [
+                            $jamEnd,   // req_end
+                            $jamStart, // req_start
+                        ]);
+                    } else {
+                        // LINTAS TENGAH MALAM: existing_start < req_end OR existing_end > req_start
+                        $q->where(function ($qq) use ($jamStart, $jamEnd) {
+                            $qq->whereRaw('TIME(transactions.jam_start) < ?', [$jamEnd])
+                                ->orWhereRaw('TIME(transactions.jam_end) > ?', [$jamStart]);
+                        });
+                    }
+                });
+            }
         }
 
-
-        $transactions = $transactions->get();
+        $transactions     = $transactions->get();
         $transactions_unit = $transactions->sum('ordered_unit');
 
         $avail_unit = $prop->unit - $transactions_unit;
-        $avail = $avail_unit >= $unit;
+        $avail      = $avail_unit >= $unit;
 
         return response()->json([
-            'available'   => $avail,
-            'avail_count' => $avail_unit,
+            'available'    => $avail,
+            'avail_count'  => $avail_unit,
             'checked_type' => $type,
-            'debug'       => [
-                'start' => $start,
-                'end' => $end,
+            'debug'        => [
+                'start'     => $start,
+                'end'       => $end,
                 'jam_start' => $jamStart,
-                'jam_end' => $jamEnd,
+                'jam_end'   => $jamEnd,
             ],
         ]);
     }

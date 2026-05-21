@@ -25,8 +25,14 @@ class User extends Authenticatable implements CanResetPasswordContract
         'name',
         'email',
         'password',
-        'role',
     ];
+
+    /**
+     * The attributes that are explicitly guarded from mass assignment.
+     *
+     * @var array<int, string>
+     */
+    protected $guarded = ['role'];
 
     /**
      * The attributes that should be hidden for serialization.

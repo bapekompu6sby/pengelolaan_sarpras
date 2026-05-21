@@ -15,19 +15,15 @@ class CustomerServiceController extends Controller
         ]);
 
 
-        $csNumber = '6281230143714';
-
+        $csNumber = env('CS_WHATSAPP_NUMBER', '6281230143714');
 
         $name = $request->name;
         $phone = $request->phone;
         $message = $request->message;
 
+        $text = rawurlencode("Halo, saya {$name} ({$phone}).\n\n{$message}");
 
-        $text = "Halo, saya $name ($phone).%0A%0A$message";
-
-
-        $waUrl = "https://wa.me/$csNumber?text=$text";
-
+        $waUrl = "https://wa.me/{$csNumber}?text={$text}";
 
         return redirect()->away($waUrl);
     }

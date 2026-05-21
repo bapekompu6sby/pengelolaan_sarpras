@@ -11,26 +11,27 @@ class CheckRole
     /**
      * Handle an incoming request.
      *
+     * Mendukung multi-role dengan separator pipe (|), contoh:
+     *   middleware('checkRole:admin|supervisor')
+     *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  string  $role  Satu atau lebih role dipisah '|' (tanpa spasi)
      */
-    public function handle(Request $request, Closure $next, string $role)
+    public function handle(Request $request, Closure $next, string $role): Response
     {
-        if ($role == 'admin' && auth()->user()->role != 'admin' ) {
-            return redirect()->back();
+        // Guard: pastikan user sudah login sebelum akses property role-nya
+        if (! auth()->check()) {
+            return redirect()->route('login');
         }
-        if ($role == 'user' && auth()->user()->role != 'user' ) {
-            return redirect()->back();
+
+        // Pisahkan multi-role (misal: "admin|supervisor") dan bersihkan spasi
+        $allowedRoles = array_map('trim', explode('|', $role));
+
+        // Cek apakah role user saat ini termasuk dalam daftar yang diizinkan
+        if (! in_array(auth()->user()->role, $allowedRoles, true)) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
-        if ($role == 'guest' && auth()->user()->role != 'guest' ) {
-            abort(403);
-        }
+
         return $next($request);
     }
-    // public function handle(Request $request, Closure $next, string $role)
-    // {
-    //     if ($request->user()->role !== $role) {
-    //         return redirect('/login');
-    //     }
-    //     return $next($request);
-    // }
 }
