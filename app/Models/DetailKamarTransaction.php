@@ -37,8 +37,4 @@ class DetailKamarTransaction extends Model
         return $this->hasMany(Penghuni::class, 'detail_kamar_transaction_id');
     }
 
-    public function penghuni()
-    {
-        return $this->hasMany(Penghuni::class, 'detail_kamar_transaction_id');
-    }
 }

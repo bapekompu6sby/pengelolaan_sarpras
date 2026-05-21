@@ -38,15 +38,19 @@ class DetailTransactionController extends Controller
             foreach ($request->kamar_id as $kamarId) {
                 $kamarId = (int) $kamarId;
 
-                // (opsional) server-side overlap check, kalau mau aman double check:
-                // $conflict = DetailKamarTransaction::where('kamar_id', $kamarId)
-                //     ->where('transaction_id','!=',$txId)
-                //     ->where('start','<', $end)
-                //     ->where('end','>', $start)
-                //     ->exists();
-                // if ($conflict) {
-                //     throw new \RuntimeException("Kamar {$kamarId} bentrok pada rentang tanggal.");
-                // }
+                // Server-side overlap check with lockForUpdate to prevent race conditions
+                $conflict = DetailKamarTransaction::lockForUpdate()
+                    ->where('kamar_id', $kamarId)
+                    ->where('transaction_id', '!=', $txId)
+                    ->where('start', '<', $end)
+                    ->where('end', '>', $start)
+                    ->exists();
+
+                if ($conflict) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'kamar_id' => "Kamar ID {$kamarId} sudah dibooking pada rentang tanggal tersebut."
+                    ]);
+                }
 
                 // 2) Insert DETAIL KAMAR
                 $detail = DetailKamarTransaction::create([

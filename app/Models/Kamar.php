@@ -27,12 +27,7 @@ class Kamar extends Model
     {
         return $this->belongsTo(Properties::class, 'properties_id');
     }
-    public function transactions()
-    {
-        return $this->belongsToMany(Transaction::class, 'transaction_kamar')
-            ->withPivot(['start', 'end', 'nama_penghuni'])
-            ->withTimestamps();
-    }
+
 
     public function properties()
     {

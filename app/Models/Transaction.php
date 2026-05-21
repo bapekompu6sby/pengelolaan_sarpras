@@ -78,16 +78,7 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function kamar()
-    {
-        return $this->belongsTo(Kamar::class, 'kamar_id'); // kalau transaksi ada id kamar
-    }
-    public function kamars()
-    {
-        return $this->belongsToMany(Kamar::class, 'transaction_kamar')
-            ->withPivot(['start', 'end', 'nama_penghuni'])
-            ->withTimestamps();
-    }
+
 
     public function detailKamars()
     {

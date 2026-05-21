@@ -552,7 +552,13 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
             return $r;
         });
 
-        return redirect()->back()->with('transactions', 'ruangan');
+        return view('admin.transactions.index', [
+            'transactions' => $transactions,
+            'ruangan' => $ruangan,
+            'matrixData' => null,
+            'matrixMode' => 'embed',
+            'showMatrixOnly' => false,
+        ]);
     }
 
 
@@ -833,7 +839,8 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
 
     public function events()
     {
-        $events = Transaction::where('status', 'approved')
+        $events = Transaction::with('properties')
+            ->where('status', 'approved')
             ->get();
 
         $events = $events->map(function ($item) {
