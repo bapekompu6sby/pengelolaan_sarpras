@@ -69,8 +69,9 @@ Route::middleware('auth')->group(function () {
                 // Halaman pinjam detail
                 Route::get('/pinjam/{id}', [TransactionController::class, 'pinjam'])->name('transactions.pinjam');
 
-                // ⛏ FIX: jangan pakai '/transactions/...' di dalam prefix('transactions')
-                Route::patch('{id}/status', [TransactionController::class, 'update_status'])->name('transactions.updateStatus');
+                // SEC-018: Route dihapus — method update_status() tidak ada di TransactionController
+                // dan tidak ada view/JS yang memanggil route('transactions.updateStatus').
+                // Jika dibutuhkan di masa depan, implementasikan method-nya terlebih dahulu.
 
                 // Upload dokumen
                 Route::post('/updatePaymentReceipt/{id}', [TransactionController::class, 'update_payment_receipt'])->name('transactions.payment');
