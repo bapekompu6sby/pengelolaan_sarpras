@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('wismas', function (Blueprint $table) {
-            $table->string('kegiatan')->after('from')->nullable();
-        });
+        // Legacy migration — tabel 'wismas' sudah di-rename ke 'transactions'.
+        // Wrap dalam hasTable() agar tidak error saat migrate:fresh di testing.
+        if (Schema::hasTable('wismas')) {
+            Schema::table('wismas', function (Blueprint $table) {
+                $table->string('kegiatan')->after('from')->nullable();
+            });
+        }
     }
 
     /**
@@ -21,8 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('wismas', function (Blueprint $table) {
-            $table->dropColumn('kegiatan');
-        });
+        if (Schema::hasTable('wismas')) {
+            Schema::table('wismas', function (Blueprint $table) {
+                $table->dropColumn('kegiatan');
+            });
+        }
     }
 };

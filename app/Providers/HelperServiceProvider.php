@@ -15,7 +15,7 @@ class HelperServiceProvider extends ServiceProvider
     public function boot()
     {
         // Helper untuk format rentang tanggal konsisten lokal
-        if (!function_exists('tanggalRangeID')) {
+        if (!function_exists('App\\Providers\\tanggalRangeID')) {
             function tanggalRangeID($start, $end) {
                 $s = Carbon::parse($start);
                 $e = Carbon::parse($end);
