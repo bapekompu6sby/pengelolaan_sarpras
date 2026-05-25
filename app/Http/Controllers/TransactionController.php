@@ -107,7 +107,7 @@ class TransactionController extends Controller
             ->firstOrFail();
     }
 
-    public function update_payment_receipt(Request $request, $id)
+    public function update_payment_receipt(Request $request, int $id)
     {
         try {
             $request->validate([
@@ -132,7 +132,7 @@ class TransactionController extends Controller
         return redirect()->back()->with('success', 'Bukti pembayaran berhasil diunggah');
     }
 
-    public function update_request_letter(Request $request, $id)
+    public function update_request_letter(Request $request, int $id)
     {
         try {
             $request->validate([
@@ -157,7 +157,7 @@ class TransactionController extends Controller
         return redirect()->back()->with('success', 'Surat permohonan berhasil diunggah');
     }
 
-    public function update_deskription(Request $request, $id)
+    public function update_deskription(Request $request, int $id)
     {
         try {
             $request->validate([
@@ -180,7 +180,7 @@ class TransactionController extends Controller
 
 
 
-    public function pinjam($id)
+    public function pinjam(int $id)
     {
         $property = Properties::findOrFail($id);
         $userId = Auth::id();
@@ -218,7 +218,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     }
 
     // public function check_available_ruangan($start, $end, $property_id) 
-    public function check_available_ruangan($start, $end, $property_id)
+    public function check_available_ruangan(string $start, string $end, int $property_id)
     {
         // check url query parameter
         // dd(request()->all());
@@ -355,7 +355,7 @@ $$ |      \$$$$$$  |\$$$$$$$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$ |$$ |  $$ |
     }
 
 
-    public function transactionUpdate(Request $request, $id)
+    public function transactionUpdate(Request $request, int $id)
     {
         if (auth()->user()->role === 'supervisor') {
             abort(403, 'Supervisor tidak dapat mengubah transaksi.');
@@ -905,7 +905,7 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
         ]);
     }
 
-    public function cancel_transaction($id)
+    public function cancel_transaction(int $id)
     {
         // Ownership check: user hanya bisa membatalkan transaksi miliknya sendiri
         $transaction = $this->findOwnedTransaction((int) $id);
@@ -927,7 +927,7 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
     /**
      * Menyediakan file aman (Private storage) dengan validasi role dan kepemilikan.
      */
-    public function serve_file($type, $filename)
+    public function serve_file(string $type, string $filename)
     {
         $allowedTypes = ['payment_receipt', 'request_letter', 'response_letter', 'billing_qr'];
         if (!in_array($type, $allowedTypes)) {

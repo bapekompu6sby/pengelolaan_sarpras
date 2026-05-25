@@ -288,7 +288,7 @@ class PropertiesController extends Controller
         return redirect()->route('properties')->with('success', 'Data berhasil ditambahkan');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         /** @var Properties|null $property */
         $property = Properties::find($id);
@@ -361,7 +361,7 @@ class PropertiesController extends Controller
             $removeIds = $request->input('remove_gallery', []);
             if (!empty($removeIds)) {
                 // pakai nama model yang benar di project kamu: PropertiesImage atau PropertyImage
-                $imagesToDelete = \App\Models\PropertiesImage::whereIn('id', $removeIds)
+                $imagesToDelete = PropertiesImage::whereIn('id', $removeIds)
                     ->where('property_id', $property->id)
                     ->get(['id', 'image_path']);
 
@@ -369,7 +369,7 @@ class PropertiesController extends Controller
                     Storage::disk('public')->delete(
                         $imagesToDelete->map(fn($img) => 'uploads/properties/gallery/' . $img->image_path)->all()
                     );
-                    \App\Models\PropertiesImage::whereIn('id', $imagesToDelete->pluck('id'))->delete();
+                    PropertiesImage::whereIn('id', $imagesToDelete->pluck('id'))->delete();
                 }
             }
 
@@ -383,7 +383,7 @@ class PropertiesController extends Controller
                 $name = $file->hashName();
                 $file->storeAs('uploads/properties/gallery', $name, 'public');
 
-                \App\Models\PropertiesImage::create([
+                PropertiesImage::create([
                     'property_id' => $property->id,
                     'image_path'  => $name,
                 ]);
@@ -395,7 +395,7 @@ class PropertiesController extends Controller
 
 
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $property = Properties::find($id);
 
@@ -417,7 +417,7 @@ class PropertiesController extends Controller
 
 
 
-    public function getPropertyById($id)
+    public function getPropertyById(int $id)
     {
         // load relasi images biar ikut diserialisasi ke JSON
         $property = Properties::with('images')->find($id);

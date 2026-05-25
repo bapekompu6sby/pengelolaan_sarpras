@@ -32,7 +32,7 @@ class UsersController extends Controller
         return redirect()->route('users')->with('success', 'User created successfully.');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $user = User::findOrFail($id);
 
