@@ -188,8 +188,8 @@
                                 </button>
 
                                 <!-- Tombol Batalkan -->
-                                <button type="button" class="btn btn-danger btn-sm px-4"
-                                    onclick="confirmCancel({{ $t->id }})">
+                                <button type="button" class="btn btn-danger btn-sm px-4 btn-cancel-booking"
+                                    data-id="{{ $t->id }}">
                                     Batalkan Pesanan
                                 </button>
 
@@ -204,25 +204,39 @@
                     @method('POST')
                 </form>
 
-                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-                <script>
-                    function confirmCancel(id) {
-                        Swal.fire({
-                            title: 'Konfirmasi Pembatalan',
-                            text: 'Yakin ingin membatalkan pesanan ini?',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: 'Ya, Batalkan',
-                            cancelButtonText: 'Tidak',
-                            reverseButtons: true,
-                            focusCancel: true
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                document.getElementById(`cancelForm-${id}`).submit();
-                            }
-                        });
-                    }
-                </script>
+                @once
+                    @push('scripts')
+                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                document.body.addEventListener('click', function(e) {
+                                    const btn = e.target.closest('.btn-cancel-booking');
+                                    if (btn) {
+                                        e.preventDefault();
+                                        const id = btn.getAttribute('data-id');
+                                        Swal.fire({
+                                            title: 'Konfirmasi Pembatalan',
+                                            text: 'Yakin ingin membatalkan pesanan ini?',
+                                            icon: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonText: 'Ya, Batalkan',
+                                            cancelButtonText: 'Tidak',
+                                            reverseButtons: true,
+                                            focusCancel: true
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                const form = document.getElementById('cancelForm-' + id);
+                                                if (form) {
+                                                    form.submit();
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        </script>
+                    @endpush
+                @endonce
 
                 @if ($t->status == 'approved')
                     <div class="row g-3 mt-4">
