@@ -157,7 +157,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($events as $e)
+                            @foreach ($events as $e)
                                 @php $rowId = 'row-'.($e->id ?? Str::slug(($e->kegiatan ?? 'kegiatan').'-'.($e->start ?? ''))); @endphp
                                 <tr id="{{ $rowId }}">
                                     <td>{{ $e->instansi }}</td>
@@ -168,11 +168,7 @@
                                     <td>{{ tanggalRangeID($e->start, $e->end) }}</td>
                                     <td>{{ $e->properties->name ?? '-' }}</td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">Tidak ada kegiatan</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
