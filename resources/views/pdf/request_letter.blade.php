@@ -234,7 +234,7 @@
     </table>
 
     <div class="doc-title">
-        <h1>BUKTI PEMINJAMAN</h1>
+        <h1>RESERVASI PEMINJAMAN RUANGAN</h1>
     </div>
     <p class="doc-subtitle">Dokumen ini adalah bukti sah pengajuan peminjaman ruang/sarana Bapekom PU Wilayah VI Surabaya
     </p>
