@@ -86,7 +86,11 @@
                         </form>
 
                         {{-- Request Letter --}}
-                        <p class="mt-3 mb-1"><strong>Surat Permohonan:</strong>
+                        <a href="{{ route('transactions.request_letter.generate', $t->id) }}"
+                            class="btn btn-outline-primary btn-sm" target="_blank">
+                            Download E-Ticket / Surat Permohonan
+                        </a>
+                        {{-- <p class="mt-3 mb-1"><strong>Surat Permohonan:</strong>
                             @if ($t->request_letter)
                                 <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
                                     target="_blank">Download</a>
@@ -102,7 +106,7 @@
                                     accept=".pdf,.jpg,.jpeg,.png" required>
                                 <button type="submit" class="btn btn-primary btn-sm">Upload</button>
                             </div>
-                        </form>
+                        </form> --}}
 
                         {{-- File code billing --}}
                         <p class="mt-3 mb-1"><strong>File code billing:</strong>

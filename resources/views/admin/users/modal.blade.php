@@ -263,7 +263,7 @@
                         <ul class="mb-0">
                             <li>Mengajukan peminjaman: pilih ruangan, isi <em>instansi/kegiatan</em>, tanggal
                                 mulai–akhir.</li>
-                            <li>Mengunggah berkas pendukung (surat permohonan), melihat status pengajuan.</li>
+                            <li>melihat status pengajuan.</li>
                             <li>Melengkapi pembayaran (jika berlaku) & unggah bukti bayar.</li>
                             <li>Menerima surat balasan.</li>
                         </ul>

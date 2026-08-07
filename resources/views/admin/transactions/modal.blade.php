@@ -509,9 +509,10 @@
                                 <input type="file" name="payment_receipt" class="form-control mt-2"
                                     accept=".pdf,.jpg,.jpeg,.png">
                             </div>
+                            
 
                             {{-- Surat Permohonan --}}
-                            <div class="mb-3 min-w-0">
+                            {{-- <div class="mb-3 min-w-0">
                                 <p class="mb-1 fw-semibold">Surat Permohonan</p>
                                 @if ($t->request_letter)
                                     <a href="{{ asset('storage/uploads/request_letter/' . $t->request_letter) }}"
@@ -523,7 +524,7 @@
                                 @endif
                                 <input type="file" name="request_letter" class="form-control mt-2"
                                     accept=".pdf,.jpg,.jpeg,.png">
-                            </div>
+                            </div> --}}
 
                             {{-- Kode Pembayaran (Billing QR/File) --}}
                             <div class="mb-3 min-w-0">
@@ -543,7 +544,7 @@
                             </div>
 
                             {{-- Surat Balasan --}}
-                            <div class="mb-3 min-w-0">
+                            {{-- <div class="mb-3 min-w-0">
                                 <p class="mb-1 fw-semibold">Surat Balasan Permohonan</p>
                                 @if ($t->response_letter)
                                     <a href="{{ asset('storage/uploads/response_letter/' . $t->response_letter) }}"
@@ -559,7 +560,7 @@
                                 @error('response_letter')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
-                            </div>
+                            </div> --}}
                         </div>
 
                         {{-- Status --}}

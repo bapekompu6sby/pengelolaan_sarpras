@@ -92,6 +92,8 @@ Route::middleware('auth')->group(function () {
                         ->name('transactions.ruangan.export-baru');
                 Route::get('transactions/ruangan/export-simple', [TransactionController::class, 'exportRuanganSimple'])
                         ->name('transactions.ruangan.export-simple');
+                Route::get('/transactions/{id}/request-letter', [TransactionController::class, 'generateRequestLetterPdf'])
+                        ->name('transactions.request_letter.generate');
 
 
 

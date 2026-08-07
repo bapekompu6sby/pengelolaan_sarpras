@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use PHPUnit\Event\Code\Throwable;
+use Barryvdh\DomPDF\Facade\Pdf;
+use ZipArchive;
 
 class TransactionController extends Controller
 {
@@ -858,5 +860,30 @@ $$ |     $$  __$$ |$$ |$$   ____|$$ |  $$ |$$ |  $$ |$$  __$$ |$$ |
         $transaction->save();
 
         return redirect()->back()->with('success', 'Transaksi berhasil dibatalkan');
+    }
+
+    public function generateRequestLetterPdf($id)
+    {
+        $t = Transaction::with('properties')->findOrFail($id);
+        $statusMap = [
+            'approved'        => ['label' => 'APPROVED',        'class' => 'approved'],
+            'pending'         => ['label' => 'PENDING',          'class' => 'pending'],
+            'rejected'        => ['label' => 'REJECTED',         'class' => 'rejected'],
+            'waiting_payment' => ['label' => 'MENUNGGU PEMBAYARAN', 'class' => 'waiting-payment'],
+            'cancelled'       => ['label' => 'DIBATALKAN',       'class' => 'cancelled'],
+        ];
+
+        $statusKey  = strtolower(trim($t->status ?? ''));
+        $statusInfo = $statusMap[$statusKey] ?? [
+            'label' => strtoupper($t->status ?? '-'),
+            'class' => 'unknown',
+        ];
+
+        $pdf = Pdf::loadView('pdf.request_letter', [
+            't'          => $t,
+            'statusInfo' => $statusInfo,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download("E-Ticket-#{$t->id}.pdf");
     }
 }
