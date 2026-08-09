@@ -228,7 +228,7 @@
                     }
                 </script>
 
-                @if ($t->status == 'approved')
+                {{-- @if ($t->status == 'approved')
                     <div class="row g-3 mt-4">
                         <div class="col-12 col-md-6">
                             <p><strong>QR Survey Kepuasan:</strong></p>
@@ -240,7 +240,7 @@
                             </a>
                         </div>
                     </div>
-                @endif
+                @endif --}}
             </div>
         </div>
     </div>
